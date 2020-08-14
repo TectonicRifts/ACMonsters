@@ -19,21 +19,25 @@ class Toolbar:
     def __init__(self, parent, cont):
         self.frame = tk.Frame(parent)
 
-        open_sql_button = tk.Button(self.frame, text="Open File", command=cont.open_sql_file)
+        open_sql_button = tk.Button(self.frame, text="Open File", command=cont.open_file)
         name_filter_label = tk.Label(self.frame, text="Name must contain", font=norm_font)
         name_filter_entry = tk.Entry(self.frame, bg="white", font=norm_font)
+        self.creature_only = tk.IntVar(value=0)
+        creature_only_check = tk.Checkbutton(
+            self.frame, text="Only creatures", variable=self.creature_only, font=norm_font)
 
         open_sql_folder_button = tk.Button(self.frame, text="Open Folder",
-                                           command=partial(cont.open_sql_folder, name_filter_entry))
+                                           command=partial(cont.open_folder, name_filter_entry, self.creature_only))
 
         save_sql_button = tk.Button(self.frame, text="Save", bg="lightblue", command=cont.save_sql)
 
         # layout
         name_filter_label.grid(row=0, column=0, sticky="ew")
         name_filter_entry.grid(row=0, column=1, sticky="ew")
-        open_sql_folder_button.grid(row=0, column=2, sticky="ew")
-        open_sql_button.grid(row=0, column=3, ipadx=10, ipady=0, sticky="ew")
-        save_sql_button.grid(row=0, column=4, ipadx=25, ipady=0, sticky="ew")
+        creature_only_check.grid(row=0, column=2, sticky="ew")
+        open_sql_folder_button.grid(row=0, column=3, sticky="ew")
+        open_sql_button.grid(row=0, column=4, ipadx=10, ipady=0, sticky="ew")
+        save_sql_button.grid(row=0, column=5, ipadx=25, ipady=0, sticky="ew")
 
 
 class View:
@@ -54,8 +58,8 @@ class View:
         art_panel = ArtPanel(right_nb, cont)
         copy_panel = AutoPanel(right_nb, cont)
         port_panel = PortalPanel(right_nb, cont)
-        kill_task_panel = KillTaskPanel(right_nb)
-        event_panel = EventPanel(right_nb)
+        kill_task_panel = QuestPanel(right_nb)
+        trophies_panel = TrophiesPanel(right_nb, cont)
 
         # left
         left_nb.add(self.console.frame, text="Console")
@@ -71,7 +75,7 @@ class View:
         right_nb.add(mods_panel.frame, text="Mods")
         right_nb.add(art_panel.frame, text="Art")
         right_nb.add(kill_task_panel.frame, text="Task")
-        right_nb.add(event_panel.frame, text="Event")
+        right_nb.add(trophies_panel.frame, text="Loot")
         right_nb.add(copy_panel.frame, text="Auto")
 
         left_nb.grid(row=0, column=0)
@@ -126,7 +130,7 @@ class Controller:
         else:
             tk.messagebox.showinfo("Info", "There was no file to save.")
 
-    def open_sql_file(self):
+    def open_file(self):
         """Load a single .sql file."""
         my_file = filedialog.askopenfilename(filetypes=[("sql files", "*.sql")])
         if my_file:
@@ -139,7 +143,7 @@ class Controller:
                 self.view.console.clear()
                 self.view.console.print("Working with: " + self.sql_output + "\n")
 
-    def open_sql_folder(self, name_filter_entry):
+    def open_folder(self, name_filter_entry, creature_only):
         """Load all .sql files in a folder for batch processing. This will also walk through all subdirectories
         in the folder."""
         file_folder = filedialog.askdirectory()
@@ -165,14 +169,24 @@ class Controller:
                         sql_file = file_object.read()
                         commands = sql_file.split(";")
                         base_name = os.path.basename(file_name)
-                        self.sql_dict[base_name] = commands
-                        self.view.console.print(base_name + "\n")
+                        self.check_creature_filter(base_name, commands, creature_only)
                 else:
                     sql_file = file_object.read()
                     commands = sql_file.split(";")
                     base_name = os.path.basename(file_name)
+                    self.check_creature_filter(base_name, commands, creature_only)
+
+    def check_creature_filter(self, base_name, commands, creature_only):
+
+        if creature_only.get() == 1:
+            item_type = file_helper.get_property(commands, "int", 1)
+            if item_type is not None:
+                if int(item_type[0]) == 16:  # weenie is creature
                     self.sql_dict[base_name] = commands
                     self.view.console.print(base_name + "\n")
+        else:
+            self.sql_dict[base_name] = commands
+            self.view.console.print(base_name + "\n")
 
     def set_properties(self, my_dict, stat_entries, tag):
         """Set properties for a list of entries. This function is for weenies in .sql format."""
@@ -488,170 +502,6 @@ class ItemPanel:
             tk.messagebox.showerror("Error", "Enter a pickup timer.")
 
 
-class WeaponDamagePanel:
-
-    def __init__(self, parent, cont):
-        self.frame = tk.Frame(parent)
-        self.cont = cont
-
-        # all fields are required here
-        weap_dmg_label = tk.Label(self.frame, text="Weapon Damage", font=norm_font, fg='blue')
-        labels = ['min', 'max']
-        self.weapon_dmg = vh.make_int_entry(self.frame, labels)
-
-        tooltip = "Auto-computes and sets the variance of the weapon to get desired min and max damage."
-        tooltip_label = tk.Label(self.frame, text=tooltip, font=norm_font, fg="dark green", wraplength=420,
-                                 justify=tk.LEFT)
-
-        set_button = tk.Button(self.frame, text="Set", bg="lightblue", command=self.set_weapon_dmg)
-        batch_button = tk.Button(self.frame, text="Run Batch",
-                                 command=partial(self.cont.set_batch, self.set_weapon_dmg))
-
-        # layout
-        r = 0
-        c = 0
-
-        weap_dmg_label.grid(row=r, column=c)
-        r += 1
-
-        for name, entry in self.weapon_dmg.items():
-            label = tk.Label(self.frame, text=name, font=norm_font)
-            label.grid(row=r, column=c)
-            entry.grid(row=r, column=c + 1)
-            r += 1
-
-        set_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
-        batch_button.grid(row=r, column=c + 1, padx=5, pady=5, sticky="ew")
-
-        r += 1
-        tooltip_label.grid(row=r, column=c, columnspan=2)
-
-    def set_weapon_dmg(self):
-
-        if self.cont.input_file:
-
-            wpn_min = self.weapon_dmg['min'].get()
-            wpn_max = self.weapon_dmg['max'].get()
-
-            if wpn_min != "" and wpn_max != "":
-                wpn_var = self.get_weapon_variance(wpn_min, wpn_max)
-                self.cont.json_updater.set_stat(self.cont.input_file, 'intStats', 44, wpn_max)
-                self.cont.json_updater.set_stat(self.cont.input_file, 'floatStats', 22, wpn_var)
-            else:
-                tk.messagebox.showerror("Error", "Both min and max are required.")
-
-    def get_weapon_variance(self, min_dmg, max_dmg):
-        """Return weapon variance given min and max damage."""
-        wpn_var = (max_dmg - min_dmg) / max
-        return round(float(wpn_var), 1)
-
-
-class UnarmedDamagePanel:
-
-    def __init__(self, parent, cont):
-        """Use to set unarmed damage for monsters, and damage for weapons."""
-        self.frame = tk.Frame(parent)
-        self.cont = cont
-
-        mob_ua_label = tk.Label(self.frame, text="Unarmed Damage", font=norm_font, fg='blue')
-
-        dmg_type_label = tk.Label(self.frame, text="type", font=norm_font)
-        options = ['no change', 'undefined', 'slash', 'pierce', 'bludge', 'cold', 'fire', 'acid', 'electric', 'nether']
-        self.dmg_type_combo = ttk.Combobox(self.frame, values=options, font=norm_font, state="readonly")
-        self.dmg_type_combo.current(0)
-
-        # damage value
-        dmg_val_label = ['value']
-        self.unarmed_damage = vh.make_int_entry(self.frame, dmg_val_label)
-
-        # damage variance
-        var_val_label = ['variance']
-        self.unarmed_variance = vh.make_float_entry(self.frame, var_val_label)
-
-        set_button = tk.Button(self.frame, text="Set", bg="lightblue", command=self.set_dmg)
-        batch_button = tk.Button(self.frame, text="Run Batch", command=partial(self.cont.set_batch, self.set_dmg))
-
-        # layout
-        r = 0
-        c = 0
-
-        mob_ua_label.grid(row=r, column=c)
-        r += 1
-        dmg_type_label.grid(row=r, column=c)
-        self.dmg_type_combo.grid(row=r, column=c + 1)
-        r += 1
-
-        for name, entry in self.unarmed_damage.items():
-            label = tk.Label(self.frame, text=name, font=norm_font)
-            label.grid(row=r, column=c)
-            entry.grid(row=r, column=c + 1)
-            r += 1
-
-        for name, entry in self.unarmed_variance.items():
-            label = tk.Label(self.frame, text=name, font=norm_font)
-            label.grid(row=r, column=c)
-            entry.grid(row=r, column=c + 1)
-            r += 1
-
-        set_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
-        batch_button.grid(row=r, column=c + 1, padx=5, pady=5, sticky="ew")
-
-    def set_dmg(self):
-
-        if self.cont.input_file:
-
-            damage_dict = {}
-
-            d_type = self.dmg_type_combo.get()
-
-            if d_type != "no change":
-                damage_dict['dtype'] = labels_module.get_damage_type_int(d_type)
-
-            # damage value
-            ua_dam = self.unarmed_damage['value'].get()
-            if ua_dam != "":
-                damage_dict['value'] = int(ua_dam)
-
-            # damage variance
-            ua_var = self.unarmed_variance['variance'].get()
-            if ua_var != "":
-                damage_dict['variance'] = round(float(ua_var), 1)
-
-            self.cont.json_updater.set_body_part_damage(self.cont.input_file, damage_dict)
-            self.cont.view.console.preview()
-
-
-class ArmorPanel:
-
-    def __init__(self, parent, cont):
-        self.frame = tk.Frame(parent)
-        self.cont = cont
-
-        dmg_type_labels = labels_module.get_armor_labels()
-        self.scale_panel = SliderPanel(self.frame, "Armor", "weak (0) - strong (800)", dmg_type_labels, 0, 800, 50, 400)
-
-        set_button = tk.Button(self.frame, text="Set", bg="lightblue", command=self.set_body_armor)
-        batch_button = tk.Button(self.frame, text="Run Batch",
-                                 command=partial(self.cont.set_batch, self.set_body_armor))
-
-        # layout
-        r = 0
-        c = 0
-        self.scale_panel.frame.grid(row=r, column=c, columnspan=2)
-        r += 1
-        set_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
-        batch_button.grid(row=r, column=c + 1, padx=5, pady=5, sticky="ew")
-
-    def set_body_armor(self):
-
-        mods = {}
-        if self.cont.input_file:
-            for k, v in self.scale_panel.scales.items():
-                mods[k] = v.get()
-            self.cont.json_updater.set_base_armor(self.cont.input_file, mods)
-            self.cont.view.console.preview()
-
-
 class AutoPanel:
 
     def __init__(self, parent, cont):
@@ -792,7 +642,6 @@ class AutoPanel:
 
                 if species_name is not None:
                     species_name = species_name.lower()
-                    print(species_name)
 
                     templates = file_helper.get_templates()
                     matching_template = None
@@ -801,20 +650,12 @@ class AutoPanel:
 
                         if species_name in template.lower():
                             matching_template = template
-                        else:
-                            wcid = re.findall('[0-9]+', (self.cont.sql_commands[0]))[0]
-                            name = file_helper.get_property(self.cont.sql_commands, "str", 1)
-                            self.cont.view.console.print("Warning! No template found for " + str(wcid) + " " + name)
 
                     if matching_template is not None:
                         with open("templates/" + matching_template) as file_object:
                             sql_file = file_object.read()
                             self.cont.template_commands = sql_file.split(";")
                             self.copy_from_template()
-                else:
-                    wcid = re.findall('[0-9]+', (self.cont.sql_commands[0]))[0]
-                    name = file_helper.get_property(self.cont.sql_commands, "str", 1)
-                    self.cont.view.console.print("Warning! No species set for " + str(wcid) + " " + name)
 
             # still autocomplete from data, regardless of template or source
             self.autocomplete_from_data()
@@ -837,7 +678,7 @@ class AutoPanel:
                 file_helper.set_spell_list(self.cont.sql_commands, spell_id, spell_pr, spell_name)
 
 
-class DeletePanel:
+class UtilityPanel:
 
     def __init__(self, parent, cont):
         self.frame = tk.Frame(parent)
@@ -847,13 +688,29 @@ class DeletePanel:
         str_labels = ["tag"]
         self.str_entries = vh.make_str_entry(self.frame, str_labels)
 
-        delete_button = tk.Button(self.frame, text="Delete", command=self.delete_command)
+        set_button = tk.Button(self.frame, text="Set", bg="lightblue", command=self.delete_command)
+        batch_button = tk.Button(
+            self.frame, text="Run Batch", command=partial(self.cont.run_sql_batch, self.delete_command))
 
-        tooltip = ("Use to delete a command in a batch of SQL files. "
+        tooltip = ("Use to delete a command. "
                    "To target a command, enter a tag, such as weenie_properties_create_list."
                    )
         tooltip_label = tk.Label(self.frame, text=tooltip, font=norm_font, fg="dark green", wraplength=420,
                                  justify=tk.LEFT)
+
+        renumber_header = tk.Label(self.frame, text="Renumber", font=norm_font, fg='blue')
+        renumber_int_labels = ['change by', 'if greater than']
+        self.renumber_int_entries = vh.make_int_entry(self.frame, renumber_int_labels)
+
+        self.subtract_check = tk.IntVar(value=1)
+        subtract_box = tk.Checkbutton(self.frame, text="subtract", variable=self.subtract_check, font=norm_font)
+
+        renumber_button = tk.Button(
+            self.frame, text="Run Batch", command=partial(self.cont.run_sql_batch, self.renumber))
+
+        renumber_tooltip = "Use to renumber WCIDs by a constant value."
+        renumber_tooltip_label = tk.Label(
+            self.frame, text=renumber_tooltip, font=norm_font, fg="dark green", wraplength=420, justify=tk.LEFT)
 
         # layout
         r = 0
@@ -868,48 +725,17 @@ class DeletePanel:
             entry.grid(row=r, column=c + 1)
             r += 1
 
-        delete_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
+        set_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
+        batch_button.grid(row=r, column=c+1, padx=5, pady=5, sticky="ew")
 
         r += 1
         tooltip_label.grid(row=r, column=c, columnspan=2)
-
-    def delete_command(self):
-
-        tag = self.str_entries["tag"].get().strip()
-
-        if tag != "":
-            for file_name, sql_file in self.cont.sql_dict.items():
-                commands = sql_file.split(";")
-                file_helper.write_clean_sql(file_name, commands, tag)
-
-
-class RenumberPanel:
-
-    def __init__(self, parent, cont):
-        self.frame = tk.Frame(parent)
-        self.cont = cont
-
-        header_label = tk.Label(self.frame, text="Renumber", font=norm_font, fg='blue')
-        int_labels = ['change by', 'if greater than']
-        self.int_entries = vh.make_int_entry(self.frame, int_labels)
-
-        self.subtract_check = tk.IntVar(value=1)
-        subtract_box = tk.Checkbutton(self.frame, text="subtract", variable=self.subtract_check, font=norm_font)
-
-        renumber_button = tk.Button(self.frame, text="Renumber", command=self.renumber)
-
-        tooltip = "Use to renumber WCIDs in a batch of SQL files by a constant value."
-        tooltip_label = tk.Label(self.frame, text=tooltip, font=norm_font, fg="dark green", wraplength=420,
-                                 justify=tk.LEFT)
-
-        # layout
-        r = 0
-        c = 0
-
-        header_label.grid(row=r, column=c)
         r += 1
 
-        for name, entry in self.int_entries.items():
+        renumber_header.grid(row=r, column=c)
+        r += 1
+
+        for name, entry in self.renumber_int_entries.items():
             label = tk.Label(self.frame, text=name, font=norm_font)
             label.grid(row=r, column=c)
             entry.grid(row=r, column=c + 1)
@@ -919,16 +745,24 @@ class RenumberPanel:
         r += 1
         renumber_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
         r += 1
-        tooltip_label.grid(row=r, column=c, columnspan=2)
+        renumber_tooltip_label.grid(row=r, column=c, columnspan=2)
+
+    def delete_command(self):
+
+        if self.cont.sql_commands is not None:
+
+            tag = self.str_entries["tag"].get().strip()
+            if tag != "":
+                self.cont.sql_commands = file_helper.delete_sql_command(self.cont.sql_commands, tag)
 
     def renumber(self):
 
-        delta = int(self.int_entries['change by'].get())
+        delta = int(self.renumber_int_entries['change by'].get())
 
         if self.subtract_check.get() == 1:
             delta = delta * -1
 
-        threshold = int(self.int_entries['if greater than'].get())
+        threshold = int(self.renumber_int_entries['if greater than'].get())
 
         # get wcid list
         wcid_list = []
@@ -965,64 +799,29 @@ class RenumberPanel:
             file_helper.write_sql_file(file_name, renumbered)
 
 
-class KillTaskPanel:
+class QuestPanel:
 
     def __init__(self, parent):
         self.frame = tk.Frame(parent)
 
-        header_label = tk.Label(self.frame, text="Kill Task", font=norm_font, fg='blue')
+        # kill task
 
-        str_labels = ['kill wait', 'kill stamp']
-        self.str_entries = vh.make_str_entry(self.frame, str_labels)
+        kill_task_header = tk.Label(self.frame, text="Kill Task", font=norm_font, fg='blue')
+
+        kill_task_labels = ['kill wait', 'kill stamp']
+        self.str_entries1 = vh.make_str_entry(self.frame, kill_task_labels)
 
         kill_count_label = ['kill count']
-        self.kill_task_entries = vh.make_int_entry(self.frame, kill_count_label)
+        self.int_entries1 = vh.make_int_entry(self.frame, kill_count_label)
 
         make_task_button = tk.Button(self.frame, text="Make Task", command=self.make_kill_task)
 
-        # layout
+        # event
 
-        r = 0
-        c = 0
+        event_header = tk.Label(self.frame, text="Event", font=norm_font, fg='blue')
 
-        header_label.grid(row=r, column=c)
-        r += 1
-
-        for name, entry in self.str_entries.items():
-            label = tk.Label(self.frame, text=name, font=norm_font)
-            label.grid(row=r, column=c)
-            entry.grid(row=r, column=c + 1)
-            r += 1
-
-        for name, entry in self.kill_task_entries.items():
-            label = tk.Label(self.frame, text=name, font=norm_font)
-            label.grid(row=r, column=c)
-            entry.grid(row=r, column=c + 1)
-            r += 1
-
-        make_task_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
-
-    def make_kill_task(self):
-        kill_wait = self.str_entries['kill wait'].get().strip()
-        kill_stamp = self.str_entries['kill stamp'].get().strip()
-        kill_count = int(self.kill_task_entries['kill count'].get())
-
-        if kill_wait and kill_stamp and kill_count:
-            quest_helper.make_quest_sql(kill_wait)
-            quest_helper.make_kill_count(kill_stamp, kill_count)
-        else:
-            tk.messagebox.showerror("Error", "Set kill wait, stamp and count.")
-
-
-class EventPanel:
-
-    def __init__(self, parent):
-        self.frame = tk.Frame(parent)
-
-        header_label = tk.Label(self.frame, text="Event", font=norm_font, fg='blue')
-
-        str_labels = ['event name']
-        self.str_entries = vh.make_str_entry(self.frame, str_labels)
+        event_label = ['event name']
+        self.str_entries2 = vh.make_str_entry(self.frame, event_label)
 
         make_event_button = tk.Button(self.frame, text="Make Event", command=self.make_event)
 
@@ -1031,10 +830,27 @@ class EventPanel:
         r = 0
         c = 0
 
-        header_label.grid(row=r, column=c)
+        kill_task_header.grid(row=r, column=c)
         r += 1
 
-        for name, entry in self.str_entries.items():
+        for name, entry in self.str_entries1.items():
+            label = tk.Label(self.frame, text=name, font=norm_font)
+            label.grid(row=r, column=c)
+            entry.grid(row=r, column=c + 1)
+            r += 1
+
+        for name, entry in self.int_entries1.items():
+            label = tk.Label(self.frame, text=name, font=norm_font)
+            label.grid(row=r, column=c)
+            entry.grid(row=r, column=c + 1)
+            r += 1
+
+        make_task_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
+        r += 1
+        event_header.grid(row=r, column=c)
+        r += 1
+
+        for name, entry in self.str_entries2.items():
             label = tk.Label(self.frame, text=name, font=norm_font)
             label.grid(row=r, column=c)
             entry.grid(row=r, column=c + 1)
@@ -1042,8 +858,19 @@ class EventPanel:
 
         make_event_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
 
+    def make_kill_task(self):
+        kill_wait = self.str_entries1['kill wait'].get().strip()
+        kill_stamp = self.str_entries1['kill stamp'].get().strip()
+        kill_count = int(self.int_entries1['kill count'].get())
+
+        if kill_wait and kill_stamp and kill_count:
+            quest_helper.make_quest_sql(kill_wait)
+            quest_helper.make_kill_count(kill_stamp, kill_count)
+        else:
+            tk.messagebox.showerror("Error", "Set kill wait, stamp and count.")
+
     def make_event(self):
-        event_name = self.str_entries['event name'].get().strip()
+        event_name = self.str_entries2['event name'].get().strip()
 
         if event_name:
             quest_helper.make_event_sql(event_name)
@@ -1329,6 +1156,14 @@ class AttributesPanel:
         self.int_entries_1 = vh.make_int_entry(self.frame, labels_module.get_primary_attribute_labels())
         self.int_entries_2 = vh.make_int_entry(self.frame, labels_module.get_secondary_attribute_labels())
 
+        self.replace_attributes = tk.IntVar(value=0)
+        replace_attributes_check = tk.Checkbutton(
+            self.frame, text="replace attributes", variable=self.replace_attributes, font=norm_font)
+
+        self.replace_vitals = tk.IntVar(value=0)
+        replace_vitals_check = tk.Checkbutton(
+            self.frame, text="replace vitals", variable=self.replace_vitals, font=norm_font)
+
         set_button = tk.Button(self.frame, text="Set", bg="lightblue", command=self.set_attributes)
         batch_button = tk.Button(self.frame, text="Run Batch",
                                  command=partial(self.cont.run_sql_batch, self.set_attributes))
@@ -1353,6 +1188,9 @@ class AttributesPanel:
             entry.grid(row=r, column=c + 1)
             r += 1
 
+        replace_attributes_check.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
+        replace_vitals_check.grid(row=r, column=c+1, padx=5, pady=5, sticky="ew")
+        r += 1
         set_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
         r += 1
         batch_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
@@ -1369,14 +1207,19 @@ class AttributesPanel:
                        'focus': (5, "/* Focus */"),
                        'self': (6, "/* Self */")
                        }
-            self.cont.set_attributes(my_dict, self.int_entries_1, True, False)
+            if self.replace_attributes.get() == 1:
+                self.cont.set_attributes(my_dict, self.int_entries_1, True, False)
+            else:
+                self.cont.set_attributes(my_dict, self.int_entries_1, False, False)
 
             my_dict = {'health': (1, "/* MaxHealth */"),
                        'stamina': (3, "/* MaxStamina */"),
                        'mana': (5, "/* MaxMana */")
                        }
-
-            self.cont.set_attributes(my_dict, self.int_entries_2, False, True)
+            if self.replace_vitals.get() == 1:
+                self.cont.set_attributes(my_dict, self.int_entries_2, True, True)
+            else:
+                self.cont.set_attributes(my_dict, self.int_entries_2, False, True)
 
 
 class ArtPanel:
@@ -1428,7 +1271,7 @@ class ArtPanel:
         r += 1
         batch_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
         r += 1
-        tooltip_label.grid(row=r, column=c, columnspan=2)
+        tooltip_label.grid(row=r, column=c, columnspan=2, sticky="w")
 
     def set_art(self):
         """Set art properties for a single .sql file"""
@@ -1738,71 +1581,6 @@ class SkillsPanel:
             self.cont.sql_commands = my_list
 
 
-class LootPanel:
-
-    def __init__(self, parent, cont):
-        self.frame = tk.Frame(parent)
-        self.cont = cont
-
-        header_label = tk.Label(self.frame, text="Random Loot", font=norm_font, fg='blue')
-
-        int_labels = ['death treasure']
-        self.death_treasure = vh.make_int_entry(self.frame, int_labels)
-        self.search_entry = tk.Entry(self.frame, bg="white", font=norm_font)
-
-        text_area = scrolledtext.ScrolledText(self.frame, height=5, width=50, undo=True)
-        text_area.configure(state='disabled', wrap=tk.WORD)
-
-        find_button = tk.Button(self.frame, text="Find by Tier",
-                                command=partial(file_helper.find_death_treasure, 'death_treasure.txt',
-                                                self.search_entry, text_area))
-
-        tooltip = ("This is an integer for the loot tier profile of a monster. "
-                   "Must look up, for example from another monster in the same loot tier or the list above. "
-                   "To search for available options, enter a loot tier (e.g., 1, 2, etc.)"
-                   )
-        tooltip_label = tk.Label(self.frame, text=tooltip, font=norm_font, fg="dark green", wraplength=500,
-                                 justify=tk.LEFT)
-
-        set_button = tk.Button(self.frame, text="Set", bg="lightblue", command=self.set_death_treasure)
-        batch_button = tk.Button(self.frame, text="Run Batch",
-                                 command=partial(self.cont.set_batch, self.set_death_treasure))
-
-        # layout
-        r = 0
-        c = 0
-
-        header_label.grid(row=r, column=c)
-        r += 1
-
-        for name, entry in self.death_treasure.items():
-            label = tk.Label(self.frame, text=name, font=norm_font)
-            label.grid(row=r, column=c)
-            entry.grid(row=r, column=c + 1)
-            r += 1
-
-        self.search_entry.grid(row=r, column=c, sticky="ew")
-        find_button.grid(row=r, column=c + 1, padx=5, pady=5, sticky="w")
-        r += 1
-        text_area.grid(row=r, column=c, columnspan=2)
-        r += 1
-
-        set_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
-        batch_button.grid(row=r, column=c + 1, padx=5, pady=5, sticky="ew")
-
-        r += 1
-        tooltip_label.grid(row=r, column=c, columnspan=2)
-
-    def set_death_treasure(self):
-        """Set death treasure for a single .json file."""
-        if self.cont.input_file:
-
-            val = self.death_treasure['death treasure'].get().strip()
-            if val != "":
-                val = int(val)
-                self.cont.json_updater.set_stat(self.cont.input_file, 'didStats', 35, val)
-
-
 class TrophiesPanel:
 
     def __init__(self, parent, cont):
@@ -1812,7 +1590,7 @@ class TrophiesPanel:
         # all fields required
         header_label = tk.Label(self.frame, text="Trophies", font=norm_font, fg='blue')
 
-        int_labels = ['wcid', 'total on corpse']
+        int_labels = ['monster wcid', 'item wcid', 'total on corpse']
         self.trophy_entries = vh.make_int_entry(self.frame, int_labels)
         self.trophy_entries['total on corpse'].insert(tk.END, "1")
 
@@ -1827,8 +1605,7 @@ class TrophiesPanel:
         tooltip_label = tk.Label(self.frame, text=tooltip, font=norm_font, fg="dark green", wraplength=500,
                                  justify=tk.LEFT)
 
-        set_button = tk.Button(self.frame, text="Set", bg="lightblue", command=self.set_trophy)
-        batch_button = tk.Button(self.frame, text="Run Batch", command=partial(self.cont.set_batch, self.set_trophy))
+        set_button = tk.Button(self.frame, text="Make Create List", command=self.make_create_list)
 
         # layout
         r = 0
@@ -1849,36 +1626,61 @@ class TrophiesPanel:
             r += 1
 
         set_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
-        batch_button.grid(row=r, column=c + 1, padx=5, pady=5, sticky="ew")
-
         r += 1
         tooltip_label.grid(row=r, column=c, columnspan=2)
 
-    def set_trophy(self):
+    def make_create_list(self):
 
-        if self.cont.input_file:
+        monster_wcid = self.trophy_entries['monster wcid'].get()
+        item_wcid = self.trophy_entries['item wcid'].get()
+        total = self.trophy_entries['total on corpse'].get()
+        drop = self.drop_chance['drop chance'].get()
 
-            wcid = self.trophy_entries['wcid'].get()
-            total = self.trophy_entries['total on corpse'].get()
-            drop = self.drop_chance['drop chance'].get()
+        if monster_wcid == "" or item_wcid == "" or total == "" or drop == "":
+            tk.messagebox.showerror("Error", "All fields are required.")
+        else:
 
-            if wcid == "" or total == "" or drop == "":
-                tk.messagebox.showerror("Error", "All trophy fields are required.")
-            else:
+            item_wcid = int(item_wcid)
+            total_on_corpse = int(total)
+            shade = round(float(drop), 2)
 
-                wcid = int(wcid)
-                total_on_corpse = int(total)
-                shade = float(drop)
+            if shade.is_integer():
+                shade = int(shade)
 
-                self.cont.json_updater.add_create_list(self.cont.input_file)
+            counter = 0
+            create_list = ""
+            for _ in range(total_on_corpse):
 
-                for _ in range(total_on_corpse):
+                if 1 > shade > 0:  # contain treasure
 
-                    if 1 > shade > 0:  # contain treasure
-                        self.cont.json_updater.set_create_list(self.cont.input_file, wcid, 9, 0, shade, 1)
-                        self.cont.json_updater.add_empty_slot(self.cont.input_file, (1 - shade))
-                    else:  # contain, always
-                        self.cont.json_updater.append_item(self.cont.input_file, wcid, 1, 0, shade, 1)
+                    empty_slot_shade = round(float(1 - shade), 2)
+                    if empty_slot_shade.is_integer():
+                        empty_slot_shade = int(empty_slot_shade)
+
+                    if counter == 0:
+
+                        create_list += """INSERT INTO `weenie_properties_create_list` (`object_Id`, `destination_Type`, `weenie_Class_Id`, `stack_Size`, `palette`, `shade`, `try_To_Bond`)\n"""
+                        create_list += f"""VALUES ({monster_wcid}, 9, {item_wcid}, 0, 0, {shade}, False) /* Create ({item_wcid}) for Contain Treasure */\n"""
+                        create_list += f"""     , ({monster_wcid}, 9,     0, 0, 0, {empty_slot_shade}, False) /* Create nothing for Contain Treasure */\n"""
+
+                    else:
+                        create_list += f"""     , ({monster_wcid}, 9, {item_wcid}, 0, 0, {shade}, False) /* Create ({item_wcid}) for Contain Treasure */\n"""
+                        create_list += f"""     , ({monster_wcid}, 9,     0, 0, 0, {empty_slot_shade}, False) /* Create nothing for Contain Treasure */\n"""
+
+                else:  # contain, always
+
+                    if counter == 0:
+                        create_list += """INSERT INTO `weenie_properties_create_list` (`object_Id`, `destination_Type`, `weenie_Class_Id`, `stack_Size`, `palette`, `shade`, `try_To_Bond`)\n"""
+                        create_list += f"""VALUES ({monster_wcid}, 9, {item_wcid},  0, 0,   1, False) /* Create ({item_wcid}) for Contain */\n"""
+
+                    else:
+                        create_list += f"""     , ({monster_wcid}, 9, {item_wcid},  0, 0,   1, False) /* Create ({item_wcid}) for Contain */\n"""
+
+                counter += 1
+
+            create_list += ";"
+            create_list = create_list.replace("\n;", ";\n")
+            self.cont.view.console.print(create_list)
 
 
 class SliderPanel:

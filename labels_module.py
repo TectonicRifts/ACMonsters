@@ -120,7 +120,7 @@ def get_item_types():
         32768: "caster",
         65536: "portal",
         131072: "lockable",
-        262144: "promissory Note",
+        262144: "promissory note",
         524288: "manastone",
         4481568: "grocer",
         4194304: "cooking base",

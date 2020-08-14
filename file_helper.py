@@ -6,21 +6,7 @@ import tkinter.messagebox
 import os
 import statistics
 import re
-
 import labels_module
-
-
-def write_readable_json(my_json, file_path):
-    """Write a json in human readable form."""
-
-    Path("output/9 WeenieDefaults").mkdir(parents=True, exist_ok=True)
-
-    if '"' in file_path:
-        file_path = file_path.replace('"', '')
-
-    if my_json and file_path:
-        with open("output/9 WeenieDefaults/" + file_path, 'w') as file_object:
-            file_object.write(json.dumps(my_json, indent=4))
 
 
 def write_sql_file(file_name, commands):
@@ -31,9 +17,9 @@ def write_sql_file(file_name, commands):
             file_object.write(command)
 
 
-def write_clean_sql(file_name, commands, tag):
-    Path("output/cleaned").mkdir(parents=True, exist_ok=True)
+def delete_sql_command(commands, tag):
 
+    tag = get_tag_name(tag)
     my_list = []
 
     for command in commands:
@@ -41,11 +27,9 @@ def write_clean_sql(file_name, commands, tag):
             pass
         else:
             if command.strip() != "":
-                my_list.append(command + ";")
+                my_list.append(command)
 
-    with open("output/cleaned/" + file_name, 'w') as file_object:
-        for command in my_list:
-            file_object.write(command)
+    return my_list
 
 
 def get_tag_name(tag):
@@ -454,11 +438,12 @@ def set_attribute_2(commands, key, val, desc, do_override):
 
     for command in commands:
         if str("`weenie_properties_attribute`") in command:
+            if str("`weenie_properties_attribute_2nd`") not in command:
 
-            if key == 1 or key == 3:  # health or stamina, need endurance
-                my_attribute = get_attribute(wcid, command, 2)
-            elif key == 5:  # mana, need self
-                my_attribute = get_attribute(wcid, command, 6)
+                if key == 1 or key == 3:  # health or stamina, need endurance
+                    my_attribute = get_attribute(wcid, command, 2)
+                elif key == 5:  # mana, need self
+                    my_attribute = get_attribute(wcid, command, 6)
 
     for command in commands:
         if str(tag) in command:
@@ -471,7 +456,7 @@ def set_attribute_2(commands, key, val, desc, do_override):
                     split_comma = line.split(",", 2)
 
                     my_key = int(split_comma[1].strip())
-                    print("My key: " + str(my_key))
+                    # print("My key: " + str(my_key))
 
                     split_other = split_comma[2].split(")")
                     init_level = split_other[0].strip()
@@ -479,10 +464,10 @@ def set_attribute_2(commands, key, val, desc, do_override):
                     init_level = split_more[0]
                     current_level = split_more[3]
 
-                    print("init level: " + str(init_level))
-                    print("curr level: " + str(current_level))
+                    # print("init level: " + str(init_level))
+                    # print("curr level: " + str(current_level))
                     comment = "".join(split_other[1].rsplit(",", 1)).strip()
-                    print("comment: " + str(comment))
+                    # print("comment: " + str(comment))
 
                     my_tuple = (init_level, current_level, comment)
                     my_dict[my_key] = my_tuple
