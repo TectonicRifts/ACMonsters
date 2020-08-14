@@ -50,7 +50,8 @@ def write_clean_sql(file_name, commands, tag):
 
 def get_tag_name(tag):
     tags = {"int": "`weenie_properties_int`", "bool": "`weenie_properties_bool`", "float": "`weenie_properties_float`",
-            "string": "`weenie_properties_string`", "did": "`weenie_properties_d_i_d`"}
+            "string": "`weenie_properties_string`", "str": "`weenie_properties_string`",
+            "did": "`weenie_properties_d_i_d`"}
 
     if tag in tags.keys():
         return tags[tag]
@@ -681,6 +682,7 @@ def find_wielded_items(file_name, entry, results_text):
 
 
 def skill_look_up(name):
+
     with open('pcap_creature_skills.txt') as my_file:
 
         melee_attack = []

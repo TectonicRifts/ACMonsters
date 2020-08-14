@@ -537,7 +537,6 @@ class WeaponDamagePanel:
                 wpn_var = self.get_weapon_variance(wpn_min, wpn_max)
                 self.cont.json_updater.set_stat(self.cont.input_file, 'intStats', 44, wpn_max)
                 self.cont.json_updater.set_stat(self.cont.input_file, 'floatStats', 22, wpn_var)
-                self.cont.view.console.preview()
             else:
                 tk.messagebox.showerror("Error", "Both min and max are required.")
 
@@ -1563,10 +1562,11 @@ class SkillsPanel:
                                  command=partial(self.cont.run_sql_batch, self.set_skills))
 
         tooltip = ("All fields optional. "
-                   "Set attributes first and enter desired skill levels, which are adjusted down based on attributes."
+                   "Set attributes first and enter desired skill levels, which are adjusted down based on attributes. "
                    "Melee offense includes heavy, light and two-handed weapons. "
                    "Magic offense includes life, creature, war, void, and mana conversion. "
-                   "Sneak attack and dirty fighting are set to the same level as melee offense."
+                   "Sneak attack and dirty fighting are set to the same level as melee offense. "
+                   "For fill from PCAPs to work, enter any value for each desired skill. "
                    )
 
         tooltip_label = tk.Label(self.frame, text=tooltip, font=norm_font, fg="dark green", wraplength=420,
@@ -1616,6 +1616,12 @@ class SkillsPanel:
                           'quickness': my_dict[4], 'focus': my_dict[5], 'self': my_dict[6]}
 
             skills = {}
+            pcap_dict = {}
+
+            if self.fill_from_pcap.get() == 1:
+                name = file_helper.get_property(self.cont.sql_commands, "str", 1)[0]
+                name = name.replace("'", "")
+                pcap_dict = file_helper.skill_look_up(name)
 
             for k, v in self.skill_entries.items():
 
@@ -1625,6 +1631,11 @@ class SkillsPanel:
                     val_int = int(val)
 
                     if k == 'melee offense':
+
+                        if 'melee offense' in pcap_dict.keys():
+                            if pcap_dict['melee offense'] > 0:
+                                val_int = int(pcap_dict['melee offense'])
+
                         base_skill = round((attributes['strength'] + attributes['coordination']) / 3)
                         val_int = val_int - base_skill
                         skills['HeavyWeapons'] = val_int
@@ -1639,11 +1650,21 @@ class SkillsPanel:
                             skills['DirtyFighting'] = val_int
 
                     elif k == 'finesse weapons':
+
+                        if 'finesse weapons' in pcap_dict.keys():
+                            if pcap_dict['finesse weapons'] > 0:
+                                val_int = int(pcap_dict['finesse weapons'])
+
                         base_skill = round((attributes['coordination'] + attributes['quickness']) / 3)
                         val_int = val_int - base_skill
                         skills['FinesseWeapons'] = val_int
 
                     elif k == 'magic offense':
+
+                        if 'magic offense' in pcap_dict.keys():
+                            if pcap_dict['magic offense'] > 0:
+                                val_int = int(pcap_dict['magic offense'])
+
                         base_skill = round((attributes['focus'] + attributes['self']) / 4)
                         val_int = val_int - base_skill
                         skills['LifeMagic'] = val_int
@@ -1653,21 +1674,41 @@ class SkillsPanel:
                         skills['ManaConversion'] = val_int
 
                     elif k == 'melee defense':
+
+                        if 'melee defense' in pcap_dict.keys():
+                            if pcap_dict['melee defense'] > 0:
+                                val_int = int(pcap_dict['melee defense'])
+
                         base_skill = round((attributes['coordination'] + attributes['quickness']) / 3)
                         val_int = val_int - base_skill
                         skills['MeleeDefense'] = val_int
 
                     elif k == 'missile defense':
+
+                        if 'missile defense' in pcap_dict.keys():
+                            if pcap_dict['missile defense'] > 0:
+                                val_int = int(pcap_dict['missile defense'])
+
                         base_skill = round((attributes['coordination'] + attributes['quickness']) / 5)
                         val_int = val_int - base_skill
                         skills['MissileDefense'] = val_int
 
                     elif k == 'magic defense':
+
+                        if 'magic defense' in pcap_dict.keys():
+                            if pcap_dict['magic defense'] > 0:
+                                val_int = int(pcap_dict['magic defense'])
+
                         base_skill = round((attributes['focus'] + attributes['self']) / 7)
                         val_int = val_int - base_skill
                         skills['MagicDefense'] = val_int
 
                     elif k == 'missile weapons':
+
+                        if 'missile offense' in pcap_dict.keys():
+                            if pcap_dict['missile offense'] > 0:
+                                val_int = int(pcap_dict['missile offense'])
+
                         base_skill = round(attributes['coordination'] / 2)
                         val_int = val_int - base_skill
                         skills['MissileDefense'] = val_int
@@ -1679,11 +1720,6 @@ class SkillsPanel:
             for k, v in skills.items():
                 if v < 0:
                     skills[k] = 0
-
-            if self.fill_from_pcap.get() == 1:
-                name = file_helper.get_property(self.cont.sql_commands, "str", 1)
-                pcap_dict = file_helper.skill_look_up(name)
-                print(pcap_dict)
 
             # make the skill table
             new_command = file_helper.get_skill_table(wcid, skills)
