@@ -164,6 +164,15 @@ def set_property(commands, tag, key, val, desc):
     """Set a property (int, bool, float, string or did) to a weenie (in sql format). If the
     property already exists, the value is updated.This function does not work for position. """
 
+    if tag == "str" or tag == "string":
+        val = f"""'{val}'"""
+
+    if tag == "bool":
+        if int(val) == 0:
+            val = False
+        else:
+            val = True
+
     tag = get_tag_name(tag)
     key = int(key)
 
