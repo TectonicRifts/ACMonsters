@@ -164,11 +164,11 @@ class Controller:
         for file_name in my_list:
 
             with open(os.path.join(file_folder, file_name)) as file_object:
+                base_name = os.path.basename(file_name)
                 if name_filter.strip() != "":
-                    if name_filter in file_name.lower():
+                    if name_filter in base_name.lower():
                         sql_file = file_object.read()
                         commands = sql_file.split(";")
-                        base_name = os.path.basename(file_name)
                         self.check_creature_filter(base_name, commands, creature_only)
                 else:
                     sql_file = file_object.read()
@@ -238,7 +238,7 @@ class PortalPanel:
 
         str_header_label = tk.Label(self.frame, text="Str", font=norm_font, fg='blue')
 
-        str_label_list = ['quest flag']
+        str_label_list = ['quest flag', 'quest restrict']
         self.str_entries = vh.make_str_entry(self.frame, str_label_list)
 
         str_label_list_2 = ['destination']
@@ -248,7 +248,10 @@ class PortalPanel:
         batch_button = tk.Button(self.frame, text="Run Batch",
                                  command=partial(self.cont.run_sql_batch, self.set_portal))
 
-        tooltip = "Destination is a /myloc paste."
+        tooltip = ("To have the portal stamp a quest when you go through it, set quest flag. "
+                   "To quest restrict the portal, so you can only go in it if on the quest, set quest restrict. "
+                   "Destination is a /myloc paste."
+                   )
         tooltip_label = tk.Label(self.frame, text=tooltip, font=norm_font, fg="dark green", wraplength=420,
                                  justify=tk.LEFT)
 
@@ -320,7 +323,7 @@ class PortalPanel:
                 tk.messagebox.showerror('Error', "Invalid value for portal restriction: " + str(portal_bitmask))
 
             # str
-            my_dict = {'quest flag': (37, "/* QuestRestriction */")}
+            my_dict = {'quest flag': (33, "/* Quest */"), 'quest restrict': (37, "/* QuestRestrict */")}
             self.cont.set_properties(my_dict, self.str_entries, 'string')
 
             # destination, should be a /myloc paste
@@ -638,7 +641,10 @@ class AutoPanel:
             if int(item_type[0]) == 16:  # weenie is creature
 
                 creature_species = file_helper.get_property(self.cont.sql_commands, "int", 2)
-                species_name = labels_module.get_creature_type_label(creature_species[0])
+                if creature_species is not None:
+                    species_name = labels_module.get_creature_type_label(creature_species[0])
+                else:
+                    species_name = None
 
                 if species_name is not None:
                     species_name = species_name.lower()
@@ -914,12 +920,24 @@ class BasePanel:
         float_labels = ['regen interval', 'gen radius']
         self.float_entries = vh.make_float_entry(self.frame, float_labels)
 
-        self.npc_check = tk.IntVar(value=0)
-        is_npc_box = tk.Checkbutton(self.frame, text="is npc", variable=self.npc_check, font=norm_font)
+        self.is_npc = tk.IntVar(value=0)
+        is_npc_check = tk.Checkbutton(self.frame, text="is npc", variable=self.is_npc, font=norm_font)
 
         self.npc_like_object = tk.IntVar(value=0)
-        npc_like_object_box = tk.Checkbutton(self.frame, text="npc like object", variable=self.npc_like_object,
+        npc_like_object_check = tk.Checkbutton(self.frame, text="npc like object", variable=self.npc_like_object,
                                              font=norm_font)
+
+        self.ignore_life_magic = tk.IntVar(value=0)
+        ignore_life_check = tk.Checkbutton(
+            self.frame, text="life hollow", variable=self.ignore_life_magic, font=norm_font)
+
+        self.ignore_item_magic = tk.IntVar(value=0)
+        ignore_item_check = tk.Checkbutton(
+            self.frame, text="item hollow", variable=self.ignore_item_magic, font=norm_font)
+
+        self.ignore_shield = tk.IntVar(value=0)
+        ignore_shield_check = tk.Checkbutton(
+            self.frame, text="shield hollow", variable=self.ignore_shield, font=norm_font)
 
         set_button = tk.Button(self.frame, text="Set", bg="lightblue", command=self.set_misc_stats)
         batch_button = tk.Button(self.frame, text="Run Batch",
@@ -936,8 +954,13 @@ class BasePanel:
             entry.grid(row=r, column=c + 1)
             r += 1
 
-        is_npc_box.grid(row=r, column=c)
-        npc_like_object_box.grid(row=r, column=c + 1)
+        is_npc_check.grid(row=r, column=c, sticky="w", padx=5)
+        npc_like_object_check.grid(row=r, column=c + 1, sticky="w", padx=5)
+        r += 1
+        ignore_life_check.grid(row=r, column=c, sticky="w", padx=5)
+        ignore_item_check.grid(row=r, column=c + 1, sticky="w", padx=5)
+        r += 1
+        ignore_shield_check.grid(row=r, column=c, sticky="w", padx=5)
         r += 1
 
         int_header_label.grid(row=r, column=c)
@@ -1028,7 +1051,7 @@ class BasePanel:
             self.cont.set_properties(my_dict, self.float_entries, 'float')
 
             # set to npc
-            if self.npc_check.get() == 1:
+            if self.is_npc.get() == 1:
                 desc = "/* PlayerKillerStatus - RubberGlue */"
                 self.cont.sql_commands = file_helper.set_property(self.cont.sql_commands, "int", 134, 16, desc)
                 self.cont.sql_commands = file_helper.set_property(self.cont.sql_commands, "bool", 19, 0,
@@ -1042,6 +1065,20 @@ class BasePanel:
                                                                   "/* DontTurnOrMoveWhenGiving */")
                 self.cont.sql_commands = file_helper.set_property(self.cont.sql_commands, "bool", 83, 1,
                                                                   "/* NpcLooksLikeObject */")
+
+            # attacks of the monster ignore life magic, i.e., ignores life armor, imperil, prots, vulns
+            if self.ignore_life_magic.get() == 1:
+                self.cont.sql_commands = file_helper.set_property(self.cont.sql_commands, "bool", 65, 1,
+                                                                  "/* IgnoreMagicResist */")
+
+            # attacks of the monster ignore item magic, i.e., impen, brittlemail, banes, lures
+            if self.ignore_item_magic.get() == 1:
+                self.cont.sql_commands = file_helper.set_property(self.cont.sql_commands, "bool", 66, 1,
+                                                                  "/* IgnoreMagicArmor */")
+            # ignore shield, this is a float
+            if self.ignore_shield.get() == 1:
+                self.cont.sql_commands = file_helper.set_property(self.cont.sql_commands, "float", 151, 1,
+                                                                  "/* IgnoreShield */")
 
 
 class ConsolePanel:

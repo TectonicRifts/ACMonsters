@@ -152,7 +152,6 @@ def set_position(commands, loc_paste):
     for command in commands:
         if str(tag) in command:
             my_list.append(get_destination(wcid, loc_paste))
-
         else:
             if command.strip() != "":
                 my_list.append(command + ";")
