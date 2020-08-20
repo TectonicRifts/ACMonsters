@@ -60,6 +60,7 @@ class View:
         port_panel = PortalPanel(right_nb, cont)
         kill_task_panel = QuestPanel(right_nb)
         trophies_panel = TrophiesPanel(right_nb, cont)
+        util_panel = UtilityPanel(right_nb, cont)
 
         # left
         left_nb.add(self.console.frame, text="Console")
@@ -76,6 +77,7 @@ class View:
         right_nb.add(art_panel.frame, text="Art")
         right_nb.add(kill_task_panel.frame, text="Task")
         right_nb.add(trophies_panel.frame, text="Loot")
+        right_nb.add(util_panel.frame, text="Util")
         right_nb.add(copy_panel.frame, text="Auto")
 
         left_nb.grid(row=0, column=0)
@@ -125,7 +127,10 @@ class Controller:
                 for command in self.sql_commands:
                     command = command.replace(";", "")
                     if command.strip() != "":
-                        file_object.write(command + ";")
+                        if "Lifestoned Changelog" in command:
+                            pass
+                        else:
+                            file_object.write(command + ";")
                 file_object.write("\n")
         else:
             tk.messagebox.showinfo("Info", "There was no file to save.")
@@ -536,7 +541,7 @@ class AutoPanel:
                    "must be adjusted later. "
                    "The spellbook and XP come from available data, and are not copied. "
                    )
-        tooltip_label = tk.Label(self.frame, text=tooltip, font=norm_font, fg="dark green", wraplength=500,
+        tooltip_label = tk.Label(self.frame, text=tooltip, font=norm_font, fg="dark green", wraplength=420,
                                  justify=tk.LEFT)
 
         # layout
@@ -690,19 +695,22 @@ class UtilityPanel:
         self.frame = tk.Frame(parent)
         self.cont = cont
 
-        header_label = tk.Label(self.frame, text="Delete", font=norm_font, fg='blue')
-        str_labels = ["tag"]
-        self.str_entries = vh.make_str_entry(self.frame, str_labels)
+        rollup_header = tk.Label(self.frame, text="Rollup", font=norm_font, fg='blue')
+        rollup_labels = ['output name']
+        self.rollup_entries = vh.make_str_entry(self.frame, rollup_labels)
+        rollup_button = tk.Button(self.frame, text="Run Batch", command=self.rollup)
+
+        delete_header = tk.Label(self.frame, text="Delete", font=norm_font, fg='blue')
+        delete_labels = ["tag"]
+        self.delete_entries = vh.make_str_entry(self.frame, delete_labels)
 
         set_button = tk.Button(self.frame, text="Set", bg="lightblue", command=self.delete_command)
         batch_button = tk.Button(
             self.frame, text="Run Batch", command=partial(self.cont.run_sql_batch, self.delete_command))
 
-        tooltip = ("Use to delete a command. "
-                   "To target a command, enter a tag, such as weenie_properties_create_list."
-                   )
-        tooltip_label = tk.Label(self.frame, text=tooltip, font=norm_font, fg="dark green", wraplength=420,
-                                 justify=tk.LEFT)
+        delete_tooltip = "Use to delete a command, such as weenie_properties_create_list."
+        delete_tooltip_label = tk.Label(
+            self.frame, text=delete_tooltip, font=norm_font, fg="dark green", wraplength=420, justify=tk.LEFT)
 
         renumber_header = tk.Label(self.frame, text="Renumber", font=norm_font, fg='blue')
         renumber_int_labels = ['change by', 'if greater than']
@@ -722,22 +730,30 @@ class UtilityPanel:
         r = 0
         c = 0
 
-        header_label.grid(row=r, column=c)
+        rollup_header.grid(row=r, column=c)
+        r += 1
+        for name, entry in self.rollup_entries.items():
+            label = tk.Label(self.frame, text=name, font=norm_font)
+            label.grid(row=r, column=c)
+            entry.grid(row=r, column=c + 1)
+            r += 1
+        rollup_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
         r += 1
 
-        for name, entry in self.str_entries.items():
+        delete_header.grid(row=r, column=c)
+        r += 1
+        for name, entry in self.delete_entries.items():
             label = tk.Label(self.frame, text=name, font=norm_font)
             label.grid(row=r, column=c)
             entry.grid(row=r, column=c + 1)
             r += 1
 
         set_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
-        batch_button.grid(row=r, column=c+1, padx=5, pady=5, sticky="ew")
-
         r += 1
-        tooltip_label.grid(row=r, column=c, columnspan=2)
+        batch_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
         r += 1
-
+        delete_tooltip_label.grid(row=r, column=c, columnspan=2, sticky="w")
+        r += 1
         renumber_header.grid(row=r, column=c)
         r += 1
 
@@ -751,13 +767,30 @@ class UtilityPanel:
         r += 1
         renumber_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
         r += 1
-        renumber_tooltip_label.grid(row=r, column=c, columnspan=2)
+        renumber_tooltip_label.grid(row=r, column=c, columnspan=2, sticky="w")
+
+    def rollup(self):
+
+        Path("output/rollup").mkdir(parents=True, exist_ok=True)
+        output_name = self.rollup_entries['output name'].get()
+        self.cont.view.console.clear()
+
+        with open("output/rollup/" + output_name + ".sql", 'w') as file_object:
+
+            for file_name, commands in self.cont.sql_dict.items():
+                self.cont.sql_commands = commands
+                for command in self.cont.sql_commands:
+                    command = command.replace(";", "")
+                    if command.strip() != "":
+                        file_object.write(command + ";")
+                    file_object.write("\n")
+            self.cont.view.console.print(output_name + " done.\n")
 
     def delete_command(self):
 
         if self.cont.sql_commands is not None:
 
-            tag = self.str_entries["tag"].get().strip()
+            tag = self.delete_entries["tag"].get().strip()
             if tag != "":
                 self.cont.sql_commands = file_helper.delete_sql_command(self.cont.sql_commands, tag)
 
@@ -925,7 +958,7 @@ class BasePanel:
 
         self.npc_like_object = tk.IntVar(value=0)
         npc_like_object_check = tk.Checkbutton(self.frame, text="npc like object", variable=self.npc_like_object,
-                                             font=norm_font)
+                                               font=norm_font)
 
         self.ignore_life_magic = tk.IntVar(value=0)
         ignore_life_check = tk.Checkbutton(
@@ -1226,7 +1259,7 @@ class AttributesPanel:
             r += 1
 
         replace_attributes_check.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
-        replace_vitals_check.grid(row=r, column=c+1, padx=5, pady=5, sticky="ew")
+        replace_vitals_check.grid(row=r, column=c + 1, padx=5, pady=5, sticky="ew")
         r += 1
         set_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
         r += 1
@@ -1639,7 +1672,7 @@ class TrophiesPanel:
                    "If greater than 0 and less than 1 it's a chance to drop. "
                    "Set to 1 to have the trophy always drop."
                    )
-        tooltip_label = tk.Label(self.frame, text=tooltip, font=norm_font, fg="dark green", wraplength=500,
+        tooltip_label = tk.Label(self.frame, text=tooltip, font=norm_font, fg="dark green", wraplength=420,
                                  justify=tk.LEFT)
 
         set_button = tk.Button(self.frame, text="Make Create List", command=self.make_create_list)
@@ -1756,8 +1789,9 @@ def main():
     if os.name == 'nt':
         windll.shcore.SetProcessDpiAwareness(1)
 
+    version = 0.1
     root = tk.Tk()
-    root.title("AC Monsters")
+    root.title("AC Monsters " + str(version))
     Controller(root)
     root.mainloop()
 

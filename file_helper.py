@@ -19,7 +19,6 @@ def write_sql_file(file_name, commands):
 
 def delete_sql_command(commands, tag):
 
-    tag = get_tag_name(tag)
     my_list = []
 
     for command in commands:
@@ -252,7 +251,7 @@ def get_skill_table(wcid, skills):
     counter = 0
     new_command = "\n\nINSERT INTO `weenie_properties_skill` (`object_Id`, `type`, `level_From_P_P`, `s_a_c`, `p_p`, `init_Level`, `resistance_At_Last_Check`, `last_Used_Time`)\n"
 
-    for skill, val, in sorted(skills.items()):
+    for skill, val in sorted(skills.items()):
 
         if val < 0:
             skills[skill] = 0
@@ -579,7 +578,7 @@ def get_xp_value(level):
     with open("xp_by_level.txt", 'r') as my_file:
         for line in my_file:
             split = line.split("\t")
-            if level == int(split[0].strip()):
+            if int(level) == int(split[0].strip()):
                 return split[1].strip()
 
     return 0
