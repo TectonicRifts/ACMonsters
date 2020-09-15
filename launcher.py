@@ -12,6 +12,8 @@ import labels_module
 import tkinter.messagebox
 from ctypes import windll
 from pathlib import Path
+import platform
+import subprocess
 
 
 class Toolbar:
@@ -20,7 +22,7 @@ class Toolbar:
         self.frame = tk.Frame(parent)
 
         open_sql_button = tk.Button(self.frame, text="Open File", command=cont.open_file)
-        name_filter_label = tk.Label(self.frame, text="Name must contain", font=norm_font)
+        name_filter_label = tk.Label(self.frame, text="Name contains", font=norm_font)
         name_filter_entry = tk.Entry(self.frame, bg="white", font=norm_font)
         self.creature_only = tk.IntVar(value=0)
         creature_only_check = tk.Checkbutton(
@@ -31,6 +33,8 @@ class Toolbar:
 
         save_sql_button = tk.Button(self.frame, text="Save", bg="lightblue", command=cont.save_sql)
 
+        open_output_button = tk.Button(self.frame, text="Output", command=cont.open_output_folder)
+
         # layout
         name_filter_label.grid(row=0, column=0, sticky="ew")
         name_filter_entry.grid(row=0, column=1, sticky="ew")
@@ -38,6 +42,7 @@ class Toolbar:
         open_sql_folder_button.grid(row=0, column=3, sticky="ew")
         open_sql_button.grid(row=0, column=4, ipadx=10, ipady=0, sticky="ew")
         save_sql_button.grid(row=0, column=5, ipadx=25, ipady=0, sticky="ew")
+        open_output_button.grid(row=0, column=6, ipadx=20, ipady=0, sticky="ew")
 
 
 class View:
@@ -58,8 +63,8 @@ class View:
         art_panel = ArtPanel(right_nb, cont)
         copy_panel = AutoPanel(right_nb, cont)
         port_panel = PortalPanel(right_nb, cont)
-        kill_task_panel = QuestPanel(right_nb)
-        trophies_panel = TrophiesPanel(right_nb, cont)
+        kill_task_panel = TaskPanel(right_nb)
+        trophies_panel = LootPanel(right_nb, cont)
         util_panel = UtilityPanel(right_nb, cont)
 
         # left
@@ -134,6 +139,18 @@ class Controller:
                 file_object.write("\n")
         else:
             tk.messagebox.showinfo("Info", "There was no file to save.")
+
+    def open_output_folder(self):
+
+        Path("output/").mkdir(parents=True, exist_ok=True)
+        path = "output"
+
+        if platform.system() == "Windows":
+            os.startfile(path)
+        elif platform.system() == "Darwin":
+            subprocess.Popen(["open", path])
+        else:
+            subprocess.Popen(["xdg-open", path])
 
     def open_file(self):
         """Load a single .sql file."""
@@ -333,7 +350,7 @@ class PortalPanel:
 
             # destination, should be a /myloc paste
             loc_paste = self.pos_entries['destination'].get().strip()
-            file_helper.set_position(self.cont.sql_commands, loc_paste)
+            self.cont.sql_commands = file_helper.set_position(self.cont.sql_commands, loc_paste)
 
 
 class ItemPanel:
@@ -505,7 +522,7 @@ class ItemPanel:
         quest_name = self.str_entries['pickup timer'].get().strip()
 
         if quest_name:
-            quest_helper.make_quest_sql(quest_name)
+            quest_helper.make_quest_sql(quest_name, True)
         else:
             tk.messagebox.showerror("Error", "Enter a pickup timer.")
 
@@ -708,7 +725,7 @@ class UtilityPanel:
         batch_button = tk.Button(
             self.frame, text="Run Batch", command=partial(self.cont.run_sql_batch, self.delete_command))
 
-        delete_tooltip = "Use to delete a command, such as weenie_properties_create_list."
+        delete_tooltip = "Use to delete a command. For example, enter weenie_properties_create_list to delete it."
         delete_tooltip_label = tk.Label(
             self.frame, text=delete_tooltip, font=norm_font, fg="dark green", wraplength=420, justify=tk.LEFT)
 
@@ -838,7 +855,7 @@ class UtilityPanel:
             file_helper.write_sql_file(file_name, renumbered)
 
 
-class QuestPanel:
+class TaskPanel:
 
     def __init__(self, parent):
         self.frame = tk.Frame(parent)
@@ -854,6 +871,16 @@ class QuestPanel:
         self.int_entries1 = vh.make_int_entry(self.frame, kill_count_label)
 
         make_task_button = tk.Button(self.frame, text="Make Task", command=self.make_kill_task)
+
+        # quest
+
+        quest_header = tk.Label(self.frame, text="Quest", font=norm_font, fg='blue')
+        quest_labels = ['quest name']
+        self.str_entries3 = vh.make_str_entry(self.frame, quest_labels)
+        self.is_timer = tk.IntVar(value=0)
+        is_timer_check = tk.Checkbutton(
+            self.frame, text="is timer", variable=self.is_timer, font=norm_font)
+        make_quest_button = tk.Button(self.frame, text="Make Quest", command=self.make_quest)
 
         # event
 
@@ -886,6 +913,19 @@ class QuestPanel:
 
         make_task_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
         r += 1
+
+        quest_header.grid(row=r, column=c)
+        r += 1
+        for name, entry in self.str_entries3.items():
+            label = tk.Label(self.frame, text=name, font=norm_font)
+            label.grid(row=r, column=c)
+            entry.grid(row=r, column=c + 1)
+            r += 1
+        is_timer_check.grid(row=r, column=c)
+        r += 1
+        make_quest_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
+        r += 1
+
         event_header.grid(row=r, column=c)
         r += 1
 
@@ -903,10 +943,17 @@ class QuestPanel:
         kill_count = int(self.int_entries1['kill count'].get())
 
         if kill_wait and kill_stamp and kill_count:
-            quest_helper.make_quest_sql(kill_wait)
+            quest_helper.make_quest_sql(kill_wait, True)
             quest_helper.make_kill_count(kill_stamp, kill_count)
         else:
             tk.messagebox.showerror("Error", "Set kill wait, stamp and count.")
+
+    def make_quest(self):
+        quest_name = self.str_entries3['quest name'].get().strip()
+        if self.is_timer == 1:
+            quest_helper.make_quest_sql(quest_name, True)
+        else:
+            quest_helper.make_quest_sql(quest_name, False)
 
     def make_event(self):
         event_name = self.str_entries2['event name'].get().strip()
@@ -1085,10 +1132,11 @@ class BasePanel:
 
             # set to npc
             if self.is_npc.get() == 1:
-                desc = "/* PlayerKillerStatus - RubberGlue */"
+                desc = "/* PlayerKillerStatus - RubberGlue */"  # this is GDLE only
                 self.cont.sql_commands = file_helper.set_property(self.cont.sql_commands, "int", 134, 16, desc)
                 self.cont.sql_commands = file_helper.set_property(self.cont.sql_commands, "bool", 19, 0,
                                                                   "/* Attackable */")
+                # must also check for targeting tactic and remove it
 
             # set npc should appear as an object
             if self.npc_like_object.get() == 1:
@@ -1169,7 +1217,7 @@ class ModsPanel:
         batch_button.grid(row=2, column=1, padx=5, pady=5, sticky="ew")
 
     def set_mods(self):
-        """Set mods for a single .sql file."""
+        """Set mods for a single .sql file. These are float properties."""
 
         armor_dict = {
             13: "/* ArmorModVsSlash */",
@@ -1178,7 +1226,8 @@ class ModsPanel:
             16: "/* ArmorModVsCold */",
             17: "/* ArmorModVsFire */",
             18: "/* ArmorModVsAcid */",
-            19: "/* ArmorModVsElectric */"
+            19: "/* ArmorModVsElectric */",
+            165: "/* ArmorModVsNether */"
         }
 
         resist_dict = {
@@ -1188,7 +1237,8 @@ class ModsPanel:
             67: "/* ResistFire */",
             68: "/* ResistCold */",
             69: "/* ResistAcid */",
-            70: "/* ResistElectric */"
+            70: "/* ResistElectric */",
+            166: "/* ResistNether */"
         }
 
         if len(self.cont.sql_commands) > 0:
@@ -1651,18 +1701,18 @@ class SkillsPanel:
             self.cont.sql_commands = my_list
 
 
-class TrophiesPanel:
+class LootPanel:
 
     def __init__(self, parent, cont):
         self.frame = tk.Frame(parent)
         self.cont = cont
 
         # all fields required
-        header_label = tk.Label(self.frame, text="Trophies", font=norm_font, fg='blue')
+        trophies_header = tk.Label(self.frame, text="Trophies", font=norm_font, fg='blue')
 
-        int_labels = ['monster wcid', 'item wcid', 'total on corpse']
+        int_labels = ['monster wcid', 'item wcid', 'total']
         self.trophy_entries = vh.make_int_entry(self.frame, int_labels)
-        self.trophy_entries['total on corpse'].insert(tk.END, "1")
+        self.trophy_entries['total'].insert(tk.END, "1")
 
         float_labels = ['drop chance']
         self.drop_chance = vh.make_float_entry(self.frame, float_labels)
@@ -1675,12 +1725,28 @@ class TrophiesPanel:
         tooltip_label = tk.Label(self.frame, text=tooltip, font=norm_font, fg="dark green", wraplength=420,
                                  justify=tk.LEFT)
 
-        set_button = tk.Button(self.frame, text="Make Create List", command=self.make_create_list)
+        make_create_list_button = tk.Button(self.frame, text="Make Create List", command=self.make_create_list)
+
+        gen_header = tk.Label(self.frame, text="Generator", font=norm_font, fg='blue')
+
+        gen_int_labels = ['delay']
+        self.gen_int_entries = vh.make_int_entry(self.frame, gen_int_labels)
+
+        make_on_top_gen_button = tk.Button(self.frame, text="Make On Top Gen", command=self.make_on_top_gen)
+        make_scatter_gen_button = tk.Button(self.frame, text="Make Scatter Gen", command=self.make_scatter_gen)
+
+        gen_tooltip = ("Enter generator wcid in the monster wcid field. "
+                       "The weenie to spawn is entered in the item wcid field. "
+                       "Total is only used for scatter generators. "
+                       "Use drop chance like for trophies to set spawn probability. "
+                       )
+        gen_tooltip_label = tk.Label(self.frame, text=gen_tooltip, font=norm_font, fg="dark green", wraplength=420,
+                                     justify=tk.LEFT)
 
         # layout
         r = 0
         c = 0
-        header_label.grid(row=r, column=c)
+        trophies_header.grid(row=r, column=c)
         r += 1
 
         for name, entry in self.trophy_entries.items():
@@ -1695,15 +1761,57 @@ class TrophiesPanel:
             entry.grid(row=r, column=c + 1)
             r += 1
 
-        set_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
+        make_create_list_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
         r += 1
         tooltip_label.grid(row=r, column=c, columnspan=2)
+        r += 1
+        gen_header.grid(row=r, column=c)
+        r += 1
+
+        for name, entry in self.gen_int_entries.items():
+            label = tk.Label(self.frame, text=name, font=norm_font)
+            label.grid(row=r, column=c)
+            entry.grid(row=r, column=c + 1)
+            r += 1
+
+        make_on_top_gen_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
+        r += 1
+        make_scatter_gen_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
+        r += 1
+        gen_tooltip_label.grid(row=r, column=c, columnspan=2)
+
+    def make_on_top_gen(self):
+
+        monster_wcid = self.trophy_entries['monster wcid'].get()
+        item_wcid = self.trophy_entries['item wcid'].get()
+        delay = self.gen_int_entries['delay'].get()
+
+        if monster_wcid == "" or item_wcid == "" or delay == "":
+            tk.messagebox.showerror("Error", "The monster, item, and delay fields are required.")
+        else:
+            gen = """INSERT INTO `weenie_properties_generator` (`object_Id`, `probability`, `weenie_Class_Id`, `delay`, `init_Create`, `max_Create`, `when_Create`, `where_Create`, `stack_Size`, `palette_Id`, `shade`, `obj_Cell_Id`, `origin_X`, `origin_Y`, `origin_Z`, `angles_W`, `angles_X`, `angles_Y`, `angles_Z`)\n"""
+            gen += f"""VALUES ({monster_wcid}, -1, {item_wcid}, {delay}, 1, 1, 1, 1, -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Generate ({item_wcid}) (x1 up to max of 1) - Regenerate upon Destruction - Location to (re)Generate: OnTop */;\n"""
+            self.cont.view.console.print(gen)
+
+    def make_scatter_gen(self):
+
+        monster_wcid = self.trophy_entries['monster wcid'].get()
+        item_wcid = self.trophy_entries['item wcid'].get()
+        total = self.trophy_entries['total'].get()
+        delay = self.gen_int_entries['delay'].get()
+
+        if monster_wcid == "" or item_wcid == "" or total == "" or delay == "":
+            tk.messagebox.showerror("Error", "The monster, item, total, and delay fields are required.")
+        else:
+            gen = """INSERT INTO `weenie_properties_generator` (`object_Id`, `probability`, `weenie_Class_Id`, `delay`, `init_Create`, `max_Create`, `when_Create`, `where_Create`, `stack_Size`, `palette_Id`, `shade`, `obj_Cell_Id`, `origin_X`, `origin_Y`, `origin_Z`, `angles_W`, `angles_X`, `angles_Y`, `angles_Z`)\n"""
+            gen += f"""VALUES ({monster_wcid}, -1, {item_wcid}, {delay}, {total}, {total}, 1, 2, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Generate  ({item_wcid}) (x{total} up to max of {total}) - Regenerate upon Destruction - Location to (re)Generate: Scatter */;\n"""
+            self.cont.view.console.print(gen)
 
     def make_create_list(self):
 
         monster_wcid = self.trophy_entries['monster wcid'].get()
         item_wcid = self.trophy_entries['item wcid'].get()
-        total = self.trophy_entries['total on corpse'].get()
+        total = self.trophy_entries['total'].get()
         drop = self.drop_chance['drop chance'].get()
 
         if monster_wcid == "" or item_wcid == "" or total == "" or drop == "":
@@ -1789,7 +1897,7 @@ def main():
     if os.name == 'nt':
         windll.shcore.SetProcessDpiAwareness(1)
 
-    version = 0.1
+    version = 0.3
     root = tk.Tk()
     root.title("AC Monsters " + str(version))
     Controller(root)

@@ -13,7 +13,7 @@ def get_secondary_attribute_labels():
 
 
 def get_damage_labels():
-    labels = ['slash', 'pierce', 'bludge', 'cold', 'fire', 'acid', 'electric']
+    labels = ['slash', 'pierce', 'bludge', 'cold', 'fire', 'acid', 'electric', 'nether']
     return labels
 
 

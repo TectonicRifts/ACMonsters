@@ -89,28 +89,6 @@ def set_body_table(commands, template_wcid, body_table):
     return my_list
 
 
-def get_destination(wcid, loc_paste):
-    loc_paste = loc_paste.strip()
-    split_loc = loc_paste.split(" ")
-
-    cell_hex = split_loc[0]
-    cell_dec = int(cell_hex, 16)
-
-    ox = split_loc[1].replace("[", "")
-    oy = split_loc[2]
-    oz = split_loc[3].replace("]", "")
-
-    aw = split_loc[4]
-    ax = split_loc[5]
-    ay = split_loc[6]
-    az = split_loc[7]
-
-    comment = "/* @teleloc " + loc_paste + " */;"
-    new_value = f"""VALUES ({wcid}, 2, "{str(cell_dec)}", "{str(ox)}", "{str(oy)}", "{str(oz)}", "{str(aw)}", "{str(ax)} + ", "{str(ay)}", "{str(az)}") /* Destination */\n"{comment}"""
-
-    return new_value
-
-
 def get_property(commands, tag, key):
     tag = get_tag_name(tag)
     key = int(key)
@@ -148,22 +126,65 @@ def set_position(commands, loc_paste):
     my_list = []
     wcid = re.findall('[0-9]+', (commands[0]))[0]  # find number string in first line
 
+    has_position = False
+
     for command in commands:
         if str(tag) in command:
-            my_list.append(get_destination(wcid, loc_paste))
+            has_position = True
+
+    for command in commands:
+
+        if has_position:
+            if str(tag) in command:
+                new_command = "\n\nINSERT INTO `weenie_properties_position` (`object_Id`, `position_Type`, `obj_Cell_Id`, `origin_X`, `origin_Y`, `origin_Z`, `angles_W`, `angles_X`, `angles_Y`, `angles_Z`)\n"
+                new_command += get_destination(wcid, loc_paste)
+                my_list.append(new_command)
+            else:
+                if command.strip() != "":
+                    my_list.append(command)
         else:
             if command.strip() != "":
-                my_list.append(command + ";")
+                my_list.append(command)
+
+    if not has_position:
+        new_command = "\n\nINSERT INTO `weenie_properties_position` (`object_Id`, `position_Type`, `obj_Cell_Id`, `origin_X`, `origin_Y`, `origin_Z`, `angles_W`, `angles_X`, `angles_Y`, `angles_Z`)\n"
+        new_command += get_destination(wcid, loc_paste)
+        my_list.append(new_command)
 
     return my_list
+
+
+def get_destination(wcid, loc_paste):
+    loc_paste = loc_paste.strip()
+    split_loc = loc_paste.split(" ")
+
+    cell_hex = split_loc[0]
+    cell_dec = int(cell_hex, 16)
+
+    ox = split_loc[1].replace("[", "")
+    oy = split_loc[2]
+    oz = split_loc[3].replace("]", "")
+
+    aw = split_loc[4]
+    ax = split_loc[5]
+    ay = split_loc[6]
+    az = split_loc[7]
+
+    comment = "/* @teleloc " + loc_paste + " */;"
+    new_value = f"""VALUES ({wcid}, 2, {str(cell_dec)}, {str(ox)}, {str(oy)}, {str(oz)}, {str(aw)}, {str(ax)}, {str(ay)}, {str(az)}) /* Destination */\n{comment}"""
+
+    return new_value
 
 
 def set_property(commands, tag, key, val, desc):
     """Set a property (int, bool, float, string or did) to a weenie (in sql format). If the
     property already exists, the value is updated.This function does not work for position. """
 
+    is_padded = True
+
     if tag == "str" or tag == "string":
         val = f"""'{val}'"""
+        is_padded = False
 
     if tag == "bool":
         if int(val) == 0:
@@ -215,18 +236,23 @@ def set_property(commands, tag, key, val, desc):
 
             new_command = f"""\n\nINSERT INTO {tag} (`object_Id`, `type`, `value`)\nVALUES """
 
+            # figure out padding
+
             i = 0
             total_lines = len(my_dict)
 
-            # figure out padding
             my_tuple = get_longest(my_dict)
             longest_key = my_tuple[0]
             longest_val = my_tuple[1]
 
             for k, v in sorted(my_dict.items()):
 
-                my_justified_value = str(v[0]).rjust(longest_val, " ")
-                my_justified_key = str(k).rjust(longest_key, " ")
+                if is_padded:
+                    my_justified_value = str(v[0]).rjust(longest_val, " ")
+                    my_justified_key = str(k).rjust(longest_key, " ")
+                else:
+                    my_justified_value = " " + str(v[0])
+                    my_justified_key = str(k).rjust(longest_key, " ")
 
                 if i == 0:
                     new_command = new_command + f"""({wcid},{my_justified_key},{my_justified_value}) {v[1]}"""
@@ -418,13 +444,11 @@ def get_attribute(wcid, command, key):
             split_comma = line.split(",", 2)
 
             my_key = int(split_comma[1].strip())
-            # print("My key: " + str(my_key))
 
             split_other = split_comma[2].split(")")
             my_val = split_other[0].strip()
             split_more = my_val.split(",", 1)
             my_val = split_more[0]
-            # print("My val: " + str(my_val))
             comment = "".join(split_other[1].rsplit(",", 1)).strip()
 
             my_tuple = (my_val, comment)
@@ -463,7 +487,6 @@ def set_attribute_2(commands, key, val, desc, do_override):
                     split_comma = line.split(",", 2)
 
                     my_key = int(split_comma[1].strip())
-                    # print("My key: " + str(my_key))
 
                     split_other = split_comma[2].split(")")
                     init_level = split_other[0].strip()
@@ -471,10 +494,7 @@ def set_attribute_2(commands, key, val, desc, do_override):
                     init_level = split_more[0]
                     current_level = split_more[3]
 
-                    # print("init level: " + str(init_level))
-                    # print("curr level: " + str(current_level))
                     comment = "".join(split_other[1].rsplit(",", 1)).strip()
-                    # print("comment: " + str(comment))
 
                     my_tuple = (init_level, current_level, comment)
                     my_dict[my_key] = my_tuple
