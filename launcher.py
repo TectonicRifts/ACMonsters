@@ -1196,9 +1196,29 @@ class ModsPanel:
         """Panel for armor and resistance mods."""
         self.frame = tk.Frame(parent)
         self.cont = cont
+        self.scales = {}
 
-        damage_type_labels = labels_module.get_damage_labels()
-        self.mod_scales = SliderPanel(self.frame, "Mod", "weak (0) - strong (2)", damage_type_labels, 0, 2, 0.1, 1)
+        self.armor_dict = {
+            "slash": (13, "/* ArmorModVsSlash */"),
+            "pierce": (14, "/* ArmorModVsPierce */"),
+            "bludge": (15, "/* ArmorModVsBludgeon */"),
+            "cold": (16, "/* ArmorModVsCold */"),
+            "fire": (17, "/* ArmorModVsFire */"),
+            "acid": (18, "/* ArmorModVsAcid */"),
+            "electric": (19, "/* ArmorModVsElectric */"),
+            "nether": (165, "/* ArmorModVsNether */")
+        }
+
+        self.resist_dict = {
+            "slash": (64, "/* ResistSlash */"),
+            "pierce": (65, "/* ResistPierce */"),
+            "bludge": (66, "/* ResistBludgeon */"),
+            "fire": (67, "/* ResistFire */"),
+            "cold": (68, "/* ResistCold */"),
+            "acid": (69, "/* ResistAcid */"),
+            "electric": (70, "/* ResistElectric */"),
+            "nether": (166, "/* ResistNether */")
+        }
 
         self.armor = tk.IntVar(value=1)
         armor_check_box = tk.Checkbutton(self.frame, text="armor", variable=self.armor, font=norm_font)
@@ -1210,50 +1230,54 @@ class ModsPanel:
         batch_button = tk.Button(self.frame, text="Run Batch", command=partial(self.cont.run_sql_batch, self.set_mods))
 
         # layout
-        self.mod_scales.frame.grid(row=0, column=0, columnspan=2)
-        armor_check_box.grid(row=1, column=0, padx=5, pady=5, sticky="w")
-        resist_check_box.grid(row=1, column=1, padx=5, pady=5, sticky="w")
-        set_button.grid(row=2, column=0, padx=5, pady=5, sticky="ew")
-        batch_button.grid(row=2, column=1, padx=5, pady=5, sticky="ew")
+        r = 0
+
+        left_label = tk.Label(self.frame, text="Mod", font=norm_font)
+        right_label = tk.Label(self.frame, text="Weak (0) - Strong (2)", font=norm_font)
+
+        left_label.grid(row=r, column=0)
+        right_label.grid(row=r, column=1)
+
+        r += 1
+
+        for k, v in self.armor_dict.items():
+            label = tk.Label(self.frame, text=k, font=norm_font)
+            label.grid(row=r, column=0, padx=5, pady=5)
+
+            scale = tk.Scale(self.frame, from_=0, to=2, resolution=0.1, orient=tk.HORIZONTAL)
+            # set default
+            scale.set(1)
+            scale.grid(row=r, column=1, padx=5, pady=5, sticky='ew')
+
+            self.scales[k] = scale
+            r += 1
+
+        armor_check_box.grid(row=r, column=0, padx=5, pady=5, sticky="w")
+        resist_check_box.grid(row=r, column=1, padx=5, pady=5, sticky="w")
+        r += 1
+        set_button.grid(row=r, column=0, padx=5, pady=5, sticky="ew")
+        r += 1
+        batch_button.grid(row=r, column=0, padx=5, pady=5, sticky="ew")
 
     def set_mods(self):
         """Set mods for a single .sql file. These are float properties."""
-
-        armor_dict = {
-            13: "/* ArmorModVsSlash */",
-            14: "/* ArmorModVsPierce */",
-            15: "/* ArmorModVsBludgeon */",
-            16: "/* ArmorModVsCold */",
-            17: "/* ArmorModVsFire */",
-            18: "/* ArmorModVsAcid */",
-            19: "/* ArmorModVsElectric */",
-            165: "/* ArmorModVsNether */"
-        }
-
-        resist_dict = {
-            64: "/* ResistSlash */",
-            65: "/* ResistPierce */",
-            66: "/* ResistBludgeon */",
-            67: "/* ResistFire */",
-            68: "/* ResistCold */",
-            69: "/* ResistAcid */",
-            70: "/* ResistElectric */",
-            166: "/* ResistNether */"
-        }
 
         if len(self.cont.sql_commands) > 0:
 
             if self.armor.get() == 1:
 
-                for k, v in self.mod_scales.scales.items():
-                    mod_val = round(v.get(), 1)
-                    self.cont.sql_commands = file_helper.set_property(self.cont.sql_commands, "float", k, mod_val,
-                                                                      armor_dict[k])
+                for k, v in self.scales.items():
+                    mod_val = float(round(v.get(), 1))
+                    self.cont.sql_commands = file_helper.set_property(self.cont.sql_commands,
+                                                                      "float",
+                                                                      self.armor_dict[k][0],
+                                                                      mod_val,
+                                                                      self.armor_dict[k][1])
 
             if self.resist.get() == 1:
 
-                for k, v in self.mod_scales.scales.items():
-                    mod_val = v.get()
+                for k, v in self.scales.items():
+                    mod_val = float(v.get())
 
                     if mod_val < 1:
                         mod_val = 2 - mod_val
@@ -1263,8 +1287,11 @@ class ModsPanel:
                         pass
 
                     mod_val = round(mod_val, 1)
-                    self.cont.sql_commands = file_helper.set_property(self.cont.sql_commands, "float", k, mod_val,
-                                                                      resist_dict[k])
+                    self.cont.sql_commands = file_helper.set_property(self.cont.sql_commands,
+                                                                      "float",
+                                                                      self.resist_dict[k][0],
+                                                                      mod_val,
+                                                                      self.resist_dict[k][1])
 
 
 class AttributesPanel:
@@ -1859,34 +1886,6 @@ class LootPanel:
             create_list += ";"
             create_list = create_list.replace("\n;", ";\n")
             self.cont.view.console.print(create_list)
-
-
-class SliderPanel:
-
-    def __init__(self, parent, col_1, col_2, label_list, s_from, s_to, s_res, s_def):
-        self.frame = tk.Frame(parent)
-        self.scales = {}
-
-        row_i = 0
-
-        left_label = tk.Label(self.frame, text=col_1, font=norm_font)
-        right_label = tk.Label(self.frame, text=col_2, font=norm_font)
-
-        left_label.grid(row=row_i, column=0)
-        right_label.grid(row=row_i, column=1)
-
-        row_i += 1
-
-        for name in label_list:
-            label = tk.Label(self.frame, text=name, font=norm_font)
-            label.grid(row=row_i, column=0, padx=5, pady=5)
-
-            scale = tk.Scale(self.frame, from_=s_from, to=s_to, resolution=s_res, orient=tk.HORIZONTAL)
-            scale.set(s_def)
-            scale.grid(row=row_i, column=1, padx=5, pady=5, sticky='ew')
-
-            self.scales[name] = scale
-            row_i += 1
 
 
 norm_font = ("Arial", 12)
