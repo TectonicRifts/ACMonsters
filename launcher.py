@@ -33,7 +33,7 @@ class Toolbar:
 
         save_sql_button = tk.Button(self.frame, text="Save", bg="lightblue", command=cont.save_sql)
 
-        open_output_button = tk.Button(self.frame, text="Output", command=cont.open_output_folder)
+        open_output_button = tk.Button(self.frame, text="Files", command=cont.open_output_folder)
 
         # layout
         name_filter_label.grid(row=0, column=0, sticky="ew")
@@ -42,7 +42,7 @@ class Toolbar:
         open_sql_folder_button.grid(row=0, column=3, sticky="ew")
         open_sql_button.grid(row=0, column=4, ipadx=10, ipady=0, sticky="ew")
         save_sql_button.grid(row=0, column=5, ipadx=25, ipady=0, sticky="ew")
-        open_output_button.grid(row=0, column=6, ipadx=20, ipady=0, sticky="ew")
+        open_output_button.grid(row=0, column=6, ipadx=25, ipady=0, sticky="ew")
 
 
 class View:
@@ -127,7 +127,7 @@ class Controller:
 
     def save_sql(self):
 
-        if len(self.sql_commands) > 0:
+        if self.sql_commands:
             with open("output/weenies/" + self.sql_output, 'w') as file_object:
                 for command in self.sql_commands:
                     command = command.replace(";", "")
@@ -987,7 +987,7 @@ class BasePanel:
 
         int_header_label = tk.Label(self.frame, text="Int", font=norm_font, fg='blue')
 
-        int_labels = ['gen init', 'gen max']
+        int_labels = ['gen init', 'gen max', 'gen dest']
         self.int_entries = vh.make_int_entry(self.frame, int_labels)
 
         did_header_label = tk.Label(self.frame, text="Data ID", font=norm_font, fg='blue')
@@ -1019,6 +1019,10 @@ class BasePanel:
         ignore_shield_check = tk.Checkbutton(
             self.frame, text="shield hollow", variable=self.ignore_shield, font=norm_font)
 
+        self.no_corpse = tk.IntVar(value=0)
+        no_corpse_check = tk.Checkbutton(
+            self.frame, text="no corpse", variable=self.no_corpse, font=norm_font)
+
         set_button = tk.Button(self.frame, text="Set", bg="lightblue", command=self.set_misc_stats)
         batch_button = tk.Button(self.frame, text="Run Batch",
                                  command=partial(self.cont.run_sql_batch, self.set_misc_stats))
@@ -1041,6 +1045,7 @@ class BasePanel:
         ignore_item_check.grid(row=r, column=c + 1, sticky="w", padx=5)
         r += 1
         ignore_shield_check.grid(row=r, column=c, sticky="w", padx=5)
+        no_corpse_check.grid(row=r, column=c + 1, sticky="w", padx=5)
         r += 1
 
         int_header_label.grid(row=r, column=c)
@@ -1114,7 +1119,8 @@ class BasePanel:
 
             # int
             my_dict = {'gen init': (82, "/* InitGeneratedObjects */"),
-                       'gen max': (81, "/* MaxGeneratedObjects */")
+                       'gen max': (81, "/* MaxGeneratedObjects */"),
+                       'gen dest': (103, "/* GeneratorDestructionType */")  # this is a 2 for destroy, 3 for kill
                        }
             self.cont.set_properties(my_dict, self.int_entries, 'int')
 
@@ -1160,6 +1166,10 @@ class BasePanel:
             if self.ignore_shield.get() == 1:
                 self.cont.sql_commands = file_helper.set_property(self.cont.sql_commands, "float", 151, 1,
                                                                   "/* IgnoreShield */")
+            # no corpse, this is a bool
+            if self.no_corpse.get() == 1:
+                self.cont.sql_commands = file_helper.set_property(self.cont.sql_commands, "bool", 29, 1,
+                                                                  "/* NoCorpse */")
 
 
 class ConsolePanel:
@@ -1761,6 +1771,7 @@ class LootPanel:
 
         make_on_top_gen_button = tk.Button(self.frame, text="Make On Top Gen", command=self.make_on_top_gen)
         make_scatter_gen_button = tk.Button(self.frame, text="Make Scatter Gen", command=self.make_scatter_gen)
+        make_specific_gen_button = tk.Button(self.frame, text="Make Specific Gen", command=self.make_specific_gen)
 
         gen_tooltip = ("Enter generator wcid in the monster wcid field. "
                        "The weenie to spawn is entered in the item wcid field. "
@@ -1805,6 +1816,8 @@ class LootPanel:
         r += 1
         make_scatter_gen_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
         r += 1
+        make_specific_gen_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
+        r += 1
         gen_tooltip_label.grid(row=r, column=c, columnspan=2)
 
     def make_on_top_gen(self):
@@ -1832,6 +1845,20 @@ class LootPanel:
         else:
             gen = """INSERT INTO `weenie_properties_generator` (`object_Id`, `probability`, `weenie_Class_Id`, `delay`, `init_Create`, `max_Create`, `when_Create`, `where_Create`, `stack_Size`, `palette_Id`, `shade`, `obj_Cell_Id`, `origin_X`, `origin_Y`, `origin_Z`, `angles_W`, `angles_X`, `angles_Y`, `angles_Z`)\n"""
             gen += f"""VALUES ({monster_wcid}, -1, {item_wcid}, {delay}, {total}, {total}, 1, 2, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Generate  ({item_wcid}) (x{total} up to max of {total}) - Regenerate upon Destruction - Location to (re)Generate: Scatter */;\n"""
+            self.cont.view.console.print(gen)
+
+    def make_specific_gen(self):
+
+        monster_wcid = self.trophy_entries['monster wcid'].get()
+        item_wcid = self.trophy_entries['item wcid'].get()
+        total = self.trophy_entries['total'].get()
+        delay = self.gen_int_entries['delay'].get()
+
+        if monster_wcid == "" or item_wcid == "" or total == "" or delay == "":
+            tk.messagebox.showerror("Error", "The monster, item, total, and delay fields are required.")
+        else:
+            gen = """INSERT INTO `weenie_properties_generator` (`object_Id`, `probability`, `weenie_Class_Id`, `delay`, `init_Create`, `max_Create`, `when_Create`, `where_Create`, `stack_Size`, `palette_Id`, `shade`, `obj_Cell_Id`, `origin_X`, `origin_Y`, `origin_Z`, `angles_W`, `angles_X`, `angles_Y`, `angles_Z`)\n"""
+            gen += f"""VALUES ({monster_wcid}, -1, {item_wcid}, {delay}, {total}, {total}, 1, 4, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) /* Generate  ({item_wcid}) (x{total} up to max of {total}) - Regenerate upon Destruction - Location to (re)Generate: Specific */;\n"""
             self.cont.view.console.print(gen)
 
     def make_create_list(self):
