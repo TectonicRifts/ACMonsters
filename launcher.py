@@ -877,9 +877,9 @@ class TaskPanel:
         quest_header = tk.Label(self.frame, text="Quest", font=norm_font, fg='blue')
         quest_labels = ['quest name']
         self.str_entries3 = vh.make_str_entry(self.frame, quest_labels)
-        self.is_timer = tk.IntVar(value=0)
+        self.is_timed = tk.IntVar(value=0)
         is_timer_check = tk.Checkbutton(
-            self.frame, text="is timer", variable=self.is_timer, font=norm_font)
+            self.frame, text="is timed", variable=self.is_timed, font=norm_font)
         make_quest_button = tk.Button(self.frame, text="Make Quest", command=self.make_quest)
 
         # event
@@ -950,7 +950,7 @@ class TaskPanel:
 
     def make_quest(self):
         quest_name = self.str_entries3['quest name'].get().strip()
-        if self.is_timer == 1:
+        if self.is_timed.get() == 1:
             quest_helper.make_quest_sql(quest_name, True)
         else:
             quest_helper.make_quest_sql(quest_name, False)
@@ -1206,7 +1206,8 @@ class ModsPanel:
         """Panel for armor and resistance mods."""
         self.frame = tk.Frame(parent)
         self.cont = cont
-        self.scales = {}
+        self.armor_scales = {}
+        self.resist_scales = {}
 
         self.armor_dict = {
             "slash": (13, "/* ArmorModVsSlash */"),
@@ -1223,18 +1224,18 @@ class ModsPanel:
             "slash": (64, "/* ResistSlash */"),
             "pierce": (65, "/* ResistPierce */"),
             "bludge": (66, "/* ResistBludgeon */"),
-            "fire": (67, "/* ResistFire */"),
             "cold": (68, "/* ResistCold */"),
+            "fire": (67, "/* ResistFire */"),
             "acid": (69, "/* ResistAcid */"),
             "electric": (70, "/* ResistElectric */"),
             "nether": (166, "/* ResistNether */")
         }
 
         self.armor = tk.IntVar(value=1)
-        armor_check_box = tk.Checkbutton(self.frame, text="armor", variable=self.armor, font=norm_font)
+        armor_check_box = tk.Checkbutton(self.frame, text="Set armor", variable=self.armor, font=norm_font)
 
         self.resist = tk.IntVar(value=1)
-        resist_check_box = tk.Checkbutton(self.frame, text="resist", variable=self.resist, font=norm_font)
+        resist_check_box = tk.Checkbutton(self.frame, text="Set resist", variable=self.resist, font=norm_font)
 
         set_button = tk.Button(self.frame, text="Set", bg="lightblue", command=self.set_mods)
         batch_button = tk.Button(self.frame, text="Run Batch", command=partial(self.cont.run_sql_batch, self.set_mods))
@@ -1242,11 +1243,11 @@ class ModsPanel:
         # layout
         r = 0
 
-        left_label = tk.Label(self.frame, text="Mod", font=norm_font)
-        right_label = tk.Label(self.frame, text="Weak (0) - Strong (2)", font=norm_font)
+        left_label = tk.Label(self.frame, text="Armor (0=weak)", font=norm_font)
+        left_label.grid(row=r, column=1)
 
-        left_label.grid(row=r, column=0)
-        right_label.grid(row=r, column=1)
+        right_label = tk.Label(self.frame, text="Resist (0=strong)", font=norm_font)
+        right_label.grid(row=r, column=2)
 
         r += 1
 
@@ -1254,16 +1255,26 @@ class ModsPanel:
             label = tk.Label(self.frame, text=k, font=norm_font)
             label.grid(row=r, column=0, padx=5, pady=5)
 
-            scale = tk.Scale(self.frame, from_=0, to=2, resolution=0.1, orient=tk.HORIZONTAL)
+            armor_scale = tk.Scale(self.frame, from_=0, to=1, resolution=0.1, orient=tk.HORIZONTAL)
             # set default
-            scale.set(1)
-            scale.grid(row=r, column=1, padx=5, pady=5, sticky='ew')
+            armor_scale.set(1)
+            armor_scale.grid(row=r, column=1, padx=5, pady=5, sticky='ew')
 
-            self.scales[k] = scale
+            self.armor_scales[k] = armor_scale
             r += 1
 
-        armor_check_box.grid(row=r, column=0, padx=5, pady=5, sticky="w")
-        resist_check_box.grid(row=r, column=1, padx=5, pady=5, sticky="w")
+        r = 1
+        for k, v in self.resist_dict.items():
+            resist_scale = tk.Scale(self.frame, from_=0, to=1, resolution=0.1, orient=tk.HORIZONTAL)
+            # set default
+            resist_scale.set(1)
+            resist_scale.grid(row=r, column=2, padx=5, pady=5, sticky='ew')
+
+            self.resist_scales[k] = resist_scale
+            r += 1
+
+        armor_check_box.grid(row=r, column=1, padx=5, pady=5, sticky="w")
+        resist_check_box.grid(row=r, column=2, padx=5, pady=5, sticky="w")
         r += 1
         set_button.grid(row=r, column=0, padx=5, pady=5, sticky="ew")
         r += 1
@@ -1274,9 +1285,9 @@ class ModsPanel:
 
         if len(self.cont.sql_commands) > 0:
 
-            if self.armor.get() == 1:
+            if self.armor.get() == 1:  # do set armor mods
 
-                for k, v in self.scales.items():
+                for k, v in self.armor_scales.items():
                     mod_val = float(round(v.get(), 1))
                     self.cont.sql_commands = file_helper.set_property(self.cont.sql_commands,
                                                                       "float",
@@ -1284,19 +1295,10 @@ class ModsPanel:
                                                                       mod_val,
                                                                       self.armor_dict[k][1])
 
-            if self.resist.get() == 1:
+            if self.resist.get() == 1:  # do set resist mods
 
-                for k, v in self.scales.items():
-                    mod_val = float(v.get())
-
-                    if mod_val < 1:
-                        mod_val = 2 - mod_val
-                    elif mod_val > 1:
-                        mod_val = abs(mod_val - 2)
-                    else:
-                        pass
-
-                    mod_val = round(mod_val, 1)
+                for k, v in self.resist_scales.items():
+                    mod_val = float(round(v.get(), 1))
                     self.cont.sql_commands = file_helper.set_property(self.cont.sql_commands,
                                                                       "float",
                                                                       self.resist_dict[k][0],
@@ -1923,7 +1925,7 @@ def main():
     if os.name == 'nt':
         windll.shcore.SetProcessDpiAwareness(1)
 
-    version = 0.3
+    version = 0.4
     root = tk.Tk()
     root.title("AC Monsters " + str(version))
     Controller(root)
