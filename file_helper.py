@@ -18,12 +18,24 @@ def write_sql_file(file_name, commands):
 
 
 def delete_sql_command(commands, tag):
-
     my_list = []
 
     for command in commands:
         if tag in command:
             pass
+        else:
+            if command.strip() != "":
+                my_list.append(command)
+
+    return my_list
+
+
+def replace_sql_command(commands, tag, new_command):
+    my_list = []
+
+    for command in commands:
+        if tag in command:
+            my_list.append("\n\n" + new_command)
         else:
             if command.strip() != "":
                 my_list.append(command)
@@ -63,7 +75,6 @@ def get_longest(my_dict):
 
 
 def set_body_table(commands, template_wcid, body_table):
-
     wcid = re.findall('[0-9]+', (commands[0]))[0]
     tag = "`weenie_properties_body_part`"
     my_list = []
@@ -694,7 +705,6 @@ def find_wielded_items(file_name, entry, results_text):
 
 
 def skill_look_up(name):
-
     with open('pcap_creature_skills.txt') as my_file:
 
         melee_attack = []

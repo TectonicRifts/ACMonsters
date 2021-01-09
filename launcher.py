@@ -561,6 +561,19 @@ class AutoPanel:
         tooltip_label = tk.Label(self.frame, text=tooltip, font=norm_font, fg="dark green", wraplength=420,
                                  justify=tk.LEFT)
 
+        header_label = tk.Label(self.frame, text="Replace Body Table", font=norm_font, fg='blue')
+
+        self.text_area = tk.scrolledtext.ScrolledText(self.frame, height=10, width=10, undo=True)
+        batch_replace = tk.Button(self.frame, text="Run Batch",
+                                  command=partial(self.cont.run_sql_batch, self.replace_body_table))
+
+        clear_button = tk.Button(self.frame, text="Clear",
+                                 command=partial(self.text_area.delete, '1.0', tk.END))
+
+        tooltip2 = "Paste a new body table above. The wcid will be set automatically."
+        tooltip_label2 = tk.Label(self.frame, text=tooltip2, font=norm_font, fg="dark green", wraplength=420,
+                                 justify=tk.LEFT)
+
         # layout
         check_body.grid(row=0, column=0, sticky="w")
         check_combat.grid(row=0, column=1, sticky="w")
@@ -570,6 +583,22 @@ class AutoPanel:
         set_button.grid(row=3, column=0, sticky="ew", padx=5, pady=5)
         batch_autofill.grid(row=3, column=1, sticky="ew", padx=5, pady=5)
         tooltip_label.grid(row=4, column=0, columnspan=2)
+        header_label.grid(row=5, column=0, sticky="ew", padx=5, pady=5)
+        self.text_area.grid(row=6, column=0, columnspan=2, sticky="ew", padx=5, pady=5)
+        clear_button.grid(row=7, column=0, sticky="ew", padx=5, pady=5)
+        batch_replace.grid(row=7, column=1, sticky="ew", padx=5, pady=5)
+        tooltip_label2.grid(row=8, column=0, columnspan=2)
+
+    def replace_body_table(self):
+        if len(self.cont.sql_commands) > 0:
+            body_table = self.text_area.get("1.0", tk.END).strip()
+            if body_table != "":
+                wcid = re.findall('[0-9]+', (self.cont.sql_commands[0]))[0]
+                body_table = re.sub(r'\([0-9]+', "(" + wcid, body_table)
+
+                self.cont.sql_commands = file_helper.replace_sql_command(self.cont.sql_commands,
+                                                                         "weenie_properties_body_part",
+                                                                         body_table)
 
     def autocomplete_from_data(self):
         """This method does not depend on source or template."""
@@ -1925,7 +1954,7 @@ def main():
     if os.name == 'nt':
         windll.shcore.SetProcessDpiAwareness(1)
 
-    version = 0.4
+    version = 0.5
     root = tk.Tk()
     root.title("AC Monsters " + str(version))
     Controller(root)
