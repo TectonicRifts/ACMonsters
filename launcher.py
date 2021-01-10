@@ -369,8 +369,8 @@ class ItemPanel:
         self.is_attuned = tk.IntVar(value=0)
         attuned_check_box = tk.Checkbutton(self.frame, text="attuned", variable=self.is_attuned, font=norm_font)
 
-        self.can_sell = tk.IntVar(value=0)
-        sellable_check_box = tk.Checkbutton(self.frame, text="can sell", variable=self.can_sell, font=norm_font)
+        self.not_sellable = tk.IntVar(value=0)
+        sellable_check_box = tk.Checkbutton(self.frame, text="not sellable", variable=self.not_sellable, font=norm_font)
 
         # bonded, -2 = destroy on death, 0 = normal, 1 = bonded
         bonded_status_label = tk.Label(self.frame, text="bonded", font=norm_font)
@@ -382,6 +382,11 @@ class ItemPanel:
 
         str_label_list = ['use', 'short desc', 'long desc', 'lock code', 'key code', 'pickup timer']
         self.str_entries = vh.make_str_entry(self.frame, str_label_list)
+
+        float_header_label = tk.Label(self.frame, text="Float", font="Arial 12", fg='blue')
+
+        float_labels = ['reset interval']
+        self.float_entries = vh.make_float_entry(self.frame, float_labels)
 
         make_quest_button = tk.Button(self.frame, text="Make Quest", command=partial(self.make_quest))
 
@@ -414,6 +419,15 @@ class ItemPanel:
         r += 1
 
         for name, entry in self.str_entries.items():
+            label = tk.Label(self.frame, text=name, font=norm_font)
+            label.grid(row=r, column=c)
+            entry.grid(row=r, column=c + 1)
+            r += 1
+
+        float_header_label.grid(row=r, column=c)
+        r += 1
+
+        for name, entry in self.float_entries.items():
             label = tk.Label(self.frame, text=name, font=norm_font)
             label.grid(row=r, column=c)
             entry.grid(row=r, column=c + 1)
@@ -480,12 +494,20 @@ class ItemPanel:
                     self.cont.sql_commands, "did", 38, val, "/* UseCreateItem */")
 
             # attuned
-            self.cont.sql_commands = file_helper.set_property(
-                self.cont.sql_commands, "int", 114, self.is_attuned.get(), "/* Attuned */")
+            val = self.is_attuned.get()
+            if val == 0:
+                pass
+            else:
+                self.cont.sql_commands = file_helper.set_property(
+                    self.cont.sql_commands, "int", 114, 1, "/* Attuned */")
 
-            # can sell
-            self.cont.sql_commands = file_helper.set_property(
-                self.cont.sql_commands, "bool", 69, self.can_sell.get(), "/* IsSellable */")
+            # not sellable
+            val = self.not_sellable.get()
+            if val == 0:
+                pass
+            else:
+                self.cont.sql_commands = file_helper.set_property(
+                    self.cont.sql_commands, "bool", 69, 0, "/* IsSellable */")
 
             # bonded
             bonded = self.bonded_status_combo.get()
@@ -516,6 +538,10 @@ class ItemPanel:
                        }
 
             self.cont.set_properties(my_dict, self.str_entries, 'str')
+
+            # float
+            my_dict = {'reset interval': (11, "/* ResetInterval */")}
+            self.cont.set_properties(my_dict, self.float_entries, 'float')
 
     def make_quest(self):
         """Makes a quest sql file."""
