@@ -350,7 +350,8 @@ class PortalPanel:
 
             # destination, should be a /myloc paste
             loc_paste = self.pos_entries['destination'].get().strip()
-            self.cont.sql_commands = file_helper.set_position(self.cont.sql_commands, loc_paste)
+            if loc_paste != "":
+                self.cont.sql_commands = file_helper.set_position(self.cont.sql_commands, loc_paste)
 
 
 class ItemPanel:
@@ -1181,7 +1182,7 @@ class BasePanel:
 
             # did
             my_dict = {'combat table': (4, "/* CombatTable */"),
-                       'death treasure': (45, "/* DeathTreasureType */")
+                       'death treasure': (35, "/* DeathTreasureType */")
                        }
             self.cont.set_properties(my_dict, self.did_entries, 'did')
 
@@ -1980,7 +1981,7 @@ def main():
     if os.name == 'nt':
         windll.shcore.SetProcessDpiAwareness(1)
 
-    version = 0.5
+    version = 0.6
     root = tk.Tk()
     root.title("AC Monsters " + str(version))
     Controller(root)
