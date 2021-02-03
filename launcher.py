@@ -33,7 +33,7 @@ class Toolbar:
 
         save_sql_button = tk.Button(self.frame, text="Save", bg="lightblue", command=cont.save_sql)
 
-        open_output_button = tk.Button(self.frame, text="Files", command=cont.open_output_folder)
+        open_output_button = tk.Button(self.frame, text="Output", command=cont.open_output_folder)
 
         # layout
         name_filter_label.grid(row=0, column=0, sticky="ew")
@@ -1053,7 +1053,7 @@ class BasePanel:
 
         float_header_label = tk.Label(self.frame, text="Float", font="Arial 12", fg='blue')
 
-        float_labels = ['regen interval', 'gen radius']
+        float_labels = ['regen interval', 'gen radius', 'visual awareness', 'home radius']
         self.float_entries = vh.make_float_entry(self.frame, float_labels)
 
         self.is_npc = tk.IntVar(value=0)
@@ -1188,7 +1188,9 @@ class BasePanel:
 
             # float
             my_dict = {'regen interval': (41, "/* RegenerationInterval */"),
-                       'gen radius': (43, "/* GeneratorRadius */")
+                       'gen radius': (43, "/* GeneratorRadius */"),
+                       'visual awareness': (31, "/* VisualAwarenessRange */"),
+                       'home radius': (55, "/* HomeRadius */")
                        }
             self.cont.set_properties(my_dict, self.float_entries, 'float')
 
@@ -1981,7 +1983,7 @@ def main():
     if os.name == 'nt':
         windll.shcore.SetProcessDpiAwareness(1)
 
-    version = 0.6
+    version = 0.7
     root = tk.Tk()
     root.title("AC Monsters " + str(version))
     Controller(root)
