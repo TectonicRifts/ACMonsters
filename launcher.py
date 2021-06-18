@@ -270,6 +270,8 @@ class PortalPanel:
         batch_button = tk.Button(self.frame, text="Run Batch",
                                  command=partial(self.cont.run_sql_batch, self.set_portal))
 
+        loc_button = tk.Button(self.frame, text="Loc Paste", command=self.get_loc_paste)
+
         tooltip = ("To have the portal stamp a quest when you go through it, set quest flag. "
                    "To quest restrict the portal, so you can only go in it if on the quest, set quest restrict. "
                    "Destination is a /myloc paste."
@@ -313,6 +315,8 @@ class PortalPanel:
         r += 1
         batch_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
         r += 1
+        loc_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
+        r += 1
         tooltip_label.grid(row=r, column=c, columnspan=2, sticky="w")
 
     def set_portal(self):
@@ -353,6 +357,13 @@ class PortalPanel:
             if loc_paste != "":
                 self.cont.sql_commands = file_helper.set_position(self.cont.sql_commands, loc_paste)
 
+    def get_loc_paste(self):
+        # destination, should be a /myloc paste
+        loc_paste = self.pos_entries['destination'].get().strip()
+        if loc_paste != "":
+            my_paste = file_helper.get_loc_paste(loc_paste)
+            self.cont.view.console.print(my_paste)
+
 
 class ItemPanel:
 
@@ -363,7 +374,7 @@ class ItemPanel:
 
         int_header_label = tk.Label(self.frame, text="Int", font=norm_font, fg='blue')
 
-        int_label_list = ['value', 'burden', 'max stack', 'lock resist', 'on use make']
+        int_label_list = ['value', 'burden', 'max stack', 'lock resist', 'on use make', 'lifespan']
         self.int_entries = vh.make_int_entry(self.frame, int_label_list)
 
         # attuned, 1 = yes, 0 = no
@@ -494,6 +505,16 @@ class ItemPanel:
                 self.cont.sql_commands = file_helper.set_property(
                     self.cont.sql_commands, "did", 38, val, "/* UseCreateItem */")
 
+            val = self.int_entries['lifespan'].get().strip()  # lifespan in seconds
+            if val != "":
+                val = int(val)  # this input is a wcid
+                self.cont.sql_commands = file_helper.set_property(
+                    self.cont.sql_commands, "int", 267, val, "/* Lifespan */"
+                )
+                self.cont.sql_commands = file_helper.set_property(
+                    self.cont.sql_commands, "int", 268, val, "/* RemainingLifespan */"
+                )
+
             # attuned
             val = self.is_attuned.get()
             if val == 0:
@@ -599,7 +620,7 @@ class AutoPanel:
 
         tooltip2 = "Paste a new body table above. The wcid will be set automatically."
         tooltip_label2 = tk.Label(self.frame, text=tooltip2, font=norm_font, fg="dark green", wraplength=420,
-                                 justify=tk.LEFT)
+                                  justify=tk.LEFT)
 
         # layout
         check_body.grid(row=0, column=0, sticky="w")
@@ -768,10 +789,19 @@ class UtilityPanel:
         self.frame = tk.Frame(parent)
         self.cont = cont
 
-        rollup_header = tk.Label(self.frame, text="Rollup", font=norm_font, fg='blue')
-        rollup_labels = ['output name']
-        self.rollup_entries = vh.make_str_entry(self.frame, rollup_labels)
-        rollup_button = tk.Button(self.frame, text="Run Batch", command=self.rollup)
+        # example, for 40% chance of casting a spell, with 4 spells
+        # to have equal chance of casting each spell
+        # chances_list = [0.1, 0.1, 0.1, 0.1]
+        # for caster only mob, leave chances empty and specify total spells
+
+        spell_header = tk.Label(self.frame, text="Spell Calculator", font=norm_font, fg='blue')
+        spell_labels = ["chances", "total spells", "total casting"]
+        self.spell_entries = vh.make_str_entry(self.frame, spell_labels)
+        spell_button = tk.Button(self.frame, text="Get", command=self.get_spell_chances)
+        spell_tooltip = "For example, for 40% chance of casting each spell, with 4 spells, enter 0.1, 0.1, 0.1, " \
+                        "0.1. For a caster only mob, leave chances empty and specify total spells. "
+        spell_tooltip_label = tk.Label(
+            self.frame, text=spell_tooltip, font=norm_font, fg="dark green", wraplength=420, justify=tk.LEFT)
 
         delete_header = tk.Label(self.frame, text="Delete", font=norm_font, fg='blue')
         delete_labels = ["tag"]
@@ -803,14 +833,16 @@ class UtilityPanel:
         r = 0
         c = 0
 
-        rollup_header.grid(row=r, column=c)
+        spell_header.grid(row=r, column=c)
         r += 1
-        for name, entry in self.rollup_entries.items():
+        for name, entry in self.spell_entries.items():
             label = tk.Label(self.frame, text=name, font=norm_font)
             label.grid(row=r, column=c)
             entry.grid(row=r, column=c + 1)
             r += 1
-        rollup_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
+        spell_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
+        r += 1
+        spell_tooltip_label.grid(row=r, column=c, columnspan=2, sticky="w")
         r += 1
 
         delete_header.grid(row=r, column=c)
@@ -820,7 +852,6 @@ class UtilityPanel:
             label.grid(row=r, column=c)
             entry.grid(row=r, column=c + 1)
             r += 1
-
         set_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
         r += 1
         batch_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
@@ -842,27 +873,71 @@ class UtilityPanel:
         r += 1
         renumber_tooltip_label.grid(row=r, column=c, columnspan=2, sticky="w")
 
-    def rollup(self):
+    def get_spell_chances(self):
 
-        Path("output/rollup").mkdir(parents=True, exist_ok=True)
-        output_name = self.rollup_entries['output name'].get()
-        self.cont.view.console.clear()
+        chances_list = []
+        total_spells = None
+        total_casting = 1
 
-        with open("output/rollup/" + output_name + ".sql", 'w') as file_object:
+        entry = self.spell_entries["chances"].get().strip()
+        if entry != "":
+            split = entry.split(",")
+            for s in split:
+                chances_list.append(float(s))
 
-            for file_name, commands in self.cont.sql_dict.items():
-                self.cont.sql_commands = commands
-                for command in self.cont.sql_commands:
-                    command = command.replace(";", "")
-                    if command.strip() != "":
-                        file_object.write(command + ";")
-                    file_object.write("\n")
-            self.cont.view.console.print(output_name + " done.\n")
+        if len(chances_list) > 0:
+            total_spells = len(chances_list)
+            self.get_spell_pr(total_spells, chances_list, total_casting)
+        else:
+            val = self.spell_entries["total spells"].get().strip()
+            if val != "":
+                total_spells = int(val)
+            val = self.spell_entries["total casting"].get().strip()
+            if val != "":
+                total_casting = float(val)
+
+            if total_spells and total_casting:
+                if total_casting > 1:
+                    total_casting = 1
+                self.get_spell_pr(total_spells, chances_list, total_casting)
+
+        my_sum = 0
+        for c in chances_list:
+            my_sum += c
+        self.cont.view.console.print("total spellcasting chance: " + str(round(my_sum, 2)))
+        self.cont.view.console.print("\n")
+
+    def get_spell_pr(self, tot_spells, chances, total_pr):
+        if len(chances) == 0:  # this is for a caster only mob
+            for i in range(tot_spells):
+                pr = total_pr / tot_spells
+                chances.append(pr)
+
+        spellbook = self.convert(chances)
+
+        for spell in spellbook:
+            self.cont.view.console.print(round(spell, 3) + 2)
+            self.cont.view.console.print("\n")
+
+    def convert(self, chances):
+        spellbook = []
+
+        for chance in chances:
+            none = self.get_prob_none(spellbook)
+            spellbook.append(chance / none)
+
+        return spellbook
+
+    def get_prob_none(self, chances):
+
+        pr = 1.0
+        for chance in chances:
+            pr *= 1.0 - chance
+        return pr
 
     def delete_command(self):
 
         if self.cont.sql_commands is not None:
-
             tag = self.delete_entries["tag"].get().strip()
             if tag != "":
                 self.cont.sql_commands = file_helper.delete_sql_command(self.cont.sql_commands, tag)
@@ -1043,7 +1118,7 @@ class BasePanel:
 
         int_header_label = tk.Label(self.frame, text="Int", font=norm_font, fg='blue')
 
-        int_labels = ['gen init', 'gen max', 'gen dest']
+        int_labels = ['gen init', 'gen max', 'gen dest', 'level']
         self.int_entries = vh.make_int_entry(self.frame, int_labels)
 
         did_header_label = tk.Label(self.frame, text="Data ID", font=norm_font, fg='blue')
@@ -1053,7 +1128,7 @@ class BasePanel:
 
         float_header_label = tk.Label(self.frame, text="Float", font="Arial 12", fg='blue')
 
-        float_labels = ['regen interval', 'gen radius', 'visual awareness', 'home radius']
+        float_labels = ['regen interval', 'gen radius', 'visual awareness']
         self.float_entries = vh.make_float_entry(self.frame, float_labels)
 
         self.is_npc = tk.IntVar(value=0)
@@ -1160,7 +1235,7 @@ class BasePanel:
             # creature type
             selected = self.creature_type_combo.get()
 
-            if selected == "no change" or not self.cont.json_updater.is_creature(self.cont.input_file):
+            if selected == "no change":
                 pass
             else:
                 val = labels_module.get_creature_type_int(selected)
@@ -1176,7 +1251,9 @@ class BasePanel:
             # int
             my_dict = {'gen init': (82, "/* InitGeneratedObjects */"),
                        'gen max': (81, "/* MaxGeneratedObjects */"),
-                       'gen dest': (103, "/* GeneratorDestructionType */")  # this is a 2 for destroy, 3 for kill
+                       # what happens to the generator's spawns when it's destroyed, 2 for destroy, 3 for kill
+                       'gen dest': (103, "/* GeneratorDestructionType */"),
+                       'level': (25, "/* Level */")
                        }
             self.cont.set_properties(my_dict, self.int_entries, 'int')
 
@@ -1189,8 +1266,7 @@ class BasePanel:
             # float
             my_dict = {'regen interval': (41, "/* RegenerationInterval */"),
                        'gen radius': (43, "/* GeneratorRadius */"),
-                       'visual awareness': (31, "/* VisualAwarenessRange */"),
-                       'home radius': (55, "/* HomeRadius */")
+                       'visual awareness': (31, "/* VisualAwarenessRange */")
                        }
             self.cont.set_properties(my_dict, self.float_entries, 'float')
 
@@ -1255,6 +1331,7 @@ class ConsolePanel:
     def print(self, line):
         self.text.configure(state='normal')
         self.text.insert(tk.END, line)
+        self.text.yview_moveto(1)
         self.text.configure(state='disabled')
 
 
@@ -1274,8 +1351,7 @@ class ModsPanel:
             "cold": (16, "/* ArmorModVsCold */"),
             "fire": (17, "/* ArmorModVsFire */"),
             "acid": (18, "/* ArmorModVsAcid */"),
-            "electric": (19, "/* ArmorModVsElectric */"),
-            "nether": (165, "/* ArmorModVsNether */")
+            "electric": (19, "/* ArmorModVsElectric */")
         }
 
         self.resist_dict = {
@@ -1285,8 +1361,7 @@ class ModsPanel:
             "cold": (68, "/* ResistCold */"),
             "fire": (67, "/* ResistFire */"),
             "acid": (69, "/* ResistAcid */"),
-            "electric": (70, "/* ResistElectric */"),
-            "nether": (166, "/* ResistNether */")
+            "electric": (70, "/* ResistElectric */")
         }
 
         self.armor = tk.IntVar(value=1)
@@ -1313,7 +1388,7 @@ class ModsPanel:
             label = tk.Label(self.frame, text=k, font=norm_font)
             label.grid(row=r, column=0, padx=5, pady=5)
 
-            armor_scale = tk.Scale(self.frame, from_=0, to=1, resolution=0.1, orient=tk.HORIZONTAL)
+            armor_scale = tk.Scale(self.frame, from_=0, to=1, resolution=0.05, orient=tk.HORIZONTAL)
             # set default
             armor_scale.set(1)
             armor_scale.grid(row=r, column=1, padx=5, pady=5, sticky='ew')
@@ -1323,7 +1398,7 @@ class ModsPanel:
 
         r = 1
         for k, v in self.resist_dict.items():
-            resist_scale = tk.Scale(self.frame, from_=0, to=1, resolution=0.1, orient=tk.HORIZONTAL)
+            resist_scale = tk.Scale(self.frame, from_=0, to=1, resolution=0.05, orient=tk.HORIZONTAL)
             # set default
             resist_scale.set(1)
             resist_scale.grid(row=r, column=2, padx=5, pady=5, sticky='ew')
@@ -1346,7 +1421,7 @@ class ModsPanel:
             if self.armor.get() == 1:  # do set armor mods
 
                 for k, v in self.armor_scales.items():
-                    mod_val = float(round(v.get(), 1))
+                    mod_val = float(round(v.get(), 2))
                     self.cont.sql_commands = file_helper.set_property(self.cont.sql_commands,
                                                                       "float",
                                                                       self.armor_dict[k][0],
@@ -1356,7 +1431,7 @@ class ModsPanel:
             if self.resist.get() == 1:  # do set resist mods
 
                 for k, v in self.resist_scales.items():
-                    mod_val = float(round(v.get(), 1))
+                    mod_val = float(round(v.get(), 2))
                     self.cont.sql_commands = file_helper.set_property(self.cont.sql_commands,
                                                                       "float",
                                                                       self.resist_dict[k][0],
@@ -1507,95 +1582,6 @@ class ArtPanel:
             # float
             my_dict = {'shade': (12, "/* Shade */")}
             self.cont.set_properties(my_dict, self.float_entries, 'float')
-
-
-class WieldPanel:
-
-    def __init__(self, parent, cont):
-        self.frame = tk.Frame(parent)
-        self.cont = cont
-
-        wield_header_label = tk.Label(self.frame, text="Wield (all fields required)", font=norm_font, fg='blue')
-
-        int_labels = ['wcid', 'palette']
-        self.wield_entries = vh.make_int_entry(self.frame, int_labels)
-        self.wield_entries['palette'].insert(tk.END, "0")
-
-        float_labels = ['shade']
-        self.wield_shade = vh.make_float_entry(self.frame, float_labels)
-        self.wield_shade['shade'].insert(tk.END, "0")
-
-        self.is_wield_treasure = tk.IntVar(value=0)
-        check_box = tk.Checkbutton(self.frame, text="is wield treasure", variable=self.is_wield_treasure,
-                                   font=norm_font)
-
-        set_button = tk.Button(self.frame, text="Set", bg="lightblue", command=self.set_wield)
-        batch_button = tk.Button(self.frame, text="Run Batch", command=partial(self.cont.set_batch, self.set_wield))
-
-        find_label = tk.Label(self.frame, text="Find from PCAPs", font=norm_font, fg='blue')
-
-        self.search_entry = tk.Entry(self.frame, bg="white", font="Arial 12")
-
-        text_area = scrolledtext.ScrolledText(self.frame, height=15, width=50, undo=True)
-        text_area.configure(state='disabled', wrap=tk.WORD)
-
-        find_button = tk.Button(self.frame, text="Find by Name",
-                                command=partial(file_helper.find_wielded_items, 'pcap_wielded_items.txt',
-                                                self.search_entry, text_area))
-
-        # layout
-        r = 0
-        c = 0
-
-        wield_header_label.grid(row=r, column=c)
-        r += 1
-
-        for name, entry in self.wield_entries.items():
-            label = tk.Label(self.frame, text=name, font=norm_font)
-            label.grid(row=r, column=c)
-            entry.grid(row=r, column=c + 1)
-            r += 1
-
-        for name, entry in self.wield_shade.items():
-            label = tk.Label(self.frame, text=name, font=norm_font)
-            label.grid(row=r, column=c)
-            entry.grid(row=r, column=c + 1)
-            r += 1
-
-        check_box.grid(row=r, column=c)
-        r += 1
-        find_label.grid(row=r, column=c)
-        r += 1
-        self.search_entry.grid(row=r, column=c, sticky="ew")
-        find_button.grid(row=r, column=c + 1, padx=5, pady=5, sticky="w")
-        r += 1
-        text_area.grid(row=r, column=c, columnspan=2)
-        r += 1
-        set_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
-        batch_button.grid(row=r, column=c + 1, padx=5, pady=5, sticky="ew")
-
-    def set_wield(self):
-
-        if self.cont.input_file:
-
-            wcid = self.wield_entries['wcid'].get()
-            palette = self.wield_entries['palette'].get()
-            shade_str = self.wield_shade['shade'].get()
-            destination = 2
-
-            if wcid == "" or palette == "" or shade_str == "":
-                tk.messagebox.showerror("Error", "All wield fields are required.")
-            else:
-                wcid = int(wcid)
-                palette = int(palette)
-                shade = float(shade_str)
-                self.cont.json_updater.add_create_list(self.cont.input_file)
-
-                if self.is_wield_treasure.get() == 1:
-                    destination = 10
-
-                self.cont.json_updater.set_create_list(self.cont.input_file, wcid, destination, palette, shade, 0)
-                self.cont.view.console.preview()
 
 
 class SkillsPanel:
@@ -1983,7 +1969,7 @@ def main():
     if os.name == 'nt':
         windll.shcore.SetProcessDpiAwareness(1)
 
-    version = 0.7
+    version = 0.8
     root = tk.Tk()
     root.title("AC Monsters " + str(version))
     Controller(root)

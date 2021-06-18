@@ -187,6 +187,27 @@ def get_destination(wcid, loc_paste):
     return new_value
 
 
+def get_loc_paste(loc_paste):
+    loc_paste = loc_paste.strip()
+    split_loc = loc_paste.split(" ")
+
+    cell_hex = split_loc[0]
+    cell_dec = int(cell_hex, 16)
+
+    ox = split_loc[1].replace("[", "")
+    oy = split_loc[2]
+    oz = split_loc[3].replace("]", "")
+
+    aw = split_loc[4]
+    ax = split_loc[5]
+    ay = split_loc[6]
+    az = split_loc[7]
+
+    new_value = f"""{str(cell_dec)}, {str(ox)}, {str(oy)}, {str(oz)}, {str(aw)}, {str(ax)}, {str(ay)}, {str(az)}"""
+
+    return new_value
+
+
 def set_property(commands, tag, key, val, desc):
     """Set a property (int, bool, float, string or did) to a weenie (in sql format). If the
     property already exists, the value is updated.This function does not work for position. """
@@ -194,6 +215,8 @@ def set_property(commands, tag, key, val, desc):
     is_padded = True
 
     if tag == "str" or tag == "string":
+        if "'" in val:
+            val = val.replace("'", "''")
         val = f"""'{val}'"""
         is_padded = False
 
@@ -255,6 +278,8 @@ def set_property(commands, tag, key, val, desc):
             my_tuple = get_longest(my_dict)
             longest_key = my_tuple[0]
             longest_val = my_tuple[1]
+            if longest_val < 8:
+                longest_val = 8
 
             for k, v in sorted(my_dict.items()):
 
