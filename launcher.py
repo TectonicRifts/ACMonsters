@@ -1,3 +1,4 @@
+import math
 import re
 import tkinter as tk
 from tkinter import ttk
@@ -1344,6 +1345,14 @@ class ModsPanel:
         self.armor_scales = {}
         self.resist_scales = {}
 
+        self.labels = {"slash": tk.IntVar(value=1), "pierce": tk.IntVar(value=1), "bludge": tk.IntVar(value=1),
+                       "cold": tk.IntVar(value=1), "fire": tk.IntVar(value=1), "acid": tk.IntVar(value=1),
+                       "electric": tk.IntVar(value=1), "nether": tk.IntVar(value=1)}
+
+        check_boxes = []
+        for k, v in self.labels.items():
+            check_boxes.append(tk.Checkbutton(self.frame, text=k, variable=v, font=norm_font))
+
         self.armor_dict = {
             "slash": (13, "/* ArmorModVsSlash */"),
             "pierce": (14, "/* ArmorModVsPierce */"),
@@ -1361,7 +1370,8 @@ class ModsPanel:
             "cold": (68, "/* ResistCold */"),
             "fire": (67, "/* ResistFire */"),
             "acid": (69, "/* ResistAcid */"),
-            "electric": (70, "/* ResistElectric */")
+            "electric": (70, "/* ResistElectric */"),
+            "nether": (166, "/* ResistElectric */")
         }
 
         self.armor = tk.IntVar(value=1)
@@ -1376,17 +1386,33 @@ class ModsPanel:
         # layout
         r = 0
 
-        left_label = tk.Label(self.frame, text="Armor (0=weak)", font=norm_font)
+        left_label = tk.Label(self.frame, text="Armor (0=weak)", font=norm_font, fg='blue')
         left_label.grid(row=r, column=1)
 
-        right_label = tk.Label(self.frame, text="Resist (0=strong)", font=norm_font)
+        right_label = tk.Label(self.frame, text="Resist (0=strong)", font=norm_font, fg='blue')
         right_label.grid(row=r, column=2)
 
         r += 1
 
+        for check_box in check_boxes:
+            if check_box["text"] == "cold":
+                check_box["fg"] = "blue"
+                check_box.grid(row=r, column=0, padx=5, pady=5, sticky="w")
+            elif check_box["text"] == "fire":
+                check_box["fg"] = "red"
+                check_box.grid(row=r, column=0, padx=5, pady=5, sticky="w")
+            elif check_box["text"] == "acid":
+                check_box["fg"] = "green"
+                check_box.grid(row=r, column=0, padx=5, pady=5, sticky="w")
+            elif check_box["text"] == "electric":
+                check_box["fg"] = "purple"
+                check_box.grid(row=r, column=0, padx=5, pady=5, sticky="w")
+            else:
+                check_box.grid(row=r, column=0, padx=5, pady=5, sticky="w")
+            r += 1
+        r = 1
+
         for k, v in self.armor_dict.items():
-            label = tk.Label(self.frame, text=k, font=norm_font)
-            label.grid(row=r, column=0, padx=5, pady=5)
 
             armor_scale = tk.Scale(self.frame, from_=0, to=1, resolution=0.05, orient=tk.HORIZONTAL)
             # set default
@@ -1421,22 +1447,27 @@ class ModsPanel:
             if self.armor.get() == 1:  # do set armor mods
 
                 for k, v in self.armor_scales.items():
-                    mod_val = float(round(v.get(), 2))
-                    self.cont.sql_commands = file_helper.set_property(self.cont.sql_commands,
-                                                                      "float",
-                                                                      self.armor_dict[k][0],
-                                                                      mod_val,
-                                                                      self.armor_dict[k][1])
+
+                    label = self.labels.get(k)
+                    if label.get() == 1:
+                        mod_val = float(round(v.get(), 2))
+                        self.cont.sql_commands = file_helper.set_property(self.cont.sql_commands,
+                                                                          "float",
+                                                                          self.armor_dict[k][0],
+                                                                          mod_val,
+                                                                          self.armor_dict[k][1])
 
             if self.resist.get() == 1:  # do set resist mods
 
                 for k, v in self.resist_scales.items():
-                    mod_val = float(round(v.get(), 2))
-                    self.cont.sql_commands = file_helper.set_property(self.cont.sql_commands,
-                                                                      "float",
-                                                                      self.resist_dict[k][0],
-                                                                      mod_val,
-                                                                      self.resist_dict[k][1])
+                    label = self.labels.get(k)
+                    if label.get() == 1:
+                        mod_val = float(round(v.get(), 2))
+                        self.cont.sql_commands = file_helper.set_property(self.cont.sql_commands,
+                                                                          "float",
+                                                                          self.resist_dict[k][0],
+                                                                          mod_val,
+                                                                          self.resist_dict[k][1])
 
 
 class AttributesPanel:
@@ -1445,12 +1476,11 @@ class AttributesPanel:
         self.frame = tk.Frame(parent)
         self.cont = cont
 
+        attributes_header = tk.Label(self.frame, text="Attributes", font=norm_font, fg='blue')
+        vitals_header = tk.Label(self.frame, text="Vitals", font=norm_font, fg='blue')
+
         self.int_entries_1 = vh.make_int_entry(self.frame, labels_module.get_primary_attribute_labels())
         self.int_entries_2 = vh.make_int_entry(self.frame, labels_module.get_secondary_attribute_labels())
-
-        self.replace_attributes = tk.IntVar(value=0)
-        replace_attributes_check = tk.Checkbutton(
-            self.frame, text="replace attributes", variable=self.replace_attributes, font=norm_font)
 
         self.replace_vitals = tk.IntVar(value=0)
         replace_vitals_check = tk.Checkbutton(
@@ -1468,11 +1498,17 @@ class AttributesPanel:
         r = 0
         c = 0
 
+        attributes_header.grid(row=r, column=c, sticky='w')
+        r += 1
+
         for name, entry in self.int_entries_1.items():
             label = tk.Label(self.frame, text=name, font=norm_font)
             label.grid(row=r, column=c)
             entry.grid(row=r, column=c + 1)
             r += 1
+
+        vitals_header.grid(row=r, column=c, sticky='w')
+        r += 1
 
         for name, entry in self.int_entries_2.items():
             label = tk.Label(self.frame, text=name, font=norm_font)
@@ -1480,8 +1516,7 @@ class AttributesPanel:
             entry.grid(row=r, column=c + 1)
             r += 1
 
-        replace_attributes_check.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
-        replace_vitals_check.grid(row=r, column=c + 1, padx=5, pady=5, sticky="ew")
+        replace_vitals_check.grid(row=r, column=c + 1, padx=5, pady=5, sticky="w")
         r += 1
         set_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
         r += 1
@@ -1499,10 +1534,8 @@ class AttributesPanel:
                        'focus': (5, "/* Focus */"),
                        'self': (6, "/* Self */")
                        }
-            if self.replace_attributes.get() == 1:
-                self.cont.set_attributes(my_dict, self.int_entries_1, True, False)
-            else:
-                self.cont.set_attributes(my_dict, self.int_entries_1, False, False)
+
+            self.cont.set_attributes(my_dict, self.int_entries_1, True, False)
 
             my_dict = {'health': (1, "/* MaxHealth */"),
                        'stamina': (3, "/* MaxStamina */"),
@@ -1531,7 +1564,7 @@ class ArtPanel:
 
         float_header_label = tk.Label(self.frame, text="Float", font=norm_font, fg="blue")
 
-        float_labels = ['shade']
+        float_labels = ['shade', 'translucency', 'scale']
         self.float_entries = vh.make_float_entry(self.frame, float_labels)
 
         set_button = tk.Button(self.frame, text="Set", bg="lightblue", command=self.set_art)
@@ -1580,7 +1613,10 @@ class ArtPanel:
             self.cont.set_properties(my_dict, self.int_entries, 'did')
 
             # float
-            my_dict = {'shade': (12, "/* Shade */")}
+            my_dict = {'shade': (12, "/* Shade */"),
+                       'translucency': (76, "/* Translucency */"),
+                       'scale': (39, "/* DefaultScale */")
+                       }
             self.cont.set_properties(my_dict, self.float_entries, 'float')
 
 
@@ -1590,9 +1626,19 @@ class SkillsPanel:
         self.frame = tk.Frame(parent)
         self.cont = cont
 
-        skill_labels = labels_module.get_skill_labels()
-        self.skill_entries = vh.make_int_entry(self.frame, skill_labels)
+        offensive_header = tk.Label(self.frame, text="Offensive", font=norm_font, fg='blue')
+        defensive_header = tk.Label(self.frame, text="Defensive", font=norm_font, fg='blue')
+        skill_check_header = tk.Label(self.frame, text="Skill Calculator", font=norm_font, fg='blue')
 
+        skill_labels = ['magic', 'melee', 'missile']
+
+        skill_check_labels = ['player skill', 'skill modifier', 'monster skill']
+        self.skill_check_entries = vh.make_float_entry(self.frame, skill_check_labels)
+
+        self.offensive_entries = vh.make_int_entry(self.frame, skill_labels)
+        self.defensive_entries = vh.make_int_entry(self.frame, skill_labels)
+
+        # other
         self.sneak_attack = tk.IntVar(value=0)
         add_sneak_attack = tk.Checkbutton(self.frame, text="sneak attack", variable=self.sneak_attack, font=norm_font)
 
@@ -1600,49 +1646,118 @@ class SkillsPanel:
         add_dirty_fighting = tk.Checkbutton(self.frame, text="dirty fighting", variable=self.dirty_fighting,
                                             font=norm_font)
 
-        self.fill_from_pcap = tk.IntVar(value=1)
-        pcap_check = tk.Checkbutton(self.frame, text="fill from pcap", variable=self.fill_from_pcap, font=norm_font)
+        self.dual_wield = tk.IntVar(value=0)
+        add_dual_wield = tk.Checkbutton(self.frame, text="dual wield", variable=self.dual_wield,
+                                        font=norm_font)
+
+        self.deception = tk.IntVar(value=0)
+        add_deception = tk.Checkbutton(self.frame, text="deception", variable=self.deception,
+                                       font=norm_font)
 
         set_button = tk.Button(self.frame, text="Set", bg="lightblue", command=self.set_skills)
         batch_button = tk.Button(self.frame, text="Run Batch",
                                  command=partial(self.cont.run_sql_batch, self.set_skills))
 
         tooltip = ("All fields optional. "
-                   "Set attributes first and enter desired skill levels, which are adjusted down based on attributes. "
-                   "Melee offense includes heavy, light and two-handed weapons. "
-                   "Magic offense includes life, creature, war, void, and mana conversion. "
-                   "Sneak attack and dirty fighting are set to the same level as melee offense. "
-                   "For fill from PCAPs to work, enter any value for each desired skill. "
+                   "Set attributes first and enter desired skill levels. "
+                   "Melee offense sets heavy, light and two-handed weapons. "
+                   "Magic offense sets life, creature, war, and void. "
+                   "Sneak attack, dirty fighting and dual wield are set to the highest melee offense skill. "
                    )
 
         tooltip_label = tk.Label(self.frame, text=tooltip, font=norm_font, fg="dark green", wraplength=420,
                                  justify=tk.LEFT)
 
+        check_skill_button = tk.Button(self.frame, text="Check Skill", command=self.check_skill)
+        check_range_button = tk.Button(self.frame, text="Check Range", command=self.check_range)
+
         # layout
         r = 0
         c = 0
 
-        for name, entry in self.skill_entries.items():
+        offensive_header.grid(row=r, column=c, sticky='w')
+        r += 1
+
+        for name, entry in self.offensive_entries.items():
             label = tk.Label(self.frame, text=name, font=norm_font)
             label.grid(row=r, column=c)
             entry.grid(row=r, column=c + 1)
             r += 1
 
-        add_sneak_attack.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
-        add_dirty_fighting.grid(row=r, column=c + 1, padx=5, pady=5, sticky="ew")
+        defensive_header.grid(row=r, column=c, sticky='w')
         r += 1
-        pcap_check.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
+
+        for name, entry in self.defensive_entries.items():
+            label = tk.Label(self.frame, text=name, font=norm_font)
+            label.grid(row=r, column=c)
+            entry.grid(row=r, column=c + 1)
+            r += 1
+
+        add_sneak_attack.grid(row=r, column=c, padx=5, pady=5, sticky="w")
+        add_dirty_fighting.grid(row=r, column=c + 1, padx=5, pady=5, sticky="w")
+        r += 1
+        add_dual_wield.grid(row=r, column=c, padx=5, pady=5, sticky="w")
+        add_deception.grid(row=r, column=c + 1, padx=5, pady=5, sticky="w")
         r += 1
         set_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
         r += 1
         batch_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
         r += 1
         tooltip_label.grid(row=r, column=c, columnspan=2)
+        r += 1
+
+        skill_check_header.grid(row=r, column=c, sticky='w')
+        r += 1
+
+        for name, entry in self.skill_check_entries.items():
+            label = tk.Label(self.frame, text=name, font=norm_font)
+            label.grid(row=r, column=c)
+            entry.grid(row=r, column=c + 1)
+            r += 1
+
+        check_skill_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
+        r += 1
+        check_range_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
+        r += 1
+
+    def check_skill(self):
+
+        # mod of 1.6 for missile at full accuracy, mod of 1.35 for melee (since 35% is average weapon attack mod)
+        player_skill = self.skill_check_entries.get("player skill").get().strip()
+        skill_modifier = self.skill_check_entries.get("skill modifier").get().strip()
+        monster_skill = self.skill_check_entries.get("monster skill").get().strip()
+
+        if player_skill != "" and skill_modifier != "" and monster_skill != "":
+
+            player_skill = int(player_skill)
+            skill_modifier = float(skill_modifier)
+            player_skill = round(player_skill * skill_modifier, 1)
+            monster_skill = int(monster_skill)
+
+            y = 1 - 1 / (1 + math.exp(0.03 * (player_skill - monster_skill)))
+            self.cont.view.console.print("player skill\t" + str(player_skill) + "\tsuccess\t"
+                                         + str(round(y * 100, 2)) + "\n")
+        else:
+            self.cont.view.console.print("Enter a value for player and monster skill.\n")
+
+    def check_range(self):
+
+        monster_skill = self.skill_check_entries.get("monster skill").get().strip()
+        if monster_skill != "":
+            monster_skill = int(monster_skill)
+            self.cont.view.console.print(f"""Results for {monster_skill} monster skill:\n""")
+            for player_skill in range(0, 1010, 10):
+                y = 1 - 1 / (1 + math.exp(0.03 * (player_skill - monster_skill)))
+                self.cont.view.console.print("player skill\t" + str(player_skill) + "\tsuccess\t"
+                                             + str(round(y * 100, 2)) + "\n")
+        else:
+            self.cont.view.console.print("Enter a value for monster skill.\n")
 
     def set_skills(self):
 
         if len(self.cont.sql_commands) > 0:
 
+            # get attributes, needed to adjust skill levels down
             my_dict = {}
             keys = [1, 2, 3, 4, 5, 6]
             wcid = re.findall('[0-9]+', (self.cont.sql_commands[0]))[0]
@@ -1654,118 +1769,89 @@ class SkillsPanel:
                         # 1 = str, 2 = endu, 3 = quick, 4 = coord, 5 = foc, 6 = self
                         for key in keys:
                             my_dict[key] = int(file_helper.get_attribute(wcid, command, key))
-                else:
-                    for key in keys:
-                        my_dict[key] = 100
 
             attributes = {'strength': my_dict[1], 'endurance': my_dict[2], 'coordination': my_dict[3],
                           'quickness': my_dict[4], 'focus': my_dict[5], 'self': my_dict[6]}
 
             skills = {}
-            pcap_dict = {}
 
-            if self.fill_from_pcap.get() == 1:
-                name = file_helper.get_property(self.cont.sql_commands, "str", 1)[0]
-                name = name.replace("'", "")
-                pcap_dict = file_helper.skill_look_up(name)
+            if self.deception.get() == 1:
+                skills['Deception'] = 999
 
-            for k, v in self.skill_entries.items():
+            # offensive skills
+            for k, v in self.offensive_entries.items():
 
                 val = v.get()
-
                 if val != "":
                     val_int = int(val)
 
-                    if k == 'melee offense':
-
-                        if 'melee offense' in pcap_dict.keys():
-                            if pcap_dict['melee offense'] > 0:
-                                val_int = int(pcap_dict['melee offense'])
-
-                        base_skill = round((attributes['strength'] + attributes['coordination']) / 3)
-                        val_int = val_int - base_skill
-                        skills['HeavyWeapons'] = val_int
-                        skills['LightWeapons'] = val_int
-                        skills['TwoHanded'] = val_int
-
-                        # sneak attack and dirty fighting set to same level as melee offense
-                        if self.sneak_attack.get() == 1:
-                            skills['SneakAttack'] = val_int
-
-                        if self.dirty_fighting.get() == 1:
-                            skills['DirtyFighting'] = val_int
-
-                    elif k == 'finesse weapons':
-
-                        if 'finesse weapons' in pcap_dict.keys():
-                            if pcap_dict['finesse weapons'] > 0:
-                                val_int = int(pcap_dict['finesse weapons'])
-
-                        base_skill = round((attributes['coordination'] + attributes['quickness']) / 3)
-                        val_int = val_int - base_skill
-                        skills['FinesseWeapons'] = val_int
-
-                    elif k == 'magic offense':
-
-                        if 'magic offense' in pcap_dict.keys():
-                            if pcap_dict['magic offense'] > 0:
-                                val_int = int(pcap_dict['magic offense'])
-
-                        base_skill = round((attributes['focus'] + attributes['self']) / 4)
-                        val_int = val_int - base_skill
+                    if k == 'magic':
+                        attribute_bonus = round((attributes['focus'] + attributes['self']) / 4)
+                        print(attribute_bonus)
+                        val_int = val_int - attribute_bonus
+                        print(val_int)
                         skills['LifeMagic'] = val_int
                         skills['WarMagic'] = val_int
                         skills['CreatureMagic'] = val_int
                         skills['VoidMagic'] = val_int
-                        skills['ManaConversion'] = val_int
 
-                    elif k == 'melee defense':
+                    elif k == 'melee':
+                        attribute_bonus1 = round((attributes['strength'] + attributes['coordination']) / 3)
+                        attribute_bonus2 = round((attributes['coordination'] + attributes['quickness']) / 3)
+                        skill1 = val_int - attribute_bonus1
+                        skill2 = val_int - attribute_bonus2
 
-                        if 'melee defense' in pcap_dict.keys():
-                            if pcap_dict['melee defense'] > 0:
-                                val_int = int(pcap_dict['melee defense'])
+                        skills['HeavyWeapons'] = skill1
+                        skills['LightWeapons'] = skill1
+                        skills['TwoHanded'] = skill1
+                        skills['FinesseWeapons'] = skill2
 
-                        base_skill = round((attributes['coordination'] + attributes['quickness']) / 3)
-                        val_int = val_int - base_skill
-                        skills['MeleeDefense'] = val_int
+                        if self.sneak_attack.get() == 1:
+                            if skill1 > skill2:
+                                skills['SneakAttack'] = skill1
+                            else:
+                                skills['SneakAttack'] = skill2
 
-                    elif k == 'missile defense':
+                        if self.dirty_fighting.get() == 1:
+                            if skill1 > skill2:
+                                skills['DirtyFighting'] = skill1
+                            else:
+                                skills['DirtyFighting'] = skill2
 
-                        if 'missile defense' in pcap_dict.keys():
-                            if pcap_dict['missile defense'] > 0:
-                                val_int = int(pcap_dict['missile defense'])
+                        if self.dual_wield.get() == 1:
+                            if skill1 > skill2:
+                                skills['DualWield'] = skill1
+                            else:
+                                skills['DualWield'] = skill2
 
-                        base_skill = round((attributes['coordination'] + attributes['quickness']) / 5)
-                        val_int = val_int - base_skill
-                        skills['MissileDefense'] = val_int
-
-                    elif k == 'magic defense':
-
-                        if 'magic defense' in pcap_dict.keys():
-                            if pcap_dict['magic defense'] > 0:
-                                val_int = int(pcap_dict['magic defense'])
-
-                        base_skill = round((attributes['focus'] + attributes['self']) / 7)
-                        val_int = val_int - base_skill
-                        skills['MagicDefense'] = val_int
-
-                    elif k == 'missile weapons':
-
-                        if 'missile offense' in pcap_dict.keys():
-                            if pcap_dict['missile offense'] > 0:
-                                val_int = int(pcap_dict['missile offense'])
-
-                        base_skill = round(attributes['coordination'] / 2)
-                        val_int = val_int - base_skill
-                        skills['MissileDefense'] = val_int
-
+                    elif k == 'missile':
+                        attribute_bonus = round(attributes['coordination'] / 2)
+                        val_int = val_int - attribute_bonus
+                        skills['MissileWeapons'] = val_int
                     else:
-                        tk.messagebox.showerror("Error", "A skill was undefined.")
+                        tk.messagebox.showerror("Error", "A skill label was undefined.")
 
-            # if negative, set to 0
-            for k, v in skills.items():
-                if v < 0:
-                    skills[k] = 0
+            # offensive skills
+            for k, v in self.defensive_entries.items():
+
+                val = v.get()
+                if val != "":
+                    val_int = int(val)
+
+                    if k == 'magic':
+                        attribute_bonus = round((attributes['focus'] + attributes['self']) / 7)
+                        val_int = val_int - attribute_bonus
+                        skills['MagicDefense'] = val_int
+                    elif k == 'melee':
+                        attribute_bonus = round((attributes['coordination'] + attributes['quickness']) / 3)
+                        val_int = val_int - attribute_bonus
+                        skills['MeleeDefense'] = val_int
+                    elif k == 'missile':
+                        attribute_bonus = round((attributes['coordination'] + attributes['quickness']) / 5)
+                        val_int = val_int - attribute_bonus
+                        skills['MissileDefense'] = val_int
+                    else:
+                        tk.messagebox.showerror("Error", "A skill label was undefined.")
 
             # make the skill table
             new_command = file_helper.get_skill_table(wcid, skills)
@@ -1969,7 +2055,7 @@ def main():
     if os.name == 'nt':
         windll.shcore.SetProcessDpiAwareness(1)
 
-    version = 0.8
+    version = 0.9
     root = tk.Tk()
     root.title("AC Monsters " + str(version))
     Controller(root)

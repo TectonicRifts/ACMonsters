@@ -1,4 +1,3 @@
-import json
 import tkinter as tk
 from tkinter import END
 from pathlib import Path
@@ -313,12 +312,15 @@ def get_skill_table(wcid, skills):
     counter = 0
     new_command = "\n\nINSERT INTO `weenie_properties_skill` (`object_Id`, `type`, `level_From_P_P`, `s_a_c`, `p_p`, `init_Level`, `resistance_At_Last_Check`, `last_Used_Time`)\n"
 
-    for skill, val in sorted(skills.items()):
-
+    for skill, val in skills.items():
         if val < 0:
-            skills[skill] = 0
+            val = 0
 
         key = labels_module.get_skill_id(skill)
+
+        # padding
+        if key < 10:
+            key = " " + str(key)
 
         if counter == 0:
             entry = f"""VALUES ({wcid},  {key}, 0, 2, 0, {val}, 0, 0) /* {skill} */\n"""
