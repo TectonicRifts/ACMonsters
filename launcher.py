@@ -1129,7 +1129,8 @@ class BasePanel:
 
         float_header_label = tk.Label(self.frame, text="Float", font="Arial 12", fg='blue')
 
-        float_labels = ['regen interval', 'gen radius', 'visual awareness']
+        float_labels = ['heartbeat interval', 'heartbeat timestamp', 'health rate', 'stamina rate', 'mana rate',
+                        'regen interval', 'gen radius', 'visual awareness']
         self.float_entries = vh.make_float_entry(self.frame, float_labels)
 
         self.is_npc = tk.IntVar(value=0)
@@ -1265,7 +1266,12 @@ class BasePanel:
             self.cont.set_properties(my_dict, self.did_entries, 'did')
 
             # float
-            my_dict = {'regen interval': (41, "/* RegenerationInterval */"),
+            my_dict = {'heartbeat interval': (1, "/* HeartbeatInterval */"),
+                       'heartbeat timestamp': (2, "/* HeartbeatTimestamp */"),
+                       'health rate': (3, "/* HealthRate */"),
+                       'stamina rate': (4, "/* StaminaRate */"),
+                       'mana rate': (5, "/* ManaRate */"),
+                       'regen interval': (41, "/* RegenerationInterval */"),
                        'gen radius': (43, "/* GeneratorRadius */"),
                        'visual awareness': (31, "/* VisualAwarenessRange */")
                        }
@@ -1371,7 +1377,7 @@ class ModsPanel:
             "fire": (67, "/* ResistFire */"),
             "acid": (69, "/* ResistAcid */"),
             "electric": (70, "/* ResistElectric */"),
-            "nether": (166, "/* ResistElectric */")
+            "nether": (166, "/* ResistNether */")
         }
 
         self.armor = tk.IntVar(value=1)
