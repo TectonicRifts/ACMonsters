@@ -42,6 +42,17 @@ def replace_sql_command(commands, tag, new_command):
     return my_list
 
 
+def append_sql_command(commands, new_command):
+    """Append to end of file. Useful for adding the same emote to many files."""
+    my_list = []
+    for command in commands:
+        if command.strip() != "":
+            my_list.append(command)
+    my_list.append("\n\n" + new_command)
+
+    return my_list
+
+
 def get_tag_name(tag):
     tags = {"int": "`weenie_properties_int`", "bool": "`weenie_properties_bool`", "float": "`weenie_properties_float`",
             "string": "`weenie_properties_string`", "str": "`weenie_properties_string`",
@@ -212,6 +223,7 @@ def set_property(commands, tag, key, val, desc):
     property already exists, the value is updated.This function does not work for position. """
 
     is_padded = True
+    key = int(key)
 
     if tag == "str" or tag == "string":
         if "'" in val:
@@ -225,8 +237,12 @@ def set_property(commands, tag, key, val, desc):
         else:
             val = True
 
+    if tag == "did":
+        val = hex(val).upper().replace('X', 'x')
+        if key == 32 or key == 35:
+            val = val.replace('0x', '')
+
     tag = get_tag_name(tag)
-    key = int(key)
 
     my_list = []
     wcid = re.findall('[0-9]+', (commands[0]))[0]  # find number string in first line
@@ -308,31 +324,37 @@ def set_property(commands, tag, key, val, desc):
     return my_list
 
 
-def get_skill_table(wcid, skills):
-    counter = 0
-    new_command = "\n\nINSERT INTO `weenie_properties_skill` (`object_Id`, `type`, `level_From_P_P`, `s_a_c`, `p_p`, `init_Level`, `resistance_At_Last_Check`, `last_Used_Time`)\n"
+def get_wcid(commands):
+    wcid = re.findall('[0-9]+', (commands[0]))[0]
+    return wcid
 
-    for skill, val in skills.items():
-        if val < 0:
-            val = 0
 
-        key = labels_module.get_skill_id(skill)
+def get_name(commands):
+    name = str(get_property(commands, "str", 1))
+    split = name.split(",")[0]
+    name = split.replace("(", "")
+    name = name.replace("''", "'")
+    name = name[2:-2]
+    return name
 
-        # padding
-        if key < 10:
-            key = " " + str(key)
 
-        if counter == 0:
-            entry = f"""VALUES ({wcid},  {key}, 0, 2, 0, {val}, 0, 0) /* {skill} */\n"""
-        else:
-            entry = f"""     , ({wcid},  {key}, 0, 2, 0, {val}, 0, 0) /* {skill} */\n"""
+def get_all_attributes(commands):
+    """Return a dictionary with all attributes."""
+    wcid = get_wcid(commands)
+    my_dict = {}
+    keys = [1, 2, 3, 4, 5, 6]
 
-        new_command += entry
-        counter += 1
+    for command in commands:
+        if str("`weenie_properties_attribute`") in command:
+            if str("`weenie_properties_attribute_2nd`") not in command:
 
-    new_command = "".join(new_command.rsplit("\n", 1))
+                # 1 = str, 2 = endu, 3 = quick, 4 = coord, 5 = foc, 6 = self
+                for key in keys:
+                    my_dict[key] = int(get_attribute(wcid, command, key))
 
-    return new_command
+    attributes = {'strength': my_dict[1], 'endurance': my_dict[2], 'coordination': my_dict[3],
+                  'quickness': my_dict[4], 'focus': my_dict[5], 'self': my_dict[6]}
+    return attributes
 
 
 def set_spell_list(commands, key, val, desc):
@@ -730,71 +752,3 @@ def find_wielded_items(file_name, entry, results_text):
 
     results_text.configure(state='disabled')
 
-
-def skill_look_up(name):
-    with open('pcap_creature_skills.txt') as my_file:
-
-        melee_attack = []
-        melee_defense = []
-
-        missile_attack = []
-        missile_defense = []
-
-        magic_attack = []
-        magic_defense = []
-
-        my_dict = {'melee offense': melee_attack,
-                   'finesse weapons': melee_attack,
-                   'melee defense': melee_defense,
-                   'missile offense': missile_attack,
-                   'missile defense': missile_defense,
-                   'magic offense': magic_attack,
-                   'magic defense': magic_defense
-                   }
-
-        for line in my_file:
-            split = line.split("\t")
-
-            if split[0] == name:
-
-                if split[1] == "ATTACKER_NOTIFICATION_EVENT" and split[2] == "MISSILE_WEAPONS_SKILL":
-                    # print('missile defense', split[3], 'hits', split[4])
-                    for i in range(int(split[4])):
-                        missile_defense.append(int(split[3]))
-
-                elif split[1] == "ATTACKER_NOTIFICATION_EVENT" and "WEAPONS_SKILL" in split[2]:
-                    # print('melee defense', split[3], 'hits', split[4])
-                    for i in range(int(split[4])):
-                        melee_defense.append(int(split[3]))
-
-                elif split[1] == "ATTACKER_NOTIFICATION_EVENT" and split[2] == "TWO_HANDED_COMBAT_SKILL":
-                    # print('melee defense', split[3], 'hits', split[4])
-                    for i in range(int(split[4])):
-                        melee_defense.append(int(split[3]))
-
-                elif split[1] == "EVASION_DEFENDER_NOTIFICATION_EVENT" and split[2] == "MELEE_DEFENSE_SKILL":
-                    # print('melee attack', split[3], 'hits', split[4])
-                    for i in range(int(split[4])):
-                        melee_attack.append(int(split[3]))
-
-                elif split[1] == "EVASION_DEFENDER_NOTIFICATION_EVENT" and split[2] == "MISSILE_DEFENSE_SKILL":
-                    # print('missile attack', split[3], 'hits', split[4])
-                    for i in range(int(split[4])):
-                        missile_attack.append(int(split[3]))
-
-                elif split[1] == "Textbox Resist" and split[2] == "MAGIC_DEFENSE_SKILL":
-                    # print('magic attack', split[3], 'hits', split[4])
-                    for i in range(int(split[4])):
-                        magic_attack.append(int(split[3]))
-
-        skill_levels = {}
-
-        for k, v in my_dict.items():
-            if len(v) > 1:
-                skill_levels[k] = round(statistics.mean(v))
-            elif len(v) == 1:
-                skill_levels[k] = v[0]
-            else:
-                skill_levels[k] = 0
-
-        return skill_levels

@@ -35,7 +35,7 @@ def make_float_entry(parent, label_list):
 
 
 def validate_int(p):
-    if str.isdigit(p) or p == "":
+    if str.isdigit(p) or p == "" or int(p, 16):
         return True
     else:
         return False

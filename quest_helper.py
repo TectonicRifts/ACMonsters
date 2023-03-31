@@ -11,14 +11,14 @@ def make_event_sql(event_name):
         my_file.write("VALUES ('" + event_name + "', -1, -1, 3, '2020-01-24 19:57:17');\n")
 
 
-def make_quest_sql(quest_name, is_timer):
+def make_quest_sql(quest_name, is_timed):
 
     Path("output/quests").mkdir(parents=True, exist_ok=True)
 
     with open("output/quests/" + quest_name + ".sql", 'w') as my_file:
         my_file.write("DELETE FROM `quest` WHERE `name` = '" + quest_name + "';\n")
         my_file.write("INSERT INTO `quest` (`name`, `min_Delta`, `max_Solves`, `message`, `last_Modified`)\n")
-        if is_timer:
+        if is_timed:
             my_file.write("VALUES ('" + quest_name + "', 72000, -1, 'quest timer', '2020-01-24 19:57:17');\n")
         else:
             my_file.write("VALUES ('" + quest_name + "', 0, 1, 'quest timer', '2020-01-24 19:57:17');\n")

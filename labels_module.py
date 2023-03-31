@@ -7,6 +7,7 @@ def get_primary_attribute_labels():
     labels = ['strength', 'endurance', 'coordination', 'quickness', 'focus', 'self']
     return labels
 
+
 def get_secondary_attribute_labels():
     labels = ['health', 'stamina', 'mana']
     return labels
@@ -78,26 +79,31 @@ def get_all_creature_types():
     return list(creature_dict.values())
 
 
+def get_all_gen_dest_types():
+    """Returns a list of all gen dest type labels."""
+    my_dict = get_gen_dest_dict()
+    return list(my_dict.values())
+
+
+def get_gen_dest_dict():
+    # what happens to the generator's spawns when it's destroyed, 2 for destroy, 3 for kill
+    gen_dest_types = {0: "Undefined", 1: "Nothing", 2: "Destroy", 3: "Kill"}
+    return gen_dest_types
+
+
+def get_gen_dest_int(selected):
+    my_dict = get_gen_dest_dict()
+    # keys become values, values become keys
+    flipped_dict = dict((v, k) for k, v in my_dict.items())
+    return flipped_dict[selected]
+
+
 def get_creature_type_int(creature_type_label):
     """Returns the creature type integer corresponding to the given item type label."""
     my_dict = get_creature_dict()
     # keys become values, values become keys
     flipped_dict = dict((v, k) for k, v in my_dict.items())
     return flipped_dict[creature_type_label]
-
-
-def get_skill_id(skill_name):
-    """Get the int representation of a skill."""
-    skill_types = {'MeleeDefense': 6, 'MissileDefense': 7, 'MagicDefense': 15, 'ManaConversion': 16, 'Jump': 22,
-                   'Run': 24, 'CreatureMagic': 31, 'ItemMagic': 32, 'LifeMagic': 33, 'WarMagic': 34,
-                   'TwoHanded': 41, 'VoidMagic': 43, 'HeavyWeapons': 44, 'LightWeapons': 45,
-                   'FinesseWeapons': 46, 'MissileWeapons': 47, 'Shield': 48, 'DualWield': 49, 'Recklessness': 50,
-                   'SneakAttack': 51, 'DirtyFighting': 52}
-
-    if skill_name in skill_types:
-        return skill_types[skill_name]
-    else:
-        return None
 
 
 def get_item_types():

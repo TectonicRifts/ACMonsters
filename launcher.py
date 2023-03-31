@@ -7,6 +7,7 @@ import tkinter.scrolledtext as scrolledtext
 import os
 from functools import partial
 import file_helper
+import skills_module
 import quest_helper
 import view_helper as vh
 import labels_module
@@ -61,6 +62,7 @@ class View:
         item_panel = ItemPanel(right_nb, cont)
         mods_panel = ModsPanel(right_nb, cont)
         skills_panel = SkillsPanel(right_nb, cont)
+        calc_panel = CalcPanel(right_nb, cont)
         art_panel = ArtPanel(right_nb, cont)
         copy_panel = AutoPanel(right_nb, cont)
         port_panel = PortalPanel(right_nb, cont)
@@ -77,6 +79,7 @@ class View:
         right_nb.add(base_panel.frame, text="Base")
         right_nb.add(attributes_panel.frame, text="Attr")
         right_nb.add(skills_panel.frame, text="Skill")
+        right_nb.add(calc_panel.frame, text="Calc")
         right_nb.add(item_panel.frame, text="Item")
         right_nb.add(port_panel.frame, text="Port")
         right_nb.add(mods_panel.frame, text="Mods")
@@ -99,16 +102,16 @@ class Controller:
 
     def __init__(self, parent):
 
-        # this is the sql file (i.e., sql commands) currently being worked on
+        # sql file (i.e., sql commands) currently being worked on
         self.sql_commands = None
 
-        # this is the name of the output file
+        # name of the output file
         self.sql_output = None
 
-        # the keys are sql file names, the values are file contents (i.e., sql commands)
+        # keys are sql file names, the values are file contents (i.e., sql commands)
         self.sql_dict = {}
 
-        # this is the sql file (i.e., the commands from it) being used as a template to copy from
+        # sql file (i.e., the commands from it) being used as a template to copy from
         self.template_commands = None
 
         self.view = View(parent, self)
@@ -212,13 +215,15 @@ class Controller:
             self.view.console.print(base_name + "\n")
 
     def set_properties(self, my_dict, stat_entries, tag):
-        """Set properties for a list of entries. This function is for weenies in .sql format."""
-        # i has the property key and comment in a tuple
+        """Set properties for a list of entries."""
+        # i is a tuple with the property key and comment
         for label, i in my_dict.items():
             val = stat_entries[label].get().strip()
             if val != "":
-                if tag == 'int' or tag == 'did':
+                if tag == 'int':
                     val = int(val)
+                elif tag == 'did':
+                    val = int(val, 16)
                 elif tag == 'float':
                     val = round(float(val), 4)
                     if val.is_integer():
@@ -227,7 +232,7 @@ class Controller:
                 self.sql_commands = file_helper.set_property(self.sql_commands, tag, i[0], val, i[1])
 
     def set_attributes(self, my_dict, stat_entries, do_override, are_vitals):
-        # i has the property key and comment in a tuple
+        # i is a tuple with the property key and comment
         for label, i in my_dict.items():
             val = stat_entries[label].get().strip()
             if val != "":
@@ -512,9 +517,6 @@ class ItemPanel:
                 self.cont.sql_commands = file_helper.set_property(
                     self.cont.sql_commands, "int", 267, val, "/* Lifespan */"
                 )
-                self.cont.sql_commands = file_helper.set_property(
-                    self.cont.sql_commands, "int", 268, val, "/* RemainingLifespan */"
-                )
 
             # attuned
             val = self.is_attuned.get()
@@ -539,11 +541,11 @@ class ItemPanel:
                 pass
             elif bonded == "no":
                 self.cont.sql_commands = file_helper.set_property(
-                    self.cont.sql_commands, "int", 33, 0, "/* Bonded - Normal*/")
+                    self.cont.sql_commands, "int", 33, 0, "/* Bonded - Normal */")
 
             elif bonded == "yes":
                 self.cont.sql_commands = file_helper.set_property(
-                    self.cont.sql_commands, "int", 33, 1, "/* Bonded - Bonded*/")
+                    self.cont.sql_commands, "int", 33, 1, "/* Bonded - Bonded */")
 
             elif bonded == "destroy on death":
                 self.cont.sql_commands = file_helper.set_property(
@@ -599,7 +601,7 @@ class AutoPanel:
         check_other = tk.Checkbutton(self.frame, text="other", variable=self.fill_other, font=norm_font)
 
         set_button = tk.Button(self.frame, text="Set", bg="lightblue", command=self.autocomplete_weenie)
-        batch_autofill = tk.Button(self.frame, text="Run Batch",
+        batch_autofill = tk.Button(self.frame, text="Batch Replace",
                                    command=partial(self.cont.run_sql_batch, self.autocomplete_weenie))
 
         tooltip = ("Use to autocomplete fields for a batch of weenies. "
@@ -610,16 +612,19 @@ class AutoPanel:
         tooltip_label = tk.Label(self.frame, text=tooltip, font=norm_font, fg="dark green", wraplength=420,
                                  justify=tk.LEFT)
 
-        header_label = tk.Label(self.frame, text="Replace Body Table", font=norm_font, fg='blue')
+        header_label = tk.Label(self.frame, text="Replace or Append", font=norm_font, fg='blue')
 
         self.text_area = tk.scrolledtext.ScrolledText(self.frame, height=10, width=10, undo=True)
         batch_replace = tk.Button(self.frame, text="Run Batch",
                                   command=partial(self.cont.run_sql_batch, self.replace_body_table))
+        batch_append = tk.Button(self.frame, text="Batch Append",
+                                 command=partial(self.cont.run_sql_batch, self.append_command))
 
         clear_button = tk.Button(self.frame, text="Clear",
                                  command=partial(self.text_area.delete, '1.0', tk.END))
 
-        tooltip2 = "Paste a new body table above. The wcid will be set automatically."
+        tooltip2 = ("For batch replace, paste a new body table. For batch append, paste an emote to be added. "
+                    "The wcid will be set automatically.")
         tooltip_label2 = tk.Label(self.frame, text=tooltip2, font=norm_font, fg="dark green", wraplength=420,
                                   justify=tk.LEFT)
 
@@ -630,13 +635,14 @@ class AutoPanel:
         check_spell.grid(row=1, column=1, sticky="w")
         check_other.grid(row=2, column=0, sticky="w")
         set_button.grid(row=3, column=0, sticky="ew", padx=5, pady=5)
-        batch_autofill.grid(row=3, column=1, sticky="ew", padx=5, pady=5)
-        tooltip_label.grid(row=4, column=0, columnspan=2)
-        header_label.grid(row=5, column=0, sticky="ew", padx=5, pady=5)
-        self.text_area.grid(row=6, column=0, columnspan=2, sticky="ew", padx=5, pady=5)
-        clear_button.grid(row=7, column=0, sticky="ew", padx=5, pady=5)
-        batch_replace.grid(row=7, column=1, sticky="ew", padx=5, pady=5)
-        tooltip_label2.grid(row=8, column=0, columnspan=2)
+        batch_autofill.grid(row=4, column=0, sticky="ew", padx=5, pady=5)
+        tooltip_label.grid(row=5, column=0, columnspan=2)
+        header_label.grid(row=6, column=0, sticky="ew", padx=5, pady=5)
+        self.text_area.grid(row=7, column=0, columnspan=2, sticky="ew", padx=5, pady=5)
+        clear_button.grid(row=8, column=0, sticky="ew", padx=5, pady=5)
+        batch_replace.grid(row=9, column=0, sticky="ew", padx=5, pady=5)
+        batch_append.grid(row=10, column=0, sticky="ew", padx=5, pady=5)
+        tooltip_label2.grid(row=11, column=0, columnspan=2)
 
     def replace_body_table(self):
         if len(self.cont.sql_commands) > 0:
@@ -648,6 +654,14 @@ class AutoPanel:
                 self.cont.sql_commands = file_helper.replace_sql_command(self.cont.sql_commands,
                                                                          "weenie_properties_body_part",
                                                                          body_table)
+
+    def append_command(self):
+        if self.cont.sql_commands is not None:
+            body_table = self.text_area.get("1.0", tk.END).strip()
+            if body_table != "":
+                wcid = re.findall('[0-9]+', (self.cont.sql_commands[0]))[0]
+                body_table = re.sub(r'\([0-9]+', "(" + wcid, body_table)
+                self.cont.sql_commands = file_helper.append_sql_command(self.cont.sql_commands, body_table)
 
     def autocomplete_from_data(self):
         """This method does not depend on source or template."""
@@ -816,20 +830,6 @@ class UtilityPanel:
         delete_tooltip_label = tk.Label(
             self.frame, text=delete_tooltip, font=norm_font, fg="dark green", wraplength=420, justify=tk.LEFT)
 
-        renumber_header = tk.Label(self.frame, text="Renumber", font=norm_font, fg='blue')
-        renumber_int_labels = ['change by', 'if greater than']
-        self.renumber_int_entries = vh.make_int_entry(self.frame, renumber_int_labels)
-
-        self.subtract_check = tk.IntVar(value=1)
-        subtract_box = tk.Checkbutton(self.frame, text="subtract", variable=self.subtract_check, font=norm_font)
-
-        renumber_button = tk.Button(
-            self.frame, text="Run Batch", command=partial(self.cont.run_sql_batch, self.renumber))
-
-        renumber_tooltip = "Use to renumber WCIDs by a constant value."
-        renumber_tooltip_label = tk.Label(
-            self.frame, text=renumber_tooltip, font=norm_font, fg="dark green", wraplength=420, justify=tk.LEFT)
-
         # layout
         r = 0
         c = 0
@@ -858,21 +858,6 @@ class UtilityPanel:
         batch_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
         r += 1
         delete_tooltip_label.grid(row=r, column=c, columnspan=2, sticky="w")
-        r += 1
-        renumber_header.grid(row=r, column=c)
-        r += 1
-
-        for name, entry in self.renumber_int_entries.items():
-            label = tk.Label(self.frame, text=name, font=norm_font)
-            label.grid(row=r, column=c)
-            entry.grid(row=r, column=c + 1)
-            r += 1
-
-        subtract_box.grid(row=r, column=c)
-        r += 1
-        renumber_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
-        r += 1
-        renumber_tooltip_label.grid(row=r, column=c, columnspan=2, sticky="w")
 
     def get_spell_chances(self):
 
@@ -942,49 +927,6 @@ class UtilityPanel:
             tag = self.delete_entries["tag"].get().strip()
             if tag != "":
                 self.cont.sql_commands = file_helper.delete_sql_command(self.cont.sql_commands, tag)
-
-    def renumber(self):
-
-        delta = int(self.renumber_int_entries['change by'].get())
-
-        if self.subtract_check.get() == 1:
-            delta = delta * -1
-
-        threshold = int(self.renumber_int_entries['if greater than'].get())
-
-        # get wcid list
-        wcid_list = []
-        file_dict = {}
-        tag = "DELETE FROM `weenie` WHERE `class_Id`"
-
-        for file_name, sql_file in self.cont.sql_dict.items():
-            commands = sql_file.split(";")
-
-            for command in commands:
-                if tag in command:
-                    my_split = command.split("=")
-                    wcid = int(my_split[1].strip())
-                    if wcid > threshold:
-                        wcid_list.append(wcid)
-                        file_dict[file_name] = sql_file
-                        break
-        # renumber
-        for file_name, sql_file in file_dict.items():
-            commands = sql_file.split(";")
-            renumbered = []
-
-            for command in commands:
-
-                for wcid in wcid_list:
-                    new_wcid = wcid + delta
-
-                    if str(wcid) in command:
-                        new_command = command.replace(str(wcid), str(new_wcid))
-                        renumbered.append(new_command + ";")
-                    if str(wcid) in file_name:
-                        file_name = file_name.replace(str(wcid), str(new_wcid))
-
-            file_helper.write_sql_file(file_name, renumbered)
 
 
 class TaskPanel:
@@ -1102,7 +1044,7 @@ class BasePanel:
         self.frame = tk.Frame(parent)
         self.cont = cont
 
-        str_labels = ['name', 'kill flag']
+        str_labels = ['name', 'kill quest']
         self.str_entries = vh.make_str_entry(self.frame, str_labels)
 
         item_type_label = tk.Label(self.frame, text="item type", font=norm_font)
@@ -1117,24 +1059,30 @@ class BasePanel:
         self.creature_type_combo = ttk.Combobox(self.frame, values=creature_options, font=norm_font, state="readonly")
         self.creature_type_combo.current(0)
 
+        gen_dest_label = tk.Label(self.frame, text="gen dest", font=norm_font)
+        gen_dest_options = sorted(labels_module.get_all_gen_dest_types())
+        gen_dest_options.insert(0, "no change")
+        self.gen_dest_combo = ttk.Combobox(self.frame, values=gen_dest_options, font=norm_font, state="readonly")
+        self.gen_dest_combo.current(0)
+
         int_header_label = tk.Label(self.frame, text="Int", font=norm_font, fg='blue')
 
-        int_labels = ['gen init', 'gen max', 'gen dest', 'level']
+        int_labels = ['gen init', 'gen max', 'level', 'xp override', 'faction bits']
         self.int_entries = vh.make_int_entry(self.frame, int_labels)
 
         did_header_label = tk.Label(self.frame, text="Data ID", font=norm_font, fg='blue')
 
-        did_labels = ['combat table', 'death treasure']
+        did_labels = ['combat table', 'wield treasure', 'death treasure']
         self.did_entries = vh.make_int_entry(self.frame, did_labels)
 
         float_header_label = tk.Label(self.frame, text="Float", font="Arial 12", fg='blue')
 
-        float_labels = ['heartbeat interval', 'heartbeat timestamp', 'health rate', 'stamina rate', 'mana rate',
-                        'regen interval', 'gen radius', 'visual awareness']
+        float_labels = ['heartbeat interval', 'heartbeat timestamp', 'health rate', 'regen interval',
+                        'gen radius', 'visual awareness']
         self.float_entries = vh.make_float_entry(self.frame, float_labels)
 
-        self.is_npc = tk.IntVar(value=0)
-        is_npc_check = tk.Checkbutton(self.frame, text="is npc", variable=self.is_npc, font=norm_font)
+        self.edge_slide = tk.IntVar(value=0)
+        edge_slide_check = tk.Checkbutton(self.frame, text="edge slide", variable=self.edge_slide, font=norm_font)
 
         self.npc_like_object = tk.IntVar(value=0)
         npc_like_object_check = tk.Checkbutton(self.frame, text="npc like object", variable=self.npc_like_object,
@@ -1171,7 +1119,7 @@ class BasePanel:
             entry.grid(row=r, column=c + 1)
             r += 1
 
-        is_npc_check.grid(row=r, column=c, sticky="w", padx=5)
+        edge_slide_check.grid(row=r, column=c, sticky="w", padx=5)
         npc_like_object_check.grid(row=r, column=c + 1, sticky="w", padx=5)
         r += 1
         ignore_life_check.grid(row=r, column=c, sticky="w", padx=5)
@@ -1190,6 +1138,10 @@ class BasePanel:
 
         creature_type_label.grid(row=r, column=c)
         self.creature_type_combo.grid(row=r, column=c + 1)
+        r += 1
+
+        gen_dest_label.grid(row=r, column=c)
+        self.gen_dest_combo.grid(row=r, column=c + 1)
         r += 1
 
         for name, entry in self.int_entries.items():
@@ -1244,23 +1196,34 @@ class BasePanel:
                 desc = "/* CreatureType - " + selected + " */"
                 self.cont.sql_commands = file_helper.set_property(self.cont.sql_commands, "int", 2, int(val), desc)
 
+            # gen dest type
+            selected = self.gen_dest_combo.get()
+
+            if selected == "no change":
+                pass
+            else:
+                val = labels_module.get_gen_dest_int(selected)
+                desc = "/* GeneratorDestructionType - " + selected + " */"
+                self.cont.sql_commands = file_helper.set_property(self.cont.sql_commands, "int", 103, int(val), desc)
+
             # str
             my_dict = {'name': (1, "/* Name */"),
-                       'kill flag': (45, "/* KillQuest */")
+                       'kill quest': (45, "/* KillQuest */")
                        }
             self.cont.set_properties(my_dict, self.str_entries, 'str')
 
             # int
             my_dict = {'gen init': (82, "/* InitGeneratedObjects */"),
                        'gen max': (81, "/* MaxGeneratedObjects */"),
-                       # what happens to the generator's spawns when it's destroyed, 2 for destroy, 3 for kill
-                       'gen dest': (103, "/* GeneratorDestructionType */"),
-                       'level': (25, "/* Level */")
+                       'level': (25, "/* Level */"),
+                       'xp override': (146, "/* XpOverride */"),
+                       'faction bits': (281, "/* Faction1Bits */")
                        }
             self.cont.set_properties(my_dict, self.int_entries, 'int')
 
             # did
             my_dict = {'combat table': (4, "/* CombatTable */"),
+                       'wield treasure': (32, "/* WieldedTreasureType */"),
                        'death treasure': (35, "/* DeathTreasureType */")
                        }
             self.cont.set_properties(my_dict, self.did_entries, 'did')
@@ -1269,8 +1232,6 @@ class BasePanel:
             my_dict = {'heartbeat interval': (1, "/* HeartbeatInterval */"),
                        'heartbeat timestamp': (2, "/* HeartbeatTimestamp */"),
                        'health rate': (3, "/* HealthRate */"),
-                       'stamina rate': (4, "/* StaminaRate */"),
-                       'mana rate': (5, "/* ManaRate */"),
                        'regen interval': (41, "/* RegenerationInterval */"),
                        'gen radius': (43, "/* GeneratorRadius */"),
                        'visual awareness': (31, "/* VisualAwarenessRange */")
@@ -1278,13 +1239,9 @@ class BasePanel:
             self.cont.set_properties(my_dict, self.float_entries, 'float')
 
             # set to npc
-            if self.is_npc.get() == 1:
-                desc = "/* PlayerKillerStatus - RubberGlue */"  # this is GDLE only
-                self.cont.sql_commands = file_helper.set_property(self.cont.sql_commands, "int", 134, 16, desc)
-                self.cont.sql_commands = file_helper.set_property(self.cont.sql_commands, "bool", 19, 0,
-                                                                  "/* Attackable */")
-                # must also check for targeting tactic and remove it
-
+            if self.edge_slide.get() == 1:
+                self.cont.sql_commands = file_helper.set_property(self.cont.sql_commands, "bool", 42, 1,
+                                                                  "/* AllowEdgeSlide */")
             # set npc should appear as an object
             if self.npc_like_object.get() == 1:
                 self.cont.sql_commands = file_helper.set_property(self.cont.sql_commands, "bool", 52, 1,
@@ -1324,6 +1281,10 @@ class ConsolePanel:
         self.text.tag_config('field', foreground="dark green")
         self.text.tag_config('warning', foreground="red")
 
+        # configure colors
+        self.text.tag_configure("red", foreground="red")
+        self.text.tag_configure("blue", foreground="blue")
+
         clear_button = tk.Button(self.frame, text="Clear", command=self.clear)
 
         # layout
@@ -1335,9 +1296,10 @@ class ConsolePanel:
         self.text.delete('1.0', tk.END)
         self.text.configure(state='disabled')
 
-    def print(self, line):
+    def print(self, line, color="black"):
+        """Color is an optional parameter."""
         self.text.configure(state='normal')
-        self.text.insert(tk.END, line)
+        self.text.insert(tk.END, line, color)
         self.text.yview_moveto(1)
         self.text.configure(state='disabled')
 
@@ -1419,7 +1381,6 @@ class ModsPanel:
         r = 1
 
         for k, v in self.armor_dict.items():
-
             armor_scale = tk.Scale(self.frame, from_=0, to=1, resolution=0.05, orient=tk.HORIZONTAL)
             # set default
             armor_scale.set(1)
@@ -1634,13 +1595,8 @@ class SkillsPanel:
 
         offensive_header = tk.Label(self.frame, text="Offensive", font=norm_font, fg='blue')
         defensive_header = tk.Label(self.frame, text="Defensive", font=norm_font, fg='blue')
-        skill_check_header = tk.Label(self.frame, text="Skill Calculator", font=norm_font, fg='blue')
 
         skill_labels = ['magic', 'melee', 'missile']
-
-        skill_check_labels = ['player skill', 'skill modifier', 'monster skill']
-        self.skill_check_entries = vh.make_float_entry(self.frame, skill_check_labels)
-
         self.offensive_entries = vh.make_int_entry(self.frame, skill_labels)
         self.defensive_entries = vh.make_int_entry(self.frame, skill_labels)
 
@@ -1660,6 +1616,11 @@ class SkillsPanel:
         add_deception = tk.Checkbutton(self.frame, text="deception", variable=self.deception,
                                        font=norm_font)
 
+        self.shield = tk.IntVar(value=0)
+        add_shield = tk.Checkbutton(self.frame, text="shield", variable=self.shield,
+                                    font=norm_font)
+
+        check_attributes_button = tk.Button(self.frame, text="Check", command=self.check_parameters)
         set_button = tk.Button(self.frame, text="Set", bg="lightblue", command=self.set_skills)
         batch_button = tk.Button(self.frame, text="Run Batch",
                                  command=partial(self.cont.run_sql_batch, self.set_skills))
@@ -1668,14 +1629,10 @@ class SkillsPanel:
                    "Set attributes first and enter desired skill levels. "
                    "Melee offense sets heavy, light and two-handed weapons. "
                    "Magic offense sets life, creature, war, and void. "
-                   "Sneak attack, dirty fighting and dual wield are set to the highest melee offense skill. "
                    )
 
         tooltip_label = tk.Label(self.frame, text=tooltip, font=norm_font, fg="dark green", wraplength=420,
                                  justify=tk.LEFT)
-
-        check_skill_button = tk.Button(self.frame, text="Check Skill", command=self.check_skill)
-        check_range_button = tk.Button(self.frame, text="Check Range", command=self.check_range)
 
         # layout
         r = 0
@@ -1705,6 +1662,11 @@ class SkillsPanel:
         add_dual_wield.grid(row=r, column=c, padx=5, pady=5, sticky="w")
         add_deception.grid(row=r, column=c + 1, padx=5, pady=5, sticky="w")
         r += 1
+        add_shield.grid(row=r, column=c, padx=5, pady=5, sticky="w")
+        r += 1
+
+        check_attributes_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
+        r += 1
         set_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
         r += 1
         batch_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
@@ -1712,77 +1674,53 @@ class SkillsPanel:
         tooltip_label.grid(row=r, column=c, columnspan=2)
         r += 1
 
-        skill_check_header.grid(row=r, column=c, sticky='w')
-        r += 1
+    def check_parameters(self):
+        """Check attributes, base, effective, and pcap skills."""
+        if self.cont.sql_commands is not None:
+            attributes = file_helper.get_all_attributes(self.cont.sql_commands)
+            self.cont.view.console.print("\nAttributes\n")
+            for k, v in attributes.items():
+                self.cont.view.console.print(str(k) + "\t" + str(v) + "\n")
 
-        for name, entry in self.skill_check_entries.items():
-            label = tk.Label(self.frame, text=name, font=norm_font)
-            label.grid(row=r, column=c)
-            entry.grid(row=r, column=c + 1)
-            r += 1
+            skills = skills_module.get_skill_table(self.cont.sql_commands)
+            self.cont.view.console.print("\nBase Skills\n")
+            for skill in skills:
+                self.cont.view.console.print(skill.name + "\t" + str(skill.value) + "\n")
 
-        check_skill_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
-        r += 1
-        check_range_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
-        r += 1
+            self.cont.view.console.print("\nEffective Skills\n")
+            for skill in skills:
+                attribute_bonus = skills_module.get_attribute_bonus(attributes, skill.name)
+                effective_value = skill.value + attribute_bonus
+                self.cont.view.console.print(skill.name + "\t" + str(effective_value) + "\n")
 
-    def check_skill(self):
-
-        # mod of 1.6 for missile at full accuracy, mod of 1.35 for melee (since 35% is average weapon attack mod)
-        player_skill = self.skill_check_entries.get("player skill").get().strip()
-        skill_modifier = self.skill_check_entries.get("skill modifier").get().strip()
-        monster_skill = self.skill_check_entries.get("monster skill").get().strip()
-
-        if player_skill != "" and skill_modifier != "" and monster_skill != "":
-
-            player_skill = int(player_skill)
-            skill_modifier = float(skill_modifier)
-            player_skill = round(player_skill * skill_modifier, 1)
-            monster_skill = int(monster_skill)
-
-            y = 1 - 1 / (1 + math.exp(0.03 * (player_skill - monster_skill)))
-            self.cont.view.console.print("player skill\t" + str(player_skill) + "\tsuccess\t"
-                                         + str(round(y * 100, 2)) + "\n")
-        else:
-            self.cont.view.console.print("Enter a value for player and monster skill.\n")
-
-    def check_range(self):
-
-        monster_skill = self.skill_check_entries.get("monster skill").get().strip()
-        if monster_skill != "":
-            monster_skill = int(monster_skill)
-            self.cont.view.console.print(f"""Results for {monster_skill} monster skill:\n""")
-            for player_skill in range(0, 1010, 10):
-                y = 1 - 1 / (1 + math.exp(0.03 * (player_skill - monster_skill)))
-                self.cont.view.console.print("player skill\t" + str(player_skill) + "\tsuccess\t"
-                                             + str(round(y * 100, 2)) + "\n")
-        else:
-            self.cont.view.console.print("Enter a value for monster skill.\n")
+            self.cont.view.console.print("\nPCAP Skills\n")
+            pcap_skills = self.get_skill_pcap()
+            for k, v in pcap_skills.items():
+                self.cont.view.console.print(str(k) + "\t" + str(v) + "\n")
 
     def set_skills(self):
+        self.replace_skills()
+
+    def get_skill_pcap(self):
+        if len(self.cont.sql_commands) > 0:
+            name = file_helper.get_name(self.cont.sql_commands)
+            pcap_skills = skills_module.skill_look_up(name)
+            return pcap_skills
+
+    def replace_skills(self):
 
         if len(self.cont.sql_commands) > 0:
 
-            # get attributes, needed to adjust skill levels down
-            my_dict = {}
-            keys = [1, 2, 3, 4, 5, 6]
-            wcid = re.findall('[0-9]+', (self.cont.sql_commands[0]))[0]
-
-            for command in self.cont.sql_commands:
-                if str("`weenie_properties_attribute`") in command:
-                    if str("`weenie_properties_attribute_2nd`") not in command:
-
-                        # 1 = str, 2 = endu, 3 = quick, 4 = coord, 5 = foc, 6 = self
-                        for key in keys:
-                            my_dict[key] = int(file_helper.get_attribute(wcid, command, key))
-
-            attributes = {'strength': my_dict[1], 'endurance': my_dict[2], 'coordination': my_dict[3],
-                          'quickness': my_dict[4], 'focus': my_dict[5], 'self': my_dict[6]}
+            wcid = file_helper.get_wcid(self.cont.sql_commands)
+            attributes = file_helper.get_all_attributes(self.cont.sql_commands)
 
             skills = {}
 
             if self.deception.get() == 1:
-                skills['Deception'] = 999
+                skills['Deception'] = 100
+
+            if self.shield.get() == 1:
+                skills['Shield'] = 100
 
             # offensive skills
             for k, v in self.offensive_entries.items():
@@ -1793,42 +1731,34 @@ class SkillsPanel:
 
                     if k == 'magic':
                         attribute_bonus = round((attributes['focus'] + attributes['self']) / 4)
-                        print(attribute_bonus)
                         val_int = val_int - attribute_bonus
-                        print(val_int)
                         skills['LifeMagic'] = val_int
                         skills['WarMagic'] = val_int
-                        skills['CreatureMagic'] = val_int
+                        skills['CreatureEnchantment'] = val_int
                         skills['VoidMagic'] = val_int
 
                     elif k == 'melee':
                         attribute_bonus1 = round((attributes['strength'] + attributes['coordination']) / 3)
                         attribute_bonus2 = round((attributes['coordination'] + attributes['quickness']) / 3)
-                        skill1 = val_int - attribute_bonus1
-                        skill2 = val_int - attribute_bonus2
+                        heavy_light_twohand = val_int - attribute_bonus1
+                        finesse_skill = val_int - attribute_bonus2
 
-                        skills['HeavyWeapons'] = skill1
-                        skills['LightWeapons'] = skill1
-                        skills['TwoHanded'] = skill1
-                        skills['FinesseWeapons'] = skill2
+                        skills['HeavyWeapons'] = heavy_light_twohand
+                        skills['LightWeapons'] = heavy_light_twohand
+                        skills['TwoHandedCombat'] = heavy_light_twohand
+                        skills['FinesseWeapons'] = finesse_skill
 
                         if self.sneak_attack.get() == 1:
-                            if skill1 > skill2:
-                                skills['SneakAttack'] = skill1
-                            else:
-                                skills['SneakAttack'] = skill2
+                            skills['SneakAttack'] = finesse_skill
 
                         if self.dirty_fighting.get() == 1:
-                            if skill1 > skill2:
-                                skills['DirtyFighting'] = skill1
-                            else:
-                                skills['DirtyFighting'] = skill2
+                            skills['DirtyFighting'] = heavy_light_twohand
 
                         if self.dual_wield.get() == 1:
-                            if skill1 > skill2:
-                                skills['DualWield'] = skill1
+                            if heavy_light_twohand > finesse_skill:
+                                skills['DualWield'] = heavy_light_twohand
                             else:
-                                skills['DualWield'] = skill2
+                                skills['DualWield'] = finesse_skill
 
                     elif k == 'missile':
                         attribute_bonus = round(attributes['coordination'] / 2)
@@ -1837,7 +1767,7 @@ class SkillsPanel:
                     else:
                         tk.messagebox.showerror("Error", "A skill label was undefined.")
 
-            # offensive skills
+            # defensive skills
             for k, v in self.defensive_entries.items():
 
                 val = v.get()
@@ -1860,7 +1790,7 @@ class SkillsPanel:
                         tk.messagebox.showerror("Error", "A skill label was undefined.")
 
             # make the skill table
-            new_command = file_helper.get_skill_table(wcid, skills)
+            new_command = skills_module.make_skill_table(wcid, skills)
 
             my_list = []
 
@@ -1874,6 +1804,82 @@ class SkillsPanel:
 
             my_list.append(new_command)
             self.cont.sql_commands = my_list
+
+
+class CalcPanel:
+
+    def __init__(self, parent, cont):
+        self.frame = tk.Frame(parent)
+        self.cont = cont
+
+        skill_check_header = tk.Label(self.frame, text="Skill Calculator", font=norm_font, fg='blue')
+        skill_check_labels = ['player skill', 'skill modifier', 'monster skill']
+        self.skill_check_entries = vh.make_float_entry(self.frame, skill_check_labels)
+
+        tooltip = ("All fields required. "
+                   "Use a skill mod of 1.6 for missile at full accuracy. "
+                   "Use a mod of 1.35 for melee since 35% is the average weapon attack mod. "
+                   "Level 200 combat pet attack skill is 693 with a mod of 1. Level 180 pet skill is 653."
+                   )
+
+        tooltip_label = tk.Label(self.frame, text=tooltip, font=norm_font, fg="dark green", wraplength=420,
+                                 justify=tk.LEFT)
+
+        check_skill_button = tk.Button(self.frame, text="Check Skill", command=self.check_skill)
+        check_range_button = tk.Button(self.frame, text="Check Range", command=self.check_range)
+
+        # layout
+        r = 0
+        c = 0
+
+        skill_check_header.grid(row=r, column=c, sticky='w')
+        r += 1
+
+        for name, entry in self.skill_check_entries.items():
+            label = tk.Label(self.frame, text=name, font=norm_font)
+            label.grid(row=r, column=c)
+            entry.grid(row=r, column=c + 1)
+            r += 1
+
+        check_skill_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
+        r += 1
+        check_range_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
+        r += 1
+        tooltip_label.grid(row=r, column=c, columnspan=2)
+        r += 1
+
+    def check_skill(self):
+
+        # mod of 1.6 for missile at full accuracy, mod of 1.35 for melee (since 35% is average weapon attack mod)
+        player_skill = self.skill_check_entries.get("player skill").get().strip()
+        skill_modifier = self.skill_check_entries.get("skill modifier").get().strip()
+        monster_skill = self.skill_check_entries.get("monster skill").get().strip()
+
+        if player_skill != "" and skill_modifier != "" and monster_skill != "":
+
+            player_skill = int(player_skill)
+            skill_modifier = float(skill_modifier)
+            player_skill = round(player_skill * skill_modifier, 1)
+            monster_skill = int(monster_skill)
+
+            y = 1 - 1 / (1 + math.exp(0.03 * (player_skill - monster_skill)))
+            self.cont.view.console.print("player skill\t" + str(player_skill) + "\tsuccess\t"
+                                         + str(round(y * 100, 2)) + "\n")
+        else:
+            self.cont.view.console.print("Enter a value for player and monster skill, and player skill modifier.\n")
+
+    def check_range(self):
+
+        monster_skill = self.skill_check_entries.get("monster skill").get().strip()
+        if monster_skill != "":
+            monster_skill = int(monster_skill)
+            self.cont.view.console.print(f"""Results for {monster_skill} monster skill:\n""")
+            for player_skill in range(0, 1010, 10):
+                y = 1 - 1 / (1 + math.exp(0.03 * (player_skill - monster_skill)))
+                self.cont.view.console.print("player skill\t" + str(player_skill) + "\tsuccess\t"
+                                             + str(round(y * 100, 2)) + "\n")
+        else:
+            self.cont.view.console.print("Enter a value for monster skill.\n")
 
 
 class LootPanel:
