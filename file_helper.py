@@ -1,87 +1,23 @@
 import tkinter as tk
 from tkinter import END
-from pathlib import Path
 import tkinter.messagebox
-import os
-import statistics
 import re
-import labels_module
-
-
-def write_sql_file(file_name, commands):
-    Path("output/renumbered").mkdir(parents=True, exist_ok=True)
-
-    with open("output/renumbered/" + file_name, 'w') as file_object:
-        for command in commands:
-            file_object.write(command)
-
-
-def delete_sql_command(commands, tag):
-    my_list = []
-
-    for command in commands:
-        if tag in command:
-            pass
-        else:
-            if command.strip() != "":
-                my_list.append(command)
-
-    return my_list
-
-
-def replace_sql_command(commands, tag, new_command):
-    my_list = []
-
-    for command in commands:
-        if tag in command:
-            my_list.append("\n\n" + new_command)
-        else:
-            if command.strip() != "":
-                my_list.append(command)
-
-    return my_list
-
-
-def append_sql_command(commands, new_command):
-    """Append to end of file. Useful for adding the same emote to many files."""
-    my_list = []
-    for command in commands:
-        if command.strip() != "":
-            my_list.append(command)
-    my_list.append("\n\n" + new_command)
-
-    return my_list
 
 
 def get_tag_name(tag):
-    tags = {"int": "`weenie_properties_int`", "bool": "`weenie_properties_bool`", "float": "`weenie_properties_float`",
-            "string": "`weenie_properties_string`", "str": "`weenie_properties_string`",
-            "did": "`weenie_properties_d_i_d`"}
+    tags = {
+        "int": "`weenie_properties_int`",
+        "bool": "`weenie_properties_bool`",
+        "float": "`weenie_properties_float`",
+        "string": "`weenie_properties_string`",
+        "str": "`weenie_properties_string`",
+        "did": "`weenie_properties_d_i_d`"
+    }
 
     if tag in tags.keys():
         return tags[tag]
     else:
         return None
-
-
-def get_longest(my_dict):
-    longest_key = 0
-    longest_val = 0
-
-    for k, v in sorted(my_dict.items()):
-
-        value_len = len(str(v[0]))
-        if value_len > longest_val:
-            longest_val = value_len
-
-        key_len = len(str(k))
-        if key_len > longest_key:
-            longest_key = key_len
-
-    longest_key += 1
-    longest_val += 1
-
-    return longest_key, longest_val
 
 
 def set_body_table(commands, template_wcid, body_table):
@@ -139,83 +75,6 @@ def get_property(commands, tag, key):
                 return my_dict[key]
             else:
                 return None
-
-
-def set_position(commands, loc_paste):
-    tag = "`weenie_properties_position`"
-
-    my_list = []
-    wcid = re.findall('[0-9]+', (commands[0]))[0]  # find number string in first line
-
-    has_position = False
-
-    for command in commands:
-        if str(tag) in command:
-            has_position = True
-
-    for command in commands:
-
-        if has_position:
-            if str(tag) in command:
-                new_command = "\n\nINSERT INTO `weenie_properties_position` (`object_Id`, `position_Type`, `obj_Cell_Id`, `origin_X`, `origin_Y`, `origin_Z`, `angles_W`, `angles_X`, `angles_Y`, `angles_Z`)\n"
-                new_command += get_destination(wcid, loc_paste)
-                my_list.append(new_command)
-            else:
-                if command.strip() != "":
-                    my_list.append(command)
-        else:
-            if command.strip() != "":
-                my_list.append(command)
-
-    if not has_position:
-        new_command = "\n\nINSERT INTO `weenie_properties_position` (`object_Id`, `position_Type`, `obj_Cell_Id`, `origin_X`, `origin_Y`, `origin_Z`, `angles_W`, `angles_X`, `angles_Y`, `angles_Z`)\n"
-        new_command += get_destination(wcid, loc_paste)
-        my_list.append(new_command)
-
-    return my_list
-
-
-def get_destination(wcid, loc_paste):
-    loc_paste = loc_paste.strip()
-    split_loc = loc_paste.split(" ")
-
-    cell_hex = split_loc[0]
-    cell_dec = int(cell_hex, 16)
-
-    ox = split_loc[1].replace("[", "")
-    oy = split_loc[2]
-    oz = split_loc[3].replace("]", "")
-
-    aw = split_loc[4]
-    ax = split_loc[5]
-    ay = split_loc[6]
-    az = split_loc[7]
-
-    comment = "/* @teleloc " + loc_paste + " */;"
-    new_value = f"""VALUES ({wcid}, 2, {str(cell_dec)}, {str(ox)}, {str(oy)}, {str(oz)}, {str(aw)}, {str(ax)}, {str(ay)}, {str(az)}) /* Destination */\n{comment}"""
-
-    return new_value
-
-
-def get_loc_paste(loc_paste):
-    loc_paste = loc_paste.strip()
-    split_loc = loc_paste.split(" ")
-
-    cell_hex = split_loc[0]
-    cell_dec = int(cell_hex, 16)
-
-    ox = split_loc[1].replace("[", "")
-    oy = split_loc[2]
-    oz = split_loc[3].replace("]", "")
-
-    aw = split_loc[4]
-    ax = split_loc[5]
-    ay = split_loc[6]
-    az = split_loc[7]
-
-    new_value = f"""{str(cell_dec)}, {str(ox)}, {str(oy)}, {str(oz)}, {str(aw)}, {str(ax)}, {str(ay)}, {str(az)}"""
-
-    return new_value
 
 
 def set_property(commands, tag, key, val, desc):
@@ -323,6 +182,24 @@ def set_property(commands, tag, key, val, desc):
 
     return my_list
 
+def get_longest(my_dict):
+    longest_key = 0
+    longest_val = 0
+
+    for k, v in sorted(my_dict.items()):
+
+        value_len = len(str(v[0]))
+        if value_len > longest_val:
+            longest_val = value_len
+
+        key_len = len(str(k))
+        if key_len > longest_key:
+            longest_key = key_len
+
+    longest_key += 1
+    longest_val += 1
+
+    return longest_key, longest_val
 
 def get_wcid(commands):
     wcid = re.findall('[0-9]+', (commands[0]))[0]
@@ -336,322 +213,6 @@ def get_name(commands):
     name = name.replace("''", "'")
     name = name[2:-2]
     return name
-
-
-def get_all_attributes(commands):
-    """Return a dictionary with all attributes."""
-    wcid = get_wcid(commands)
-    my_dict = {}
-    keys = [1, 2, 3, 4, 5, 6]
-
-    for command in commands:
-        if str("`weenie_properties_attribute`") in command:
-            if str("`weenie_properties_attribute_2nd`") not in command:
-
-                # 1 = str, 2 = endu, 3 = quick, 4 = coord, 5 = foc, 6 = self
-                for key in keys:
-                    my_dict[key] = int(get_attribute(wcid, command, key))
-
-    attributes = {'strength': my_dict[1], 'endurance': my_dict[2], 'coordination': my_dict[3],
-                  'quickness': my_dict[4], 'focus': my_dict[5], 'self': my_dict[6]}
-    return attributes
-
-
-def set_spell_list(commands, key, val, desc):
-    """Set a property (int, bool, float, string or did) to a weenie (in sql format). If the
-    property already exists, the value is updated.This function does not work for position. """
-
-    tag = "`weenie_properties_spell_book`"
-    key = int(key)
-
-    my_list = []
-    wcid = re.findall('[0-9]+', (commands[0]))[0]  # find number string in first line
-
-    for command in commands:
-        if str(tag) in command:
-
-            my_dict = {}
-            split_command = command.split("(")
-
-            for line in split_command:
-                if str(wcid) in line:
-                    split_comma = line.split(",", 2)
-
-                    my_key = int(split_comma[1].strip())
-
-                    split_other = split_comma[2].split(")")
-                    my_val = split_other[0].strip()
-                    comment = "".join(split_other[1].rsplit(",", 1)).strip()
-
-                    my_tuple = (my_val, comment)
-                    my_dict[my_key] = my_tuple
-
-            # if key not in my_dict.keys():
-            my_dict[key] = (val, desc)
-
-            new_command = f"""\n\nINSERT INTO {tag} (`object_Id`, `spell`, `probability`)\nVALUES """
-
-            i = 0
-            total_lines = len(my_dict)
-
-            # figure out padding
-            my_tuple = get_longest(my_dict)
-            longest_key = my_tuple[0]
-            longest_val = my_tuple[1]
-
-            for k, v in sorted(my_dict.items()):
-
-                my_justified_value = str(v[0]).rjust(longest_val, " ")
-                my_justified_key = str(k).rjust(longest_key, " ")
-
-                if i == 0:
-                    new_command = new_command + f"""({wcid},{my_justified_key},{my_justified_value}) {v[1]}"""
-                    if i < (total_lines - 1):
-                        new_command = new_command + "\n    "
-                else:
-                    new_command = new_command + f""" , ({wcid},{my_justified_key},{my_justified_value}) {v[1]}"""
-                    if i < (total_lines - 1):
-                        new_command = new_command + "\n    "
-                i += 1
-
-            my_list.append(new_command + ";")
-
-        else:
-            if command.strip() != "":
-                my_list.append(command + ";")
-
-    return my_list
-
-
-def set_attribute_1(commands, key, val, desc, do_override):
-    tag = "`weenie_properties_attribute`"
-    key = int(key)
-
-    my_list = []
-    wcid = re.findall('[0-9]+', (commands[0]))[0]  # find number string in first line
-
-    for command in commands:
-        if str(tag) in command:
-
-            my_dict = {}
-            split_command = command.split("(")
-
-            for line in split_command:
-                if str(wcid) in line:
-                    split_comma = line.split(",", 2)
-
-                    my_key = int(split_comma[1].strip())
-                    # print("My key: " + str(my_key))
-
-                    split_other = split_comma[2].split(")")
-                    my_val = split_other[0].strip()
-                    split_more = my_val.split(",", 1)
-                    my_val = split_more[0]
-                    # print("My val: " + str(my_val))
-                    comment = "".join(split_other[1].rsplit(",", 1)).strip()
-
-                    my_tuple = (my_val, comment)
-                    my_dict[my_key] = my_tuple
-
-            # if true, replace existing value
-            if do_override:
-                my_dict[key] = (val, desc)
-            else:
-                if key not in my_dict.keys():
-                    my_dict[key] = (val, desc)
-
-            param_list = "(`object_Id`, `type`, `init_Level`, `level_From_C_P`, `c_P_Spent`)"
-            new_command = f"""\n\nINSERT INTO {tag} {param_list}\nVALUES """
-
-            i = 0
-            total_lines = len(my_dict)
-
-            # figure out padding
-            my_tuple = get_longest(my_dict)
-            longest_key = my_tuple[0]
-            longest_val = my_tuple[1]
-
-            for k, v in sorted(my_dict.items()):
-
-                my_justified_value = str(v[0]).rjust(longest_val, " ")
-                my_justified_key = str(k).rjust(longest_key, " ")
-
-                if i == 0:
-                    new_command = new_command + f"""({wcid},{my_justified_key},{my_justified_value}, 0, 0) {v[1]}"""
-                    if i < (total_lines - 1):
-                        new_command = new_command + "\n    "
-                else:
-                    new_command = new_command + f""" , ({wcid},{my_justified_key},{my_justified_value}, 0, 0) {v[1]}"""
-                    if i < (total_lines - 1):
-                        new_command = new_command + "\n    "
-                i += 1
-
-            my_list.append(new_command + ";")
-
-        else:
-            if command.strip() != "":
-                my_list.append(command + ";")
-
-    return my_list
-
-
-def get_attribute(wcid, command, key):
-    my_dict = {}
-    split_command = command.split("(")
-
-    for line in split_command:
-        if str(wcid) in line:
-            split_comma = line.split(",", 2)
-
-            my_key = int(split_comma[1].strip())
-
-            split_other = split_comma[2].split(")")
-            my_val = split_other[0].strip()
-            split_more = my_val.split(",", 1)
-            my_val = split_more[0]
-            comment = "".join(split_other[1].rsplit(",", 1)).strip()
-
-            my_tuple = (my_val, comment)
-            my_dict[my_key] = my_tuple
-
-    return my_dict[key][0]
-
-
-def set_attribute_2(commands, key, val, desc, do_override):
-    tag = "`weenie_properties_attribute_2nd`"
-    key = int(key)
-
-    my_list = []
-    wcid = re.findall('[0-9]+', (commands[0]))[0]  # find number string in first line
-
-    # needed for health, stamina or mana adjustment
-    my_attribute = 0
-
-    for command in commands:
-        if str("`weenie_properties_attribute`") in command:
-            if str("`weenie_properties_attribute_2nd`") not in command:
-
-                if key == 1 or key == 3:  # health or stamina, need endurance
-                    my_attribute = get_attribute(wcid, command, 2)
-                elif key == 5:  # mana, need self
-                    my_attribute = get_attribute(wcid, command, 6)
-
-    for command in commands:
-        if str(tag) in command:
-
-            my_dict = {}
-            split_command = command.split("(")
-
-            for line in split_command:
-                if str(wcid) in line:
-                    split_comma = line.split(",", 2)
-
-                    my_key = int(split_comma[1].strip())
-
-                    split_other = split_comma[2].split(")")
-                    init_level = split_other[0].strip()
-                    split_more = init_level.split(",")
-                    init_level = split_more[0]
-                    current_level = split_more[3]
-
-                    comment = "".join(split_other[1].rsplit(",", 1)).strip()
-
-                    my_tuple = (init_level, current_level, comment)
-                    my_dict[my_key] = my_tuple
-
-            init = val
-            curr = 0
-
-            # must compute
-            if key == 1:  # health
-                curr = compute_health(val, my_attribute)
-            elif key == 3:  # stamina
-                curr = compute_stamina(val, my_attribute)
-            elif key == 5:  # mana
-                curr = compute_mana(val, my_attribute)
-
-            # if true, replace existing value
-            if do_override:
-                my_dict[key] = (init, curr, desc)
-            else:
-                if key not in my_dict.keys():
-                    my_dict[key] = (init, curr, desc)
-
-            param_list = "(`object_Id`, `type`, `init_Level`, `level_From_C_P`, `c_P_Spent`, `current_Level`)"
-            new_command = f"""\n\nINSERT INTO {tag} {param_list}\nVALUES """
-
-            i = 0
-            total_lines = len(my_dict)
-
-            # figure out padding
-            longest_tuple = get_longest(my_dict)
-            longest_key = longest_tuple[0]
-            longest_init = longest_tuple[1]
-            longest_curr = 0
-
-            for k, v in sorted(my_dict.items()):
-
-                value_len = len(str(v[1]))
-                if value_len > longest_curr:
-                    longest_curr = value_len
-
-            for k, v in sorted(my_dict.items()):
-
-                just_init = str(v[0]).rjust(longest_init, " ")
-                just_curr = str(v[1]).rjust(longest_curr, " ")
-                just_key = str(k).rjust(longest_key, " ")
-
-                if i == 0:
-                    new_command = new_command + f"""({wcid},{just_key},{just_curr}, 0, 0,{just_init}) {v[2]}"""
-                    if i < (total_lines - 1):
-                        new_command = new_command + "\n    "
-                else:
-                    new_command = new_command + f""" , ({wcid},{just_key},{just_curr}, 0, 0,{just_init}) {v[2]}"""
-                    if i < (total_lines - 1):
-                        new_command = new_command + "\n    "
-                i += 1
-
-            my_list.append(new_command + ";")
-
-        else:
-            if command.strip() != "":
-                my_list.append(command)
-
-    return my_list
-
-
-def compute_health(health, endurance):
-    """Compute the initial level of health based on endurance."""
-    health = int(health) - round(int(endurance) / 2)
-    if health < 0:
-        health = 0
-    return health
-
-
-def compute_stamina(stamina, endurance):
-    """Compute the initial level of stamina based on endurance."""
-    stamina = int(stamina) - int(endurance)
-    if stamina < 0:
-        stamina = 0
-    return stamina
-
-
-def compute_mana(mana, self):
-    """Compute the initial level of mana based on self."""
-    mana = int(mana) - int(self)
-    if mana < 0:
-        mana = 0
-    return mana
-
-
-def get_templates():
-    my_list = []
-
-    for file in os.listdir("templates"):
-        if file.endswith(".sql"):
-            my_list.append(file)
-
-    return my_list
 
 
 def get_xp_value(level):
@@ -729,26 +290,3 @@ def get_spell_list(name):
                     results_dict[spell_id] = spell_name
 
     return results_dict
-
-
-def find_wielded_items(file_name, entry, results_text):
-    results_list = []
-    search_phrase = entry.get().strip().lower()
-
-    results_text.configure(state='normal')
-    results_text.delete('1.0', END)
-
-    if not search_phrase:
-        results_text.insert(END, "Enter something to search for.")
-    else:
-        with open(file_name, 'r') as my_file:
-            for line in my_file:
-                split = line.split('\t')
-                if search_phrase == split[0] or search_phrase in split[1].lower():
-                    results_list.append(split[0] + " - " + split[1] + ", " + split[2] + " - " + split[3] + "\n")
-
-        for result in results_list:
-            results_text.insert(END, result)
-
-    results_text.configure(state='disabled')
-

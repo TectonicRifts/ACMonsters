@@ -144,6 +144,7 @@ def get_skill_table(commands):
 
 
 def get_attribute_bonus(attributes, name):
+    """Return how much attributes would add to a base skill."""
 
     magic = ["LifeMagic", "WarMagic", "CreatureEnchantment", "VoidMagic"]
     str_based = ["HeavyWeapons", "LightWeapons", "TwoHandedCombat", "DirtyFighting",
@@ -272,10 +273,13 @@ def skill_look_up(name):
 
         for k, v in my_dict.items():
             if len(v) > 1:
-                skill_levels[k] = round(statistics.mean(v))
+                avg = round(statistics.mean(v))
+                min_val = min(v)
+                max_val = max(v)
+                skill_levels[k] = (avg, min_val, max_val)
             elif len(v) == 1:
-                skill_levels[k] = v[0]
+                skill_levels[k] = (v[0], 0, 0)
             else:
-                skill_levels[k] = 0
+                skill_levels[k] = (0, 0, 0)
 
         return skill_levels
