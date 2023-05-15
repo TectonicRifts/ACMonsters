@@ -46,6 +46,53 @@ def set_body_table(commands, template_wcid, body_table):
     return my_list
 
 
+def get_armor_mods(commands):
+    armor_mods = {
+        "slash": 13,
+        "pierce": 14,
+        "bludge": 15,
+        "cold": 16,
+        "fire": 17,
+        "acid": 18,
+        "electric": 19
+    }
+
+    for k, v in armor_mods.items():
+        mod = get_property(commands, "float", v)
+        match = re.search(r"'([\d.]+)'", str(mod))
+        if match:
+            val = float(match.group(1))
+            armor_mods[k] = val
+        else:
+            armor_mods[k] = None
+
+    return armor_mods
+
+
+def get_resist_mods(commands):
+    resist_mods = {
+        "slash": 64,
+        "pierce": 65,
+        "bludge": 66,
+        "cold": 68,
+        "fire": 67,
+        "acid": 69,
+        "electric": 70,
+        "nether": 166
+    }
+
+    for k, v in resist_mods.items():
+        mod = get_property(commands, "float", v)
+        match = re.search(r"'([\d.]+)'", str(mod))
+        if match:
+            val = float(match.group(1))
+            resist_mods[k] = val
+        else:
+            resist_mods[k] = None
+
+    return resist_mods
+
+
 def get_property(commands, tag, key):
     tag = get_tag_name(tag)
     key = int(key)
@@ -182,6 +229,7 @@ def set_property(commands, tag, key, val, desc):
 
     return my_list
 
+
 def get_longest(my_dict):
     longest_key = 0
     longest_val = 0
@@ -200,6 +248,7 @@ def get_longest(my_dict):
     longest_val += 1
 
     return longest_key, longest_val
+
 
 def get_wcid(commands):
     wcid = re.findall('[0-9]+', (commands[0]))[0]

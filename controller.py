@@ -83,6 +83,7 @@ class Controller:
                 self.view.attributes_panel.show_attributes()
                 self.view.skills_panel.check_parameters()
                 self.view.calc_panel.max_player()
+                self.view.mods_panel.show_mods()
 
     def open_folder(self, name_filter_entry):
         """Load all .sql files in a folder for batch processing. This will also walk through all subdirectories

@@ -88,6 +88,15 @@ class CalcPanel:
 
             self.cont.view.console.print("\nMax Player Profile (% chance)\n", "purple")
 
+            output = {
+                "land magic": "NA",
+                "land melee": "NA",
+                "land missile": "NA",
+                "resist magic": "NA",
+                "evade melee": "NA",
+                "evade missile": "NA"
+            }
+
             attributes = stat_helper.get_all_attributes(self.cont.sql_commands)
             skills = skills_module.get_skill_table(self.cont.sql_commands)
             for skill in skills:
@@ -97,32 +106,31 @@ class CalcPanel:
                 if skill.name == "MagicDefense":  # this is on the mob
                     player_skill = 561
                     result = pf.calc_skill(player_skill, 1, effective_value)
-                    self.cont.view.console.print(
-                        "magic attack of " + str(player_skill) +
-                        " lands:\n" +
-                        str(result) + "\n"
-                    )
-                    if result < 10:
-                        self.cont.view.console.print("Warning! Less than 10% chance to land.\n", "red")
+                    output["land magic"] = result
 
                 if skill.name == "MeleeDefense":
                     player_skill = 607
                     result = pf.calc_skill(player_skill, 1.35, effective_value)
-                    self.cont.view.console.print(
-                        "melee attack of " + str(player_skill) +
-                        " with +35% to attack hits:\n" +
-                        str(result) + "\n"
-                    )
-                    if result < 10:
-                        self.cont.view.console.print("Warning! Less than 10% chance to hit.\n", "red")
+                    output["land melee"] = result
 
                 if skill.name == "MissileDefense":
                     player_skill = 556
                     result = pf.calc_skill(player_skill, 1.35, effective_value)
-                    self.cont.view.console.print(
-                        "missile attack of " + str(player_skill) +
-                        " at full accuracy hits:\n" +
-                        str(result) + "\n"
-                    )
-                    if result < 10:
-                        self.cont.view.console.print("Warning! Less than 10% chance to hit.\n", "red")
+                    output["land missile"] = result
+
+                if skill.name == "HeavyWeapons" or skill.name == "LightWeapons" or skill.name == "FinesseWeapons" or skill.name == "TwoHandedCombat":
+                    if effective_value > 0:
+                        player_skill = 580
+                        result = pf.calc_skill(player_skill, 1.55, effective_value)
+                        output["evade melee"] = result
+
+                if skill.name == "WarMagic" or skill.name == "VoidMagic":
+                    player_skill = 417
+                    result = pf.calc_skill(player_skill, 1, effective_value)
+                    output["resist magic"] = result
+
+            for k, v in output.items():
+                if v != "NA" and v < 10:
+                    self.cont.view.console.print(k + ": " + str(v) + "\n", "red")
+                else:
+                    self.cont.view.console.print(k + ": " + str(v) + "\n")

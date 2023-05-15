@@ -24,14 +24,47 @@ def get_all_attributes(commands):
 
 def get_all_vitals(commands):
 
-    values = [1, 1, 1]
+    vitals = {
+        'health': 1,
+        'stamina': 1,
+        'mana': 1
+    }
 
     for command in commands:
         if str("`weenie_properties_attribute_2nd`") in command:
-            values = [int(value) for value in re.findall(r'\((?:[^()]+)?, (?:[^()]+)?, (?:[^()]+)?, (?:[^()]+)?, (?:[^()]+)?, (\d+)', command)]
+            command = command.replace(
+                "INSERT INTO `weenie_properties_attribute_2nd` (`object_Id`, `type`, `init_Level`, `level_From_C_P`, `c_P_Spent`, `current_Level`)",
+                "")
+            command = command.replace("VALUES", "")
+            command = command.replace("/* MaxHealth */", "")
+            command = command.replace("/* MaxStamina */", "")
+            command = command.replace("/* MaxMana */", "")
+            command = command.strip()
+            command = command.replace("\n", "")
+            command = command.replace(" ", "")
+            split_command = command.split("),")
+            result = []
+            for part in split_command:
+                part = part.replace("(", "")
+                part = part.replace(")", "")
+                result.append(part)
 
-    vitals = {'health': values[0], 'stamina': values[1], 'mana': values[2]}
-    return vitals
+            try:
+                vitals['health'] = result[0].split(",")[5]
+            except IndexError:
+                pass
+
+            try:
+                vitals['stamina'] = result[1].split(",")[5]
+            except IndexError:
+                pass
+
+            try:
+                vitals['mana'] = result[2].split(",")[5]
+            except IndexError:
+                pass
+
+            return vitals
 
 
 def get_attribute(wcid, command, key):
