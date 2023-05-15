@@ -99,18 +99,7 @@ class SkillsPanel:
         if self.cont.sql_commands is not None:
 
             attributes = stat_helper.get_all_attributes(self.cont.sql_commands)
-            """
-            self.cont.view.console.print("\nAttributes\n")
-            for k, v in attributes.items():
-                self.cont.view.console.print(str(k) + "\t" + str(v) + "\n")
-            """
-
             skills = skills_module.get_skill_table(self.cont.sql_commands)
-            """
-            self.cont.view.console.print("\nBase Skills\n")
-            for skill in skills:
-                self.cont.view.console.print(skill.name + "\t" + str(skill.value) + "\n")
-            """
 
             self.cont.view.console.print("\nCurrent Effective Skills\n", "purple")
             for skill in skills:
@@ -131,14 +120,14 @@ class SkillsPanel:
                 self.cont.view.console.print(str(k) + "\t" + str(v[0]) + " [" + str(v[1]) + ", " + str(v[2]) + "]\n")
 
     def get_skill_pcap(self):
-        if len(self.cont.sql_commands) > 0:
+        if self.cont.sql_commands is not None:
             name = file_helper.get_name(self.cont.sql_commands)
             pcap_skills = skills_module.skill_look_up(name)
             return pcap_skills
 
     def set_skills(self):
 
-        if len(self.cont.sql_commands) > 0:
+        if self.cont.sql_commands is not None:
 
             wcid = file_helper.get_wcid(self.cont.sql_commands)
             attributes = stat_helper.get_all_attributes(self.cont.sql_commands)

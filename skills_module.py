@@ -93,17 +93,10 @@ def get_skill_id(skill_name):
         54: "Summoning"
     }
 
-    for k, v in skills.items():
-        if skill_name == v:
-            return k
-        elif skill_name == "CreatureMagic":
-            return 31
-        elif skill_name == "ItemMagic":
-            return 32
-        elif skill_name == "TwoHanded":
-            return 41
-        else:
-            return 0
+    skills = {value: key for key, value in skills.items()}
+    print(skills)
+
+    return skills.get(skill_name)
 
 
 def get_skill_table(commands):
@@ -195,7 +188,11 @@ def make_skill_table(wcid, skills):
 
     for skill, val in skills.items():
 
+        print(skill)
+
         key = get_skill_id(skill)
+
+        print(key)
 
         # padding
         if key < 10:

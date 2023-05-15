@@ -179,9 +179,7 @@ class BasePanel:
             self.cont.set_properties(my_dict, self.did_entries, 'did')
 
             # float
-            my_dict = {'heartbeat interval': (1, "/* HeartbeatInterval */"),
-                       'heartbeat timestamp': (2, "/* HeartbeatTimestamp */"),
-                       'health rate': (3, "/* HealthRate */"),
+            my_dict = {'health rate': (3, "/* HealthRate */"),
                        'regen interval': (41, "/* RegenerationInterval */"),
                        'gen radius': (43, "/* GeneratorRadius */"),
                        'visual awareness': (31, "/* VisualAwarenessRange */")
