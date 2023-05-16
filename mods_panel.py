@@ -57,19 +57,24 @@ class ModsPanel:
 
     def show_mods(self):
         if self.cont.sql_commands is not None:
+
+            # clear existing
+            for name, entry in self.armor_entries.items():
+                entry.delete(0, tk.END)
+            for name, entry in self.resist_entries.items():
+                entry.delete(0, tk.END)
+
             armor_mods = fh.get_armor_mods(self.cont.sql_commands)
             resist_mods = fh.get_resist_mods(self.cont.sql_commands)
 
             for name, entry in self.armor_entries.items():
                 if name in armor_mods.keys():
-                    entry.delete(0, tk.END)  # delete existing
                     result = armor_mods.get(name)
                     if result is not None:
                         entry.insert(0, result)
 
             for name, entry in self.resist_entries.items():
                 if name in resist_mods.keys():
-                    entry.delete(0, tk.END)  # delete existing
                     result = resist_mods.get(name)
                     if result is not None:
                         entry.insert(0, result)

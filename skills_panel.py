@@ -31,7 +31,9 @@ class SkillsPanel:
         self.defensive_entries = vh.make_int_entry(self.frame, defensive_labels)
         self.other_entries = vh.make_int_entry(self.frame, other_labels)
 
-        self.all_entries = {**self.offensive_entries, **self.magic_entries, **self.defensive_entries, **self.other_entries}
+        self.all_entries = {
+            **self.offensive_entries, **self.magic_entries, **self.defensive_entries, **self.other_entries
+        }
 
         check_attributes_button = tk.Button(self.frame, text="Check", command=self.check_parameters)
         set_button = tk.Button(self.frame, text="Set", bg="lightblue", command=self.set_skills)
@@ -49,54 +51,35 @@ class SkillsPanel:
         r = 0
         c = 0
 
-        melee_header.grid(row=r, column=c, sticky='w')
-        r += 1
+        headers = [melee_header, magic_header, defensive_header, other_header]
+        content = [self.offensive_entries, self.magic_entries, self.defensive_entries, self.other_entries]
+        buttons = [check_attributes_button, set_button, batch_button]
 
-        for name, entry in self.offensive_entries.items():
-            label = tk.Label(self.frame, text=name, font=norm_font)
-            label.grid(row=r, column=c)
-            entry.grid(row=r, column=c + 1)
+        for i in range(len(headers)):
+
+            headers[i].grid(row=r, column=c, sticky='w')
             r += 1
 
-        magic_header.grid(row=r, column=c, sticky='w')
-        r += 1
+            for name, entry in content[i].items():
+                label = tk.Label(self.frame, text=name, font=norm_font)
+                label.grid(row=r, column=c)
+                entry.grid(row=r, column=c + 1)
+                r += 1
 
-        for name, entry in self.magic_entries.items():
-            label = tk.Label(self.frame, text=name, font=norm_font)
-            label.grid(row=r, column=c)
-            entry.grid(row=r, column=c + 1)
+        for button in buttons:
+            button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
             r += 1
 
-        defensive_header.grid(row=r, column=c, sticky='w')
-        r += 1
-
-        for name, entry in self.defensive_entries.items():
-            label = tk.Label(self.frame, text=name, font=norm_font)
-            label.grid(row=r, column=c)
-            entry.grid(row=r, column=c + 1)
-            r += 1
-
-        other_header.grid(row=r, column=c, sticky='w')
-        r += 1
-
-        for name, entry in self.other_entries.items():
-            label = tk.Label(self.frame, text=name, font=norm_font)
-            label.grid(row=r, column=c)
-            entry.grid(row=r, column=c + 1)
-            r += 1
-
-        check_attributes_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
-        r += 1
-        set_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
-        r += 1
-        batch_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
-        r += 1
         tooltip_label.grid(row=r, column=c, columnspan=2)
         r += 1
 
     def check_parameters(self):
         """Check attributes, base, effective, and pcap skills."""
         if self.cont.sql_commands is not None:
+
+            # clear existing
+            for name, entry in self.all_entries.items():
+                entry.delete(0, tk.END)  # delete existing
 
             attributes = stat_helper.get_all_attributes(self.cont.sql_commands)
             skills = skills_module.get_skill_table(self.cont.sql_commands)
@@ -111,13 +94,18 @@ class SkillsPanel:
                 for name, entry in self.all_entries.items():
                     name = name.title().replace(" ", "")
                     if name == skill.name:
-                        entry.delete(0, tk.END)  # delete existing
                         entry.insert(0, str(effective_value))  # insert new
 
             self.cont.view.console.print("\nPCAP Effective Skills (mean [min, max])\n", "purple")
             pcap_skills = self.get_skill_pcap()
-            for k, v in pcap_skills.items():
-                self.cont.view.console.print(str(k) + "\t" + str(v[0]) + " [" + str(v[1]) + ", " + str(v[2]) + "]\n")
+            for name, v in pcap_skills.items():
+                if "defense" in name:
+                    self.cont.view.console.print(
+                        str(name) + "\t" + str(v[0]) + " [" + str(v[1]) + ", " + str(v[2]) + "]\n", "brown"
+                    )
+                else:
+                    self.cont.view.console.print(
+                        str(name) + "\t" + str(v[0]) + " [" + str(v[1]) + ", " + str(v[2]) + "]\n")
 
     def get_skill_pcap(self):
         if self.cont.sql_commands is not None:

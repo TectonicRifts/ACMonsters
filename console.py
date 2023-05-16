@@ -19,6 +19,7 @@ class ConsolePanel:
         self.text.tag_configure("blue", foreground="blue")
         self.text.tag_configure("green", foreground="dark green")
         self.text.tag_configure("purple", foreground="purple")
+        self.text.tag_configure("brown", foreground="brown")
 
         clear_button = tk.Button(self.frame, text="Clear", command=self.clear)
 

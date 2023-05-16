@@ -82,7 +82,12 @@ class Controller:
                 self.view.console.print("Working with: " + self.sql_output + "\n")
                 self.view.attributes_panel.show_attributes()
                 self.view.skills_panel.check_parameters()
-                self.view.calc_panel.max_player()
+
+                # for max, use 561, 607, 556, 580, 417, 1.55
+                # for 150, use 435, 482, 430, 460, 322, 1.45
+                self.view.calc_panel.profile_player("Max", 561, 607, 556, 580, 417, 1.55)
+                self.view.calc_panel.profile_player("150", 435, 482, 430, 460, 322, 1.45)
+
                 self.view.mods_panel.show_mods()
 
     def open_folder(self, name_filter_entry):

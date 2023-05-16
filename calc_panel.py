@@ -30,7 +30,6 @@ class CalcPanel:
 
         check_skill_button = tk.Button(self.frame, text="Check Skill", command=self.check_skill)
         check_range_button = tk.Button(self.frame, text="Check Range", command=self.check_range)
-        max_profile_button = tk.Button(self.frame, text="Max Profile", command=self.max_player)
 
         # layout
         r = 0
@@ -48,8 +47,6 @@ class CalcPanel:
         check_skill_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
         r += 1
         check_range_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
-        r += 1
-        max_profile_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
         r += 1
         tooltip_label.grid(row=r, column=c, columnspan=2)
         r += 1
@@ -82,11 +79,15 @@ class CalcPanel:
         else:
             self.cont.view.console.print("Enter a value for monster skill.\n")
 
-    def max_player(self):
+    def profile_player(self, label, pmagic_att, pmelee_att, pmissile_att, pmelee_def, pmagic_def, pmelee_def_mod):
+
+        # for max, use 561, 607, 556, 580, 417, 1.55
+        # for 150, use 435, 482, 430, 460, 322, 1.45
 
         if self.cont.sql_commands is not None:
 
-            self.cont.view.console.print("\nMax Player Profile (% chance)\n", "purple")
+            label = "\n" + label + " Player Profile (% chance)\n"
+            self.cont.view.console.print(label, "purple")
 
             output = {
                 "land magic": "NA",
@@ -94,7 +95,7 @@ class CalcPanel:
                 "land missile": "NA",
                 "resist magic": "NA",
                 "evade melee": "NA",
-                "evade missile": "NA"
+                # "evade missile": "NA"
             }
 
             attributes = stat_helper.get_all_attributes(self.cont.sql_commands)
@@ -104,29 +105,26 @@ class CalcPanel:
                 effective_value = skill.value + attribute_bonus
 
                 if skill.name == "MagicDefense":  # this is on the mob
-                    player_skill = 561
-                    result = pf.calc_skill(player_skill, 1, effective_value)
+                    result = pf.calc_skill(pmagic_att, 1, effective_value)
                     output["land magic"] = result
 
                 if skill.name == "MeleeDefense":
-                    player_skill = 607
-                    result = pf.calc_skill(player_skill, 1.35, effective_value)
+                    pmelee_att_mod = 1.35
+                    result = pf.calc_skill(pmelee_att, pmelee_att_mod, effective_value)
                     output["land melee"] = result
 
                 if skill.name == "MissileDefense":
-                    player_skill = 556
-                    result = pf.calc_skill(player_skill, 1.35, effective_value)
+                    pmissile_att_mod = 1.6  # for full accuracy
+                    result = pf.calc_skill(pmissile_att, pmissile_att_mod, effective_value)
                     output["land missile"] = result
 
                 if skill.name == "HeavyWeapons" or skill.name == "LightWeapons" or skill.name == "FinesseWeapons" or skill.name == "TwoHandedCombat":
                     if effective_value > 0:
-                        player_skill = 580
-                        result = pf.calc_skill(player_skill, 1.55, effective_value)
+                        result = pf.calc_skill(pmelee_def, pmelee_def_mod, effective_value)
                         output["evade melee"] = result
 
                 if skill.name == "WarMagic" or skill.name == "VoidMagic":
-                    player_skill = 417
-                    result = pf.calc_skill(player_skill, 1, effective_value)
+                    result = pf.calc_skill(pmagic_def, 1, effective_value)
                     output["resist magic"] = result
 
             for k, v in output.items():
