@@ -4,17 +4,19 @@ from tkinter import ttk
 from art_panel import ArtPanel
 from attributes_panel import AttributesPanel
 from calc_panel import CalcPanel
+from grid_panel import GridPanel
 from skills_panel import SkillsPanel
 from toolbar import Toolbar
 from base_panel import BasePanel
 from console import ConsolePanel
 from mods_panel import ModsPanel
+import settings as st
 
 
 class View:
 
     def __init__(self, parent, cont):
-        self.frame = tk.Frame(parent)
+        self.frame = tk.Frame(parent, bg=st.base_bg)
         self.cont = cont
 
         right_nb = ttk.Notebook(self.frame)
@@ -26,6 +28,7 @@ class View:
         self.skills_panel = SkillsPanel(right_nb, cont)
         self.calc_panel = CalcPanel(right_nb, cont)
         self.mods_panel = ModsPanel(right_nb, cont)
+        self.grid_panel = GridPanel(right_nb, cont)
         art_panel = ArtPanel(right_nb, cont)
 
         # left
@@ -37,6 +40,7 @@ class View:
         right_nb.add(base_panel.frame, text="Base")
         right_nb.add(self.attributes_panel.frame, text="Attr")
         right_nb.add(self.skills_panel.frame, text="Skill")
+        right_nb.add(self.grid_panel.frame, text="Grid")
         right_nb.add(self.calc_panel.frame, text="Calc")
         right_nb.add(self.mods_panel.frame, text="Mods")
         right_nb.add(art_panel.frame, text="Art")

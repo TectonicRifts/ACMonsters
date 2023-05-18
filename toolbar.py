@@ -6,17 +6,17 @@ import settings as st
 class Toolbar:
 
     def __init__(self, parent, cont):
-        self.frame = tk.Frame(parent)
+        self.frame = tk.Frame(parent, bg=st.base_bg)
 
         open_sql_button = tk.Button(self.frame, text="Open File", command=cont.open_file)
-        name_filter_label = tk.Label(self.frame, text="Name contains", font=st.norm_font)
-        name_filter_entry = tk.Entry(self.frame, bg="white", font=st.norm_font)
+        name_filter_label = tk.Label(self.frame, text="Name contains", font=st.norm_font, bg=st.base_bg)
+        name_filter_entry = tk.Entry(self.frame, bg=st.entry_bg, font=st.norm_font)
         self.creature_only = tk.IntVar(value=0)
 
         open_sql_folder_button = tk.Button(self.frame, text="Open Folder",
                                            command=partial(cont.open_folder, name_filter_entry))
 
-        save_sql_button = tk.Button(self.frame, text="Save", bg="lightblue", command=cont.save_sql)
+        save_sql_button = tk.Button(self.frame, text="Save", bg=st.button_bg, command=cont.save_sql)
 
         open_output_button = tk.Button(self.frame, text="Output", command=cont.open_output_folder)
 

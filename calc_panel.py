@@ -10,12 +10,12 @@ import skills_module
 class CalcPanel:
 
     def __init__(self, parent, cont):
-        self.frame = tk.Frame(parent)
+        self.frame = tk.Frame(parent, bg=st.base_bg)
         self.cont = cont
 
         norm_font = st.norm_font
 
-        skill_check_header = tk.Label(self.frame, text="Skill Calculator", font=norm_font, fg='blue')
+        skill_check_header = tk.Label(self.frame, text="Skill Calculator", font=norm_font, fg='blue', bg=st.base_bg)
         skill_check_labels = ['player skill', 'skill modifier', 'monster skill']
         self.skill_check_entries = vh.make_float_entry(self.frame, skill_check_labels)
 
@@ -26,7 +26,7 @@ class CalcPanel:
                    )
 
         tooltip_label = tk.Label(self.frame, text=tooltip, font=norm_font, fg="dark green", wraplength=420,
-                                 justify=tk.LEFT)
+                                 justify=tk.LEFT, bg=st.base_bg)
 
         check_skill_button = tk.Button(self.frame, text="Check Skill", command=self.check_skill)
         check_range_button = tk.Button(self.frame, text="Check Range", command=self.check_range)
@@ -39,7 +39,7 @@ class CalcPanel:
         r += 1
 
         for name, entry in self.skill_check_entries.items():
-            label = tk.Label(self.frame, text=name, font=norm_font)
+            label = tk.Label(self.frame, text=name, font=norm_font, bg=st.base_bg)
             label.grid(row=r, column=c)
             entry.grid(row=r, column=c + 1)
             r += 1

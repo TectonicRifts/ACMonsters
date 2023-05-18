@@ -94,7 +94,6 @@ def get_skill_id(skill_name):
     }
 
     skills = {value: key for key, value in skills.items()}
-    print(skills)
 
     return skills.get(skill_name)
 
@@ -188,11 +187,7 @@ def make_skill_table(wcid, skills):
 
     for skill, val in skills.items():
 
-        print(skill)
-
         key = get_skill_id(skill)
-
-        print(key)
 
         # padding
         if key < 10:

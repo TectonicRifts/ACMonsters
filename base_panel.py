@@ -10,7 +10,7 @@ import labels_module
 class BasePanel:
 
     def __init__(self, parent, cont):
-        self.frame = tk.Frame(parent)
+        self.frame = tk.Frame(parent, bg=st.base_bg)
         self.cont = cont
 
         norm_font = st.norm_font
@@ -18,57 +18,58 @@ class BasePanel:
         str_labels = ['name', 'kill quest']
         self.str_entries = vh.make_str_entry(self.frame, str_labels)
 
-        creature_type_label = tk.Label(self.frame, text="creature type", font=norm_font)
+        creature_type_label = tk.Label(self.frame, text="creature type", font=norm_font, bg=st.base_bg)
         creature_options = sorted(labels_module.get_all_creature_types())
         creature_options.insert(0, "no change")
         self.creature_type_combo = ttk.Combobox(self.frame, values=creature_options, font=norm_font, state="readonly")
         self.creature_type_combo.current(0)
 
-        gen_dest_label = tk.Label(self.frame, text="gen dest", font=norm_font)
+        gen_dest_label = tk.Label(self.frame, text="gen dest", font=norm_font, bg=st.base_bg)
         gen_dest_options = sorted(labels_module.get_all_gen_dest_types())
         gen_dest_options.insert(0, "no change")
         self.gen_dest_combo = ttk.Combobox(self.frame, values=gen_dest_options, font=norm_font, state="readonly")
         self.gen_dest_combo.current(0)
 
-        int_header_label = tk.Label(self.frame, text="Int", font=norm_font, fg='blue')
+        int_header_label = tk.Label(self.frame, text="Int", font=norm_font, fg='blue', bg=st.base_bg)
 
         int_labels = ['gen init', 'gen max', 'level', 'xp override', 'faction bits']
         self.int_entries = vh.make_int_entry(self.frame, int_labels)
 
-        did_header_label = tk.Label(self.frame, text="Data ID", font=norm_font, fg='blue')
+        did_header_label = tk.Label(self.frame, text="Data ID", font=norm_font, fg='blue', bg=st.base_bg)
 
         did_labels = ['combat table', 'wield treasure', 'death treasure']
         self.did_entries = vh.make_int_entry(self.frame, did_labels)
 
-        float_header_label = tk.Label(self.frame, text="Float", font="Arial 12", fg='blue')
+        float_header_label = tk.Label(self.frame, text="Float", font="Arial 12", fg='blue', bg=st.base_bg)
 
         float_labels = ['health rate', 'regen interval', 'gen radius', 'visual awareness']
         self.float_entries = vh.make_float_entry(self.frame, float_labels)
 
         self.edge_slide = tk.IntVar(value=0)
-        edge_slide_check = tk.Checkbutton(self.frame, text="edge slide", variable=self.edge_slide, font=norm_font)
+        edge_slide_check = tk.Checkbutton(self.frame, text="edge slide", variable=self.edge_slide, font=norm_font,
+                                          bg=st.base_bg)
 
         self.npc_like_object = tk.IntVar(value=0)
         npc_like_object_check = tk.Checkbutton(self.frame, text="npc like object", variable=self.npc_like_object,
-                                               font=norm_font)
+                                               font=norm_font, bg=st.base_bg)
 
         self.ignore_life_magic = tk.IntVar(value=0)
         ignore_life_check = tk.Checkbutton(
-            self.frame, text="life hollow", variable=self.ignore_life_magic, font=norm_font)
+            self.frame, text="life hollow", variable=self.ignore_life_magic, font=norm_font, bg=st.base_bg)
 
         self.ignore_item_magic = tk.IntVar(value=0)
         ignore_item_check = tk.Checkbutton(
-            self.frame, text="item hollow", variable=self.ignore_item_magic, font=norm_font)
+            self.frame, text="item hollow", variable=self.ignore_item_magic, font=norm_font, bg=st.base_bg)
 
         self.ignore_shield = tk.IntVar(value=0)
         ignore_shield_check = tk.Checkbutton(
-            self.frame, text="shield hollow", variable=self.ignore_shield, font=norm_font)
+            self.frame, text="shield hollow", variable=self.ignore_shield, font=norm_font, bg=st.base_bg)
 
         self.no_corpse = tk.IntVar(value=0)
         no_corpse_check = tk.Checkbutton(
-            self.frame, text="no corpse", variable=self.no_corpse, font=norm_font)
+            self.frame, text="no corpse", variable=self.no_corpse, font=norm_font, bg=st.base_bg)
 
-        set_button = tk.Button(self.frame, text="Set", bg="lightblue", command=self.set_misc_stats)
+        set_button = tk.Button(self.frame, text="Set", bg=st.button_bg, command=self.set_misc_stats)
         batch_button = tk.Button(self.frame, text="Run Batch",
                                  command=partial(self.cont.run_sql_batch, self.set_misc_stats))
 
@@ -78,7 +79,7 @@ class BasePanel:
         c = 0
 
         for name, entry in self.str_entries.items():
-            label = tk.Label(self.frame, text=name, font=norm_font)
+            label = tk.Label(self.frame, text=name, font=norm_font, bg=st.base_bg)
             label.grid(row=r, column=c)
             entry.grid(row=r, column=c + 1)
             r += 1
@@ -105,7 +106,7 @@ class BasePanel:
         r += 1
 
         for name, entry in self.int_entries.items():
-            label = tk.Label(self.frame, text=name, font=norm_font)
+            label = tk.Label(self.frame, text=name, font=norm_font, bg=st.base_bg)
             label.grid(row=r, column=c)
             entry.grid(row=r, column=c + 1)
             r += 1
@@ -114,7 +115,7 @@ class BasePanel:
         r += 1
 
         for name, entry in self.did_entries.items():
-            label = tk.Label(self.frame, text=name, font=norm_font)
+            label = tk.Label(self.frame, text=name, font=norm_font, bg=st.base_bg)
             label.grid(row=r, column=c)
             entry.grid(row=r, column=c + 1)
             r += 1
@@ -123,7 +124,7 @@ class BasePanel:
         r += 1
 
         for name, entry in self.float_entries.items():
-            label = tk.Label(self.frame, text=name, font=norm_font)
+            label = tk.Label(self.frame, text=name, font=norm_font, bg=st.base_bg)
             label.grid(row=r, column=c)
             entry.grid(row=r, column=c + 1)
             r += 1

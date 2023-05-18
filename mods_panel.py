@@ -10,22 +10,22 @@ class ModsPanel:
 
     def __init__(self, parent, cont):
         """Panel for armor and resistance mods."""
-        self.frame = tk.Frame(parent)
+        self.frame = tk.Frame(parent, bg=st.base_bg)
         self.cont = cont
 
         norm_font = st.norm_font
 
-        armor_header_label = tk.Label(self.frame, text="Armor (0=weak)", font="Arial 12", fg='blue')
+        armor_header_label = tk.Label(self.frame, text="Armor (0=weak)", font="Arial 12", fg='blue', bg=st.base_bg)
 
         armor_labels = ['slash', 'pierce', 'bludge', 'cold', 'fire', 'acid', 'electric']
         self.armor_entries = vh.make_float_entry(self.frame, armor_labels)
 
-        resist_header_label = tk.Label(self.frame, text="Resist (0=strong)", font="Arial 12", fg='blue')
+        resist_header_label = tk.Label(self.frame, text="Resist (0=strong)", font="Arial 12", fg='blue', bg=st.base_bg)
 
         resist_labels = ['slash', 'pierce', 'bludge', 'cold', 'fire', 'acid', 'electric', 'nether']
         self.resist_entries = vh.make_float_entry(self.frame, resist_labels)
 
-        set_button = tk.Button(self.frame, text="Set", bg="lightblue", command=self.set_mods)
+        set_button = tk.Button(self.frame, text="Set", bg=st.button_bg, command=self.set_mods)
         batch_button = tk.Button(self.frame, text="Run Batch", command=partial(self.cont.run_sql_batch, self.set_mods))
 
         # layout
@@ -37,7 +37,7 @@ class ModsPanel:
         r += 1
 
         for name, entry in self.armor_entries.items():
-            label = tk.Label(self.frame, text=name, font=norm_font)
+            label = tk.Label(self.frame, text=name, font=norm_font, bg=st.base_bg)
             label.grid(row=r, column=c)
             entry.grid(row=r, column=c + 1)
             r += 1
@@ -46,7 +46,7 @@ class ModsPanel:
         r += 1
 
         for name, entry in self.resist_entries.items():
-            label = tk.Label(self.frame, text=name, font=norm_font)
+            label = tk.Label(self.frame, text=name, font=norm_font, bg=st.base_bg)
             label.grid(row=r, column=c)
             entry.grid(row=r, column=c + 1)
             r += 1

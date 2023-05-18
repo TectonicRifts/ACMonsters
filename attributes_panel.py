@@ -10,24 +10,24 @@ import labels_module
 class AttributesPanel:
 
     def __init__(self, parent, cont):
-        self.frame = tk.Frame(parent)
+        self.frame = tk.Frame(parent, bg=st.base_bg)
         self.cont = cont
 
         norm_font = st.norm_font
 
-        attributes_header = tk.Label(self.frame, text="Attributes", font=norm_font, fg='blue')
-        vitals_header = tk.Label(self.frame, text="Vitals", font=norm_font, fg='blue')
+        attributes_header = tk.Label(self.frame, text="Attributes", font=norm_font, fg='blue', bg=st.base_bg)
+        vitals_header = tk.Label(self.frame, text="Vitals", font=norm_font, fg='blue', bg=st.base_bg)
 
         self.int_entries_1 = vh.make_int_entry(self.frame, labels_module.get_primary_attribute_labels())
         self.int_entries_2 = vh.make_int_entry(self.frame, labels_module.get_secondary_attribute_labels())
 
-        set_button = tk.Button(self.frame, text="Set", bg="lightblue", command=self.set_attributes)
+        set_button = tk.Button(self.frame, text="Set", bg=st.button_bg, command=self.set_attributes)
         batch_button = tk.Button(self.frame, text="Run Batch",
                                  command=partial(self.cont.run_sql_batch, self.set_attributes))
 
         tooltip = "All fields optional. Vitals are adjusted based on attributes."
         tooltip_label = tk.Label(self.frame, text=tooltip, font=norm_font, fg="dark green", wraplength=420,
-                                 justify=tk.LEFT)
+                                 justify=tk.LEFT, bg=st.base_bg)
 
         # layout
         r = 0
@@ -37,7 +37,7 @@ class AttributesPanel:
         r += 1
 
         for name, entry in self.int_entries_1.items():
-            label = tk.Label(self.frame, text=name, font=norm_font)
+            label = tk.Label(self.frame, text=name, font=norm_font, bg=st.base_bg)
             label.grid(row=r, column=c)
             entry.grid(row=r, column=c + 1)
             r += 1
@@ -46,7 +46,7 @@ class AttributesPanel:
         r += 1
 
         for name, entry in self.int_entries_2.items():
-            label = tk.Label(self.frame, text=name, font=norm_font)
+            label = tk.Label(self.frame, text=name, font=norm_font, bg=st.base_bg)
             label.grid(row=r, column=c)
             entry.grid(row=r, column=c + 1)
             r += 1

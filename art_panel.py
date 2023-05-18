@@ -7,26 +7,26 @@ import tkinter as tk
 class ArtPanel:
 
     def __init__(self, parent, cont):
-        self.frame = tk.Frame(parent)
+        self.frame = tk.Frame(parent, bg=st.base_bg)
         self.cont = cont
 
         norm_font = st.norm_font
 
-        int_header_label = tk.Label(self.frame, text="Int or Data ID", font=norm_font, fg="blue")
+        int_header_label = tk.Label(self.frame, text="Int or Data ID", font=norm_font, fg="blue", bg=st.base_bg)
 
         int_labels = ['palette template', 'palette base', 'clothing base', 'physics effect']
         self.int_entries = vh.make_int_entry(self.frame, int_labels)
 
         tooltip = "All fields optional."
         tooltip_label = tk.Label(self.frame, text=tooltip, font=norm_font, fg="dark green", wraplength=420,
-                                 justify=tk.LEFT)
+                                 justify=tk.LEFT, bg=st.base_bg)
 
-        float_header_label = tk.Label(self.frame, text="Float", font=norm_font, fg="blue")
+        float_header_label = tk.Label(self.frame, text="Float", font=norm_font, fg="blue", bg=st.base_bg)
 
         float_labels = ['shade', 'translucency', 'scale']
         self.float_entries = vh.make_float_entry(self.frame, float_labels)
 
-        set_button = tk.Button(self.frame, text="Set", bg="lightblue", command=self.set_art)
+        set_button = tk.Button(self.frame, text="Set", bg=st.button_bg, command=self.set_art)
         batch_button = tk.Button(self.frame, text="Run Batch", command=partial(self.cont.run_sql_batch, self.set_art))
 
         # layout
@@ -37,7 +37,7 @@ class ArtPanel:
         r += 1
 
         for name, entry in self.int_entries.items():
-            label = tk.Label(self.frame, text=name, font=norm_font)
+            label = tk.Label(self.frame, text=name, font=norm_font, bg=st.base_bg)
             label.grid(row=r, column=c)
             entry.grid(row=r, column=c + 1)
             r += 1
@@ -46,7 +46,7 @@ class ArtPanel:
         r += 1
 
         for name, entry in self.float_entries.items():
-            label = tk.Label(self.frame, text=name, font=norm_font)
+            label = tk.Label(self.frame, text=name, font=norm_font, bg=st.base_bg)
             label.grid(row=r, column=c)
             entry.grid(row=r, column=c + 1)
             r += 1

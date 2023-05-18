@@ -11,15 +11,15 @@ import skills_module
 class SkillsPanel:
 
     def __init__(self, parent, cont):
-        self.frame = tk.Frame(parent)
+        self.frame = tk.Frame(parent, bg=st.base_bg)
         self.cont = cont
 
         norm_font = st.norm_font
 
-        melee_header = tk.Label(self.frame, text="Melee", font=norm_font, fg='blue')
-        magic_header = tk.Label(self.frame, text="Magic", font=norm_font, fg='blue')
-        defensive_header = tk.Label(self.frame, text="Defense", font=norm_font, fg='blue')
-        other_header = tk.Label(self.frame, text="Other", font=norm_font, fg='blue')
+        melee_header = tk.Label(self.frame, text="Melee", font=norm_font, fg='blue', bg=st.base_bg)
+        magic_header = tk.Label(self.frame, text="Magic", font=norm_font, fg='blue', bg=st.base_bg)
+        defensive_header = tk.Label(self.frame, text="Defense", font=norm_font, fg='blue', bg=st.base_bg)
+        other_header = tk.Label(self.frame, text="Other", font=norm_font, fg='blue', bg=st.base_bg)
 
         offensive_labels = ['heavy weapons', 'light weapons', 'finesse weapons', 'two handed combat', 'missile weapons']
         magic_labels = ['war magic', 'life magic', 'creature enchantment', 'item enchantment', 'void magic']
@@ -36,7 +36,7 @@ class SkillsPanel:
         }
 
         check_attributes_button = tk.Button(self.frame, text="Check", command=self.check_parameters)
-        set_button = tk.Button(self.frame, text="Set", bg="lightblue", command=self.set_skills)
+        set_button = tk.Button(self.frame, text="Set", bg=st.button_bg, command=self.set_skills)
         batch_button = tk.Button(self.frame, text="Run Batch",
                                  command=partial(self.cont.run_sql_batch, self.set_skills))
 
@@ -45,7 +45,7 @@ class SkillsPanel:
                    )
 
         tooltip_label = tk.Label(self.frame, text=tooltip, font=norm_font, fg="dark green", wraplength=420,
-                                 justify=tk.LEFT)
+                                 justify=tk.LEFT, bg=st.base_bg)
 
         # layout
         r = 0
@@ -61,7 +61,7 @@ class SkillsPanel:
             r += 1
 
             for name, entry in content[i].items():
-                label = tk.Label(self.frame, text=name, font=norm_font)
+                label = tk.Label(self.frame, text=name, font=norm_font, bg=st.base_bg)
                 label.grid(row=r, column=c)
                 entry.grid(row=r, column=c + 1)
                 r += 1

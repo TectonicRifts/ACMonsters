@@ -6,10 +6,11 @@ import settings as st
 class ConsolePanel:
 
     def __init__(self, parent, cont):
-        self.frame = tk.Frame(parent)
+        self.frame = tk.Frame(parent, bg=st.base_bg)
         self.cont = cont
 
-        self.text = scrolledtext.ScrolledText(self.frame, height=30, width=40, undo=True, font=st.norm_font)
+        self.text = scrolledtext.ScrolledText(self.frame, height=30, width=40, undo=True, font=st.norm_font,
+                                              bg=st.entry_bg)
         self.text.configure(state='disabled', wrap=tk.WORD)
         self.text.tag_config('field', foreground="dark green")
         self.text.tag_config('warning', foreground="red")

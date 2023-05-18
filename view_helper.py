@@ -1,5 +1,6 @@
 import tkinter as tk
 import re
+import settings as st
 
 
 def make_int_entry(parent, label_list):
@@ -7,7 +8,7 @@ def make_int_entry(parent, label_list):
     vcmd = parent.register(validate_int)
 
     for name in label_list:
-        entry = tk.Entry(parent, validate='all', validatecommand=(vcmd, '%P'), bg="white", font="Arial 12")
+        entry = tk.Entry(parent, validate='all', validatecommand=(vcmd, '%P'), bg=st.entry_bg, font="Arial 12")
         entries[name] = entry
 
     return entries
@@ -17,7 +18,7 @@ def make_str_entry(parent, label_list):
     entries = {}
 
     for name in label_list:
-        entry = tk.Entry(parent, bg="white", font="Arial 12")
+        entry = tk.Entry(parent, bg=st.entry_bg, font="Arial 12")
         entries[name] = entry
 
     return entries
@@ -28,7 +29,7 @@ def make_float_entry(parent, label_list):
     vcmd = parent.register(validate_float)
 
     for name in label_list:
-        entry = tk.Entry(parent, validate='all', validatecommand=(vcmd, '%P'), bg="white", font="Arial 12")
+        entry = tk.Entry(parent, validate='all', validatecommand=(vcmd, '%P'), bg=st.entry_bg, font="Arial 12")
         entries[name] = entry
 
     return entries
@@ -51,7 +52,7 @@ def make_listbox(parent, my_font, selection_mode):
     """Returns a frame and a listbox with a vertical scrollbar."""
     frame = tk.Frame(parent)
 
-    listbox = tk.Listbox(frame, selectmode=selection_mode, font=my_font)
+    listbox = tk.Listbox(frame, selectmode=selection_mode, font=my_font, bg=st.entry_bg)
     listbox['width'] = 30
     listbox.pack(side="left", fill="y")
 

@@ -123,6 +123,16 @@ class Controller:
                     base_name = os.path.basename(file_name)
                     self.check_creature_filter(base_name, commands)
 
+        counter = 0
+        max_panels = 4
+        self.view.grid_panel.clear()
+        for file_name, commands in self.sql_dict.items():
+            if counter < max_panels:
+                self.sql_commands = commands
+                self.sql_output = file_name
+                self.view.grid_panel.show_file(counter)
+                counter += 1
+
     def check_creature_filter(self, base_name, commands):
 
         item_type = file_helper.get_property(commands, "int", 1)
