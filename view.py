@@ -6,6 +6,7 @@ from attributes_panel import AttributesPanel
 from calc_panel import CalcPanel
 from grid_panel import GridPanel
 from skills_panel import SkillsPanel
+from spells_panel import SpellsPanel
 from toolbar import Toolbar
 from base_panel import BasePanel
 from console import ConsolePanel
@@ -30,6 +31,7 @@ class View:
         self.mods_panel = ModsPanel(right_nb, cont)
         self.grid_panel = GridPanel(right_nb, cont)
         art_panel = ArtPanel(right_nb, cont)
+        spells_panel = SpellsPanel(right_nb, cont)
 
         # left
         left_nb.add(self.console.frame, text="Console")
@@ -44,6 +46,7 @@ class View:
         right_nb.add(self.calc_panel.frame, text="Calc")
         right_nb.add(self.mods_panel.frame, text="Mods")
         right_nb.add(art_panel.frame, text="Art")
+        right_nb.add(spells_panel.frame, text="Spell")
 
         left_nb.grid(row=0, column=0)
         right_nb.grid(row=0, column=1, sticky="ns")

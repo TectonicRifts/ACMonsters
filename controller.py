@@ -1,3 +1,4 @@
+import spells_module
 from view import View
 from pathlib import Path
 import tkinter as tk

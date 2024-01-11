@@ -1,0 +1,291 @@
+Alchemy Ineptitude Other VII	Bottle Breaker
+Alchemy Mastery Other VII	Silencia's Boon
+Alchemy Mastery Self VII	Silencia's Blessing
+Arcane Benightedness Other VII	Hands of Chorizite
+Arcane Enlightenment Other VII	Aliester's Boon
+Arcane Enlightenment Self VII	Aliester's Blessing
+Armor Expertise Other VII	Jibril's Boon
+Armor Expertise Self VII	Jibril's Blessing
+Armor Ignorance Other VII	Jibril's Vitae
+Axe Ineptitude Other VII	S'retpirk's Delight
+Axe Mastery Other VII	Reenigne's Boon
+Axe Mastery Self VII	Reenigne's Blessing
+Bafflement Other VII	Synaptic Misfire
+Bow Ineptitude Other VII	Chronic Twitch
+Bow Mastery Other VII	Strathelar's Boon
+Bow Mastery Self VII	Strathelar's Blessing
+Clumsiness Other VII	Ataxia
+Cooking Ineptitude Other VII	Challenger's Legacy
+Cooking Mastery Other VII	Morimoto's Boon
+Cooking Mastery Self VII	Morimoto's Blessing
+Coordination Other VII	Boon of Refinement
+Coordination Self VII	Honed Control
+Creature Enchantment Ineptitude Other VII	Wrath of Adja
+Creature Enchantment Mastery Other VII	Adja's Boon
+Creature Enchantment Mastery Self VII	Adja's Blessing
+Crossbow Ineptitude Other VII	Itchy Finger
+Crossbow Mastery Other VII	Barnar's Boon
+Crossbow Mastery Self VII	Barnar's Blessing
+Dagger Ineptitude Other VII	Picking of the Teeth
+Dagger Mastery Other VII	Gertarh's Boon
+Dagger Mastery Self VII	Gertarh's Blessing
+Deception Ineptitude Other VII	Hearts on Sleeves
+Deception Mastery Other VII	Ketnan's Boon
+Deception Mastery Self VII	Ketnan's Blessing
+Defenselessness Other VII	Broadside of a Barn
+Endurance Other VII	Temeritous Touch
+Endurance Self VII	Perseverance
+Faithlessness Other VII	Sashi Mu's Kiss
+Fealty Other VII	Odif's Boon
+Fealty Self VII	Odif's Blessing
+Feeblemind Other VII	Self Loathing
+Fletching Ineptitude Other VII	Twisted Digits
+Fletching Mastery Other VII	Lilitha's Boon
+Fletching Mastery Self VII	Lilitha's Blessing
+Focus Other VII	Calming Gaze
+Focus Self VII	Inner Calm
+Frailty Other VII	Brittle Bones
+Healing Ineptitude Other VII	Unsteady Hands
+Healing Mastery Other VII	Avalenne's Boon
+Healing Mastery Self VII	Avalenne's Blessing
+Impregnability Other VII	Web of Deflection
+Impregnability Self VII	Aura of Deflection
+Invulnerability Other VII	Web of Defense
+Invulnerability Self VII	Aura of Defense
+Item Enchantment Ineptitude Other VII	Wrath of Celcynd
+Item Enchantment Mastery Other VII	Celcynd's Boon
+Item Enchantment Mastery Self VII	Celcynd's Blessing
+Item Expertise Other VII	Yoshi's Boon
+Item Expertise Self VII	Yoshi's Blessing
+Item Ignorance Other VII	Unfortunate Appraisal
+Jumping Ineptitude Other VII	Feat of Radaz
+Jumping Mastery Other VII	Jahannan's Boon
+Jumping Mastery Self VII	Jahannan's Blessing
+Leaden Feet Other VII	Gears Unwound
+Leadership Ineptitude Other VII	Kwipetian Vision
+Leadership Mastery Other VII	Ar-Pei's Boon
+Leadership Mastery Self VII	Ar-Pei's Blessing
+Life Magic Ineptitude Other VII	Wrath of Harlune
+Life Magic Mastery Other VII	Harlune's Boon
+Life Magic Mastery Self VII	Harlune's Blessing
+Lockpick Ineptitude Other VII	Fat Fingers
+Lockpick Mastery Other VII	Oswald's Boon
+Lockpick Mastery Self VII	Oswald's Blessing
+Mace Ineptitude Other VII	Top Heavy Swing
+Mace Mastery Other VII	Mi-Krauli's Boon
+Mace Mastery Self VII	Mi-Krauli's Blessing
+Magic Item Expertise Other VII	Celdiseth's Boon
+Magic Item Expertise Self VII	Celdiseth's Blessing
+Magic Item Ignorance Other VII	Eyes Clouded
+Magic Resistance Other VII	Web of Resistance
+Magic Resistance Self VII	Aura of Resistance
+Magic Yield Other VII	Futility
+Mana Conversion Ineptitude Other VII	Inefficient Investment
+Mana Conversion Mastery Other VII	Nuhmidura's Boon
+Mana Conversion Mastery Self VII	Nuhmidura's Blessing
+Monster Attunement Other VII	Topheron's Boon
+Monster Attunement Self VII	Topheron's Blessing
+Monster Unfamiliarity Other VII	Ignorance's Bliss
+Person Attunement Other VII	Kaluhc's Boon
+Person Attunement Self VII	Kaluhc's Blessing
+Person Unfamiliarity Other VII	Introversion
+Quickness Other VII	Ogfoot
+Quickness Self VII	Hastening
+Slowness Other VII	Belly of Lead
+Spear Ineptitude Other VII	Headbreaker
+Spear Mastery Other VII	Tibri's Boon
+Spear Mastery Self VII	Tibri's Blessing
+Sprint Other VII	Saladur's Boon
+Sprint Self VII	Saladur's Blessing
+Staff Ineptitude Other VII	The Shaft
+Staff Mastery Other VII	Anadil's Boon
+Staff Mastery Self VII	Anadil's Blessing
+Strength Other VII	Might of the 5 Mules
+Strength Self VII	Might of the Lugians
+Sword Ineptitude Other VII	Metallophobia
+Sword Mastery Other VII	MacNiall's Boon
+Sword Mastery Self VII	MacNiall's Blessing
+Thrown Weapons Ineptitude Other VII	The Wrong Spell
+Thrown Weapons Mastery Other VII	Asmolum's Boon
+Thrown Weapons Mastery Self VII	Asmolum's Blessing
+Unarmed Combat Ineptitude Other VII	Hamfistedness
+Unarmed Combat Mastery Other VII	Hamud's Boon
+Unarmed Combat Mastery Self VII	Hamud's Blessing
+Vulnerability Other VII	Gravity Well
+War Magic Ineptitude Other VII	Wrath of the Hieromancer
+War Magic Mastery Other VII	Hieromancer's Boon
+War Magic Mastery Self VII	Hieromancer's Blessing
+Weakness Other VII	Senescence
+Weapon Expertise Other VII	Koga's Boon
+Weapon Expertise Self VII	Koga's Blessing
+Weapon Ignorance Other VII	Eye of the Grunt
+Willpower Other VII	Bolstered Will
+Willpower Self VII	Mind Blossom
+Dirty Fighting Ineptitude Other VII	Dirty Fighting Ineptitude Other VII
+Dirty Fighting Mastery Other VII	Dirty Fighting Mastery Other VII
+Dirty Fighting Mastery Self VII	Dirty Fighting Mastery Self VII
+Dual Wielding Ineptitude Other VII	Dual Wielding Ineptitude Other VII
+Dual Wielding Mastery Other VII	Dual Wielding Mastery Other VII
+Dual Wielding Mastery Self VII	Dual Wielding Mastery Self VII
+Finesse Weapon Ineptitude Other VII	Finesse Weapon Ineptitude Other VII
+Finesse Weapon Mastery Other VII	Finesse Weapon Mastery Other VII
+Finesse Weapon Mastery Self VII	Finesse Weapon Mastery Self VII
+Gear Craft Ineptitude Other VII	Fatter Fingers
+Gear Craft Mastery Other VII	Gear Craft Mastery Other VII
+Gear Craft Mastery Self VII	Blessing of Tristra
+Heavy Weapon Ineptitude Other VII	Heavy Weapon Ineptitude Other VII
+Heavy Weapon Mastery Other VII	Heavy Weapon Mastery Other VII
+Heavy Weapon Mastery Self VII	Heavy Weapon Mastery Self VII
+Light Weapon Ineptitude Other VII	Light Weapon Ineptitude Other VII
+Light Weapon Mastery Other VII	Light Weapon Mastery Other VII
+Light Weapon Mastery Self VII	Light Weapon Mastery Self VII
+Missile Weapon Ineptitude Other VII	Missile Weapon Ineptitude Other VII
+Missile Weapon Mastery Other VII	Missile Weapon Mastery Other VII
+Missile Weapon Mastery Self VII	Missile Weapon Mastery Self VII
+Recklessness Ineptitude Other VII	Recklessness Ineptitude Other VII
+Recklessness Mastery Other VII	Recklessness Mastery Other VII
+Recklessness Mastery Self VII	Recklessness Mastery Self VII
+Arcanum Enlightenment VII	Arcanum Enlightenment VII
+Arcanum Salvaging VII	Arcanum Salvaging VII
+Shield Ineptitude Other VII	Shield Ineptitude Other VII
+Shield Mastery Other VII	Shield Mastery Other VII
+Shield Mastery Self VII	Shield Mastery Self VII
+Sneak Attack Ineptitude Other VII	Sneak Attack Ineptitude Other VII
+Sneak Attack Mastery Other VII	Sneak Attack Mastery Other VII
+Sneak Attack Mastery Self VII	Sneak Attack Mastery Self VII
+Summoning Ineptitude Other VII	Summoning Ineptitude Other VII
+Summoning Mastery Other VII	Summoning Mastery Other VII
+Summoning Mastery Self VII	Summoning Mastery Self VII
+Two Handed Combat Ineptitude Other VII	Greased Palms
+Two Handed Combat Mastery Other VII	Boon of T'ing
+Two Handed Combat Mastery Self VII	Blessing of T'ing
+Void Magic Ineptitude Other VII	Void Magic Ineptitude Other VII
+Void Magic Mastery Other VII	Void Magic Mastery Other VII
+Void Magic Mastery Self VII	Void Magic Mastery Self VII
+Acid Bane VII	Olthoi's Bane
+Acid Lure VII	Olthoi Bait
+Blade Bane VII	Swordsman's Bane
+Blade Lure VII	Swordsman Bait
+Blood Drinker VII	Infected Caress
+Blood Loather VII	Pacification
+Bludgeoning Bane VII	Tusker's Bane
+Bludgeoning Lure VII	Tusker Bait
+Brittlemail VII	Tattercoat
+Defender VII	Cragstone's Will
+Flame Bane VII	Inferno's Bane
+Flame Lure VII	Inferno Bait
+Frost Bane VII	Gelidite's Bane
+Frost Lure VII	Geledite Bait
+Heart Seeker VII	Elysa's Sight
+Hide Value VII	Material Obfuscation
+Impenetrability VII	Brogard's Defiance
+Leaden Weapon VII	Lugian's Speed
+Lightning Bane VII	Astyrrian's Bane
+Lightning Lure VII	Astyrrian Bait
+Lure Blade VII	Wi's Folly
+Piercing Bane VII	Archer's Bane
+Piercing Lure VII	Archer Bait
+Strengthen Lock VII	Fortified
+Swift Killer VII	Atlan's Alacrity
+True Value VII	Material Insight
+Turn Blade VII	Clouded Motives
+Weaken Lock VII	Vagabond's Gift
+Aura of Blood Drinker Other VII	Aura of Blood Drinker Other VII
+Aura of Blood Drinker Self VII	Aura of Infected Caress
+Aura of Defender Other VII	Aura of Defender Other VII
+Aura of Defender Self VII	Aura of Cragstone's Will
+Aura of Heart Seeker Other VII	Aura of Heart Seeker Other VII
+Aura of Heart Seeker Self VII	Aura of Elysa's Sight
+Aura of Hermetic Link Other VII	Aura of Hermetic Link Other VII
+Aura of Hermetic Link Self VII	Aura of Mystic's Blessing
+Aura of Spirit Drinker Other VII	Aura of Spirit Drinker Other VII
+Aura of Spirit Drinker Self VII	Aura of Infected Spirit Caress
+Aura of Swift Killer Other VII	Aura of Swift Killer Other VII
+Aura of Swift Killer Self VII	Aura of Atlan's Alacrity
+Hermetic Link VII	Mystic's Blessing
+Hermetic Void VII	Cabalistic Ostracism
+Spirit Drinker VII	Infected Spirit Caress
+Spirit Loather VII	Spirit Pacification
+Acid Protection Other VII	Caustic Boon
+Acid Protection Self VII	Caustic Blessing
+Acid Vulnerability Other VII	Olthoi's Gift
+Armor Other VII	Executor's Boon
+Armor Self VII	Executor's Blessing
+Blade Protection Other VII	Boon of the Blade Turner
+Blade Protection Self VII	Blessing of the Blade Turner
+Blade Vulnerability Other VII	Swordsman's Gift
+Bludgeoning Protection Other VII	Boon of the Mace Turner
+Bludgeoning Protection Self VII	Blessing of the Mace Turner
+Bludgeoning Vulnerability Other VII	Tusker's Gift
+Cold Protection Other VII	Icy Boon
+Cold Protection Self VII	Icy Blessing
+Cold Vulnerability Other VII	Gelidite's Gift
+Drain Health VII	Vitality Siphon
+Drain Mana VII	Essence Void
+Drain Stamina VII	Vigor Siphon
+Enfeeble Other VII	Anemia
+Exhaustion Other VII	Enervation
+Fester Other VII	Decrepitude's Grasp
+Fire Protection Other VII	Fiery Boon
+Fire Protection Self VII	Fiery Blessing
+Fire Vulnerability Other VII	Inferon's Gift
+Harm Other VII	Heart Rend
+Heal Other VII	Adja's Gift
+Heal Self VII	Adja's Intervention
+Health to Mana Self VII	Cannibalize
+Health to Stamina Self VII	Self Sacrifice
+Imperil Other VII	Gossamer Flesh
+Infuse Health Other VII	Gift of Vitality
+Infuse Mana Other VII	Gift of Essence
+Infuse Stamina Other VII	Gift of Vigor
+Lightning Protection Other VII	Storm's Boon
+Lightning Protection Self VII	Storm's Blessing
+Lightning Vulnerability Other VII	Astyrrian's Gift
+Mana Depletion Other VII	Energy Flux
+Mana Drain Other VII	Void's Call
+Mana Renewal Other VII	Battlemage's Boon
+Mana Renewal Self VII	Battlemage's Blessing
+Mana to Health Self VII	Energize Vitality
+Mana to Stamina Self VII	Energize Vigor
+Piercing Protection Other VII	Boon of the Arrow Turner
+Piercing Protection Self VII	Blessing of the Arrow Turner
+Piercing Vulnerability Other VII	Archer's Gift
+Regeneration Other VII	Hydra's Head
+Regeneration Self VII	Robustify
+Rejuvenation Other VII	Tenaciousness
+Rejuvenation Self VII	Unflinching Persistence
+Revitalize Other VII	Replenish
+Revitalize Self VII	Robustification
+Stamina to Health Self VII	Rushed Recovery
+Stamina to Mana Self VII	Meditative Trance
+Martyr's Blight VII	Martyr's Blight VII
+Martyr's Hecatomb VII	Martyr's Hecatomb VII
+Martyr's Tenacity VII	Martyr's Tenacity VII
+Acid Blast VII	Dissolving Vortex
+Acid Streak VII	Corrosive Flash
+Acid Stream VII	Disintegration
+Acid Volley VII	Celdiseth's Searing
+Flame Blast VII	Silencia's Scorn
+Flame Bolt VII	Ilservian's Flame
+Flame Streak VII	Sizzling Fury
+Flame Volley VII	Infernae
+Force Blast VII	Stinging Needles
+Force Bolt VII	The Spike
+Force Streak VII	Outlander's Insolence
+Force Volley VII	Fusillade
+Frost Blast VII	Winter's Embrace
+Frost Bolt VII	Icy Torment
+Frost Streak VII	Sudden Frost
+Frost Volley VII	Blizzard
+Lightning Blast VII	Luminous Wrath
+Lightning Bolt VII	Alset's Coil
+Lightning Streak VII	Lhen's Flare
+Lightning Volley VII	Tempest
+Shock Blast VII	Pummeling Storm
+Shock Streak VII	Cameron's Curse
+Shock Volley VII	Thousand Fists
+Shock Wave VII	Crushing Shame
+Blade Blast VII	Sau Kolin's Sword
+Whirling Blade Streak VII	Rending Wind
+Whirling Blade VII	Evisceration
+Blade Volley VII	Flensing Wings
