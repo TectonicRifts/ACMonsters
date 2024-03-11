@@ -1,4 +1,3 @@
-import spells_module
 from view import View
 from pathlib import Path
 import tkinter as tk
@@ -133,6 +132,9 @@ class Controller:
                 self.sql_output = file_name
                 self.view.grid_panel.show_file(counter)
                 counter += 1
+
+    def file_warning(self):
+        self.view.console.print("Open a file to work with.\n")
 
     def check_creature_filter(self, base_name, commands):
 

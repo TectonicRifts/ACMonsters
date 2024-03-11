@@ -66,11 +66,11 @@ class LabelPanel:
         r = 0
         c = 0
 
-        label1 = tk.Label(self.frame, text="wcid", font=norm_font, fg='blue', bg=st.base_bg)
+        label1 = tk.Label(self.frame, text="wcid", font=norm_font, fg='#221CD9', bg=st.base_bg)
         label1.grid(row=r, column=c)
         r += 1
 
-        label2 = tk.Label(self.frame, text="name", font=norm_font, fg='blue', bg=st.base_bg)
+        label2 = tk.Label(self.frame, text="name", font=norm_font, fg='#221CD9', bg=st.base_bg)
         label2.grid(row=r, column=c)
         r += 1
 
@@ -141,15 +141,27 @@ class MiniPanel:
             entry.grid(row=r, column=c + 1, padx=0, pady=1)
             r += 1
 
+        self.toggle_entries_state("readonly")
+
+    def toggle_entries_state(self, entry_state):
+        # toggle the state of all entry widgets
+        self.wcid_entry.config(state=entry_state)
+        self.name_entry.config(state=entry_state)
+        for name, entry in self.all_entries.items():
+            entry.config(state=entry_state)
+
     def clear(self):
+        self.toggle_entries_state("normal")
         self.wcid_entry.delete(0, tk.END)
         self.name_entry.delete(0, tk.END)
         for name, entry in self.all_entries.items():
             entry.delete(0, tk.END)  # delete existing
+        self.toggle_entries_state("readonly")
 
     def show_parameters(self):
         # clear existing
         if self.cont.sql_commands is not None:
+            self.toggle_entries_state("normal")
             for name, entry in self.all_entries.items():
                 entry.delete(0, tk.END)  # delete existing
 
@@ -158,7 +170,6 @@ class MiniPanel:
 
             self.wcid_entry.delete(0, tk.END)
             self.wcid_entry.insert(0, str(mob_wcid))
-
             self.name_entry.delete(0, tk.END)
             self.name_entry.insert(0, str(mob_name))
 
@@ -172,3 +183,5 @@ class MiniPanel:
                     name = name.title().replace(" ", "")
                     if name == skill.name:
                         entry.insert(0, str(effective_value))
+
+            self.toggle_entries_state("readonly")

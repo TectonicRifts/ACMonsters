@@ -42,14 +42,20 @@ class SpellsPanel:
 
     def check_spells(self):
         if self.cont.sql_commands is not None:
+            wcid = file_helper.get_wcid(self.cont.sql_commands)
+            name = file_helper.get_name(self.cont.sql_commands)
+            self.cont.view.console.print("\n" + str(wcid) + "\t" + name + "\n\n")
             spells = spells_module.get_spellbook(self.cont.sql_commands)
 
             for spell in spells:
                 self.cont.view.console.print(str(spell.id) + "\t" + spell.name + "\n")
+        else:
+            self.cont.file_warning()
 
     def upgrade_spells(self):
         if self.cont.sql_commands is not None:
             wcid = file_helper.get_wcid(self.cont.sql_commands)
+            name = file_helper.get_name(self.cont.sql_commands)
             spells = spells_module.get_spellbook(self.cont.sql_commands)
             upgraded = []
             for spell in spells:
@@ -70,3 +76,5 @@ class SpellsPanel:
 
             my_list.append(new_command)
             self.cont.sql_commands = my_list
+
+            self.cont.view.console.print("\nSpells for " + str(wcid) + "\t" + name + " upgraded.\n")

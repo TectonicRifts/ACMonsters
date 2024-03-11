@@ -15,8 +15,8 @@ class AttributesPanel:
 
         norm_font = st.norm_font
 
-        attributes_header = tk.Label(self.frame, text="Attributes", font=norm_font, fg='blue', bg=st.base_bg)
-        vitals_header = tk.Label(self.frame, text="Vitals", font=norm_font, fg='blue', bg=st.base_bg)
+        attributes_header = tk.Label(self.frame, text="Attributes", font=norm_font, fg=st.label_text, bg=st.base_bg)
+        vitals_header = tk.Label(self.frame, text="Vitals", font=norm_font, fg=st.label_text, bg=st.base_bg)
 
         self.int_entries_1 = vh.make_int_entry(self.frame, labels_module.get_primary_attribute_labels())
         self.int_entries_2 = vh.make_int_entry(self.frame, labels_module.get_secondary_attribute_labels())
@@ -93,3 +93,6 @@ class AttributesPanel:
                        }
 
             self.cont.set_attributes(my_dict, self.int_entries_2, True)
+
+        else:
+            self.cont.file_warning()

@@ -15,7 +15,7 @@ class CalcPanel:
 
         norm_font = st.norm_font
 
-        skill_check_header = tk.Label(self.frame, text="Skill Calculator", font=norm_font, fg='blue', bg=st.base_bg)
+        skill_check_header = tk.Label(self.frame, text="Skill Calculator", font=norm_font, fg='#221CD9', bg=st.base_bg)
         skill_check_labels = ['player skill', 'skill modifier', 'monster skill']
         self.skill_check_entries = vh.make_float_entry(self.frame, skill_check_labels)
 

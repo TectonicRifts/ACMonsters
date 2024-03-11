@@ -12,7 +12,7 @@ class ArtPanel:
 
         norm_font = st.norm_font
 
-        int_header_label = tk.Label(self.frame, text="Int or Data ID", font=norm_font, fg="blue", bg=st.base_bg)
+        int_header_label = tk.Label(self.frame, text="Int or Data ID", font=norm_font, fg=st.label_text, bg=st.base_bg)
 
         int_labels = ['palette template', 'palette base', 'clothing base', 'physics effect']
         self.int_entries = vh.make_int_entry(self.frame, int_labels)
@@ -21,7 +21,7 @@ class ArtPanel:
         tooltip_label = tk.Label(self.frame, text=tooltip, font=norm_font, fg="dark green", wraplength=420,
                                  justify=tk.LEFT, bg=st.base_bg)
 
-        float_header_label = tk.Label(self.frame, text="Float", font=norm_font, fg="blue", bg=st.base_bg)
+        float_header_label = tk.Label(self.frame, text="Float", font=norm_font, fg=st.label_text, bg=st.base_bg)
 
         float_labels = ['shade', 'translucency', 'scale']
         self.float_entries = vh.make_float_entry(self.frame, float_labels)
@@ -59,7 +59,7 @@ class ArtPanel:
 
     def set_art(self):
         """Set art properties for a single .sql file"""
-        if len(self.cont.sql_commands) > 0:
+        if self.cont.sql_commands is not None:
             # int
             my_dict = {'palette template': (3, "/* PaletteTemplate */")}
             self.cont.set_properties(my_dict, self.int_entries, 'int')
@@ -77,3 +77,6 @@ class ArtPanel:
                        'scale': (39, "/* DefaultScale */")
                        }
             self.cont.set_properties(my_dict, self.float_entries, 'float')
+
+        else:
+            self.cont.file_warning()

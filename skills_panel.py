@@ -16,10 +16,10 @@ class SkillsPanel:
 
         norm_font = st.norm_font
 
-        melee_header = tk.Label(self.frame, text="Melee", font=norm_font, fg='blue', bg=st.base_bg)
-        magic_header = tk.Label(self.frame, text="Magic", font=norm_font, fg='blue', bg=st.base_bg)
-        defensive_header = tk.Label(self.frame, text="Defense", font=norm_font, fg='blue', bg=st.base_bg)
-        other_header = tk.Label(self.frame, text="Other", font=norm_font, fg='blue', bg=st.base_bg)
+        melee_header = tk.Label(self.frame, text="Melee", font=norm_font, fg=st.label_text, bg=st.base_bg)
+        magic_header = tk.Label(self.frame, text="Magic", font=norm_font, fg=st.label_text, bg=st.base_bg)
+        defensive_header = tk.Label(self.frame, text="Defense", font=norm_font, fg=st.label_text, bg=st.base_bg)
+        other_header = tk.Label(self.frame, text="Other", font=norm_font, fg=st.label_text, bg=st.base_bg)
 
         offensive_labels = ['heavy weapons', 'light weapons', 'finesse weapons', 'two handed combat', 'missile weapons']
         magic_labels = ['war magic', 'life magic', 'creature enchantment', 'item enchantment', 'void magic']
@@ -106,6 +106,8 @@ class SkillsPanel:
                 else:
                     self.cont.view.console.print(
                         str(name) + "\t" + str(v[0]) + " [" + str(v[1]) + ", " + str(v[2]) + "]\n")
+        else:
+            self.cont.file_warning()
 
     def get_skill_pcap(self):
         if self.cont.sql_commands is not None:
@@ -196,3 +198,6 @@ class SkillsPanel:
 
             my_list.append(new_command)
             self.cont.sql_commands = my_list
+
+        else:
+            self.cont.file_warning()

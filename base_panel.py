@@ -30,17 +30,17 @@ class BasePanel:
         self.gen_dest_combo = ttk.Combobox(self.frame, values=gen_dest_options, font=norm_font, state="readonly")
         self.gen_dest_combo.current(0)
 
-        int_header_label = tk.Label(self.frame, text="Int", font=norm_font, fg='blue', bg=st.base_bg)
+        int_header_label = tk.Label(self.frame, text="Int", font=norm_font, fg='#221CD9', bg=st.base_bg)
 
         int_labels = ['gen init', 'gen max', 'level', 'xp override', 'faction bits']
         self.int_entries = vh.make_int_entry(self.frame, int_labels)
 
-        did_header_label = tk.Label(self.frame, text="Data ID", font=norm_font, fg='blue', bg=st.base_bg)
+        did_header_label = tk.Label(self.frame, text="Data ID", font=norm_font, fg='#221CD9', bg=st.base_bg)
 
         did_labels = ['combat table', 'wield treasure', 'death treasure']
         self.did_entries = vh.make_int_entry(self.frame, did_labels)
 
-        float_header_label = tk.Label(self.frame, text="Float", font="Arial 12", fg='blue', bg=st.base_bg)
+        float_header_label = tk.Label(self.frame, text="Float", font="Arial 12", fg='#221CD9', bg=st.base_bg)
 
         float_labels = ['health rate', 'regen interval', 'gen radius', 'visual awareness']
         self.float_entries = vh.make_float_entry(self.frame, float_labels)
@@ -135,7 +135,7 @@ class BasePanel:
 
     def set_misc_stats(self):
 
-        if len(self.cont.sql_commands) > 0:
+        if self.cont.sql_commands is not None:
 
             # creature type
             selected = self.creature_type_combo.get()
@@ -217,3 +217,5 @@ class BasePanel:
             if self.no_corpse.get() == 1:
                 self.cont.sql_commands = file_helper.set_property(self.cont.sql_commands, "bool", 29, 1,
                                                                   "/* NoCorpse */")
+        else:
+            self.cont.file_warning()

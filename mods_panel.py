@@ -15,12 +15,12 @@ class ModsPanel:
 
         norm_font = st.norm_font
 
-        armor_header_label = tk.Label(self.frame, text="Armor (0=weak)", font="Arial 12", fg='blue', bg=st.base_bg)
+        armor_header_label = tk.Label(self.frame, text="Armor (0=weak)", font="Arial 12", fg='#221CD9', bg=st.base_bg)
 
         armor_labels = ['slash', 'pierce', 'bludge', 'cold', 'fire', 'acid', 'electric']
         self.armor_entries = vh.make_float_entry(self.frame, armor_labels)
 
-        resist_header_label = tk.Label(self.frame, text="Resist (0=strong)", font="Arial 12", fg='blue', bg=st.base_bg)
+        resist_header_label = tk.Label(self.frame, text="Resist (0=strong)", font="Arial 12", fg='#221CD9', bg=st.base_bg)
 
         resist_labels = ['slash', 'pierce', 'bludge', 'cold', 'fire', 'acid', 'electric', 'nether']
         self.resist_entries = vh.make_float_entry(self.frame, resist_labels)
@@ -104,3 +104,6 @@ class ModsPanel:
                 "nether": (166, "/* ResistNether */")
             }
             self.cont.set_properties(resist_dict, self.resist_entries, 'float')
+
+        else:
+            self.cont.file_warning()
