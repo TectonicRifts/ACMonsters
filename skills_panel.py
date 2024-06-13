@@ -1,6 +1,5 @@
 import tkinter as tk
 from functools import partial
-import tkinter.messagebox
 import file_helper
 import settings as st
 import view_helper as vh
@@ -21,21 +20,22 @@ class SkillsPanel:
         defensive_header = tk.Label(self.frame, text="Defense", font=norm_font, fg=st.label_text, bg=st.base_bg)
         other_header = tk.Label(self.frame, text="Other", font=norm_font, fg=st.label_text, bg=st.base_bg)
 
+        # warning, do not change the labels
         offensive_labels = ['heavy weapons', 'light weapons', 'finesse weapons', 'two handed combat', 'missile weapons']
         magic_labels = ['war magic', 'life magic', 'creature enchantment', 'item enchantment', 'void magic']
         defensive_labels = ['melee defense', 'missile defense', 'magic defense']
-        other_labels = ['sneak attack', 'dirty fighting', 'dual wield', 'deception', 'shield']
+        other_labels = ['sneak attack', 'dirty fighting', 'dual wield', 'deception', 'shield', 'run']
 
         self.offensive_entries = vh.make_int_entry(self.frame, offensive_labels)
         self.magic_entries = vh.make_int_entry(self.frame, magic_labels)
         self.defensive_entries = vh.make_int_entry(self.frame, defensive_labels)
         self.other_entries = vh.make_int_entry(self.frame, other_labels)
 
+        # ** is dictionary unpacking, helps merge multiple dictionaries into a single dictionary
         self.all_entries = {
             **self.offensive_entries, **self.magic_entries, **self.defensive_entries, **self.other_entries
         }
 
-        check_attributes_button = tk.Button(self.frame, text="Check", command=self.check_parameters)
         set_button = tk.Button(self.frame, text="Set", bg=st.button_bg, command=self.set_skills)
         batch_button = tk.Button(self.frame, text="Run Batch",
                                  command=partial(self.cont.run_sql_batch, self.set_skills))
@@ -53,7 +53,7 @@ class SkillsPanel:
 
         headers = [melee_header, magic_header, defensive_header, other_header]
         content = [self.offensive_entries, self.magic_entries, self.defensive_entries, self.other_entries]
-        buttons = [check_attributes_button, set_button, batch_button]
+        buttons = [set_button, batch_button]
 
         for i in range(len(headers)):
 
@@ -105,7 +105,8 @@ class SkillsPanel:
                     )
                 else:
                     self.cont.view.console.print(
-                        str(name) + "\t" + str(v[0]) + " [" + str(v[1]) + ", " + str(v[2]) + "]\n")
+                        str(name) + "\t" + str(v[0]) + " [" + str(v[1]) + ", " + str(v[2]) + "]\n"
+                    )
         else:
             self.cont.file_warning()
 
@@ -123,65 +124,19 @@ class SkillsPanel:
             attributes = stat_helper.get_all_attributes(self.cont.sql_commands)
 
             skills = {}
+            # k = skill name , v = skill value
+            for k, v in self.all_entries.items():
 
-            # magic skills
-            for k, v in self.magic_entries.items():
-
-                val = v.get()
+                val = v.get()  # skill value entered in the skill panel
                 if val != "":
-                    val_int = int(val)
-
-                    attribute_bonus = round((attributes['focus'] + attributes['self']) / 4)
-                    val_int = val_int - attribute_bonus
-
+                    effective_int = int(val)
+                    label = k.title().replace(" ", "")  # for example, "life magic" becomes "LifeMagic"
+                    attribute_bonus = skills_module.get_attribute_bonus(attributes, label)
+                    base_int = effective_int - attribute_bonus  # adjust down by attribute bonus to get base skill value
+                    if base_int <= 0:
+                        base_int = 1
                     skill_name = k.title().replace(" ", "")
-                    skills[skill_name] = val_int
-
-            # melee skills
-            for k, v in self.offensive_entries.items():
-
-                val = v.get()
-                if val != "":
-                    val_int = int(val)
-
-                    attribute_bonus = 0
-
-                    if k == 'heavy weapons' or k == 'light weapons' or k == 'two handed combat':
-                        attribute_bonus = round((attributes['strength'] + attributes['coordination']) / 3)
-                    elif k == 'finesse weapons':
-                        attribute_bonus = round((attributes['coordination'] + attributes['quickness']) / 3)
-                    elif k == 'missile weapons':
-                        attribute_bonus = round(attributes['coordination'] / 2)
-                    else:
-                        tk.messagebox.showerror("Error", "A skill label was undefined.")
-
-                    val_int = val_int - attribute_bonus
-
-                    skill_name = k.title().replace(" ", "")
-                    skills[skill_name] = val_int
-
-            # defenses
-            for k, v in self.defensive_entries.items():
-
-                val = v.get()
-                if val != "":
-                    val_int = int(val)
-
-                    attribute_bonus = 0
-
-                    if k == 'magic defense':
-                        attribute_bonus = round((attributes['focus'] + attributes['self']) / 7)
-                    elif k == 'melee defense':
-                        attribute_bonus = round((attributes['coordination'] + attributes['quickness']) / 3)
-                    elif k == 'missile defense':
-                        attribute_bonus = round((attributes['coordination'] + attributes['quickness']) / 5)
-                    else:
-                        tk.messagebox.showerror("Error", "A skill label was undefined.")
-
-                    val_int = val_int - attribute_bonus
-
-                    skill_name = k.title().replace(" ", "")
-                    skills[skill_name] = val_int
+                    skills[skill_name] = base_int
 
             # make the skill table
             new_command = skills_module.make_skill_table(wcid, skills)

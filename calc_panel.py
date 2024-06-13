@@ -126,6 +126,10 @@ class CalcPanel:
                 if skill.name == "WarMagic" or skill.name == "VoidMagic":
                     result = pf.calc_skill(pmagic_def, 1, effective_value)
                     output["resist magic"] = result
+                elif skill.name == "LifeMagic":
+                    # only use if no war or void magic
+                    result = pf.calc_skill(pmagic_def, 1, effective_value)
+                    output["resist magic"] = result
 
             for k, v in output.items():
                 if v != "NA" and v < 10:

@@ -86,24 +86,28 @@ def upgrade_spell(spell, spell_dict, special_names, flipped_names):
         next_level = 8
 
     old_name = spell.name.split(" ")
-    # spell name without the roman numeral
+    # spell name without the Roman numeral
     old_name = " ".join(old_name[:-1])
 
     if next_level == 8:
         new_name = "Incantation of " + old_name
     else:
-        # get roman numeral for the next level
+        # get Roman numeral for the next level
         next_roman = get_roman_level(next_level)
-        # append the roman numeral for the next level to the name
+        # append the Roman numeral for the next level to the name
         new_name = old_name + " " + next_roman
         # print(new_name)
         if next_level == 7:
-            # print("This ran.")
             if new_name in special_names.keys():
                 new_name = special_names[new_name]
 
     if new_name in spell_dict.keys():
         upgraded = Spell(spell_dict[new_name], spell.pr, new_name)
+        # check for special cases, convert yellow lightning bolt / arc to standard purple
+        if upgraded.id == 6198:
+            upgraded.id = 4451
+        elif upgraded.id == 6199:
+            upgraded.id = 4426
 
     if upgraded is not None:
         return upgraded

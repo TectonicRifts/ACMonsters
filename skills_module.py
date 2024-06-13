@@ -138,7 +138,7 @@ def get_skill_table(commands):
 def get_attribute_bonus(attributes, name):
     """Return how much attributes would add to a base skill."""
 
-    magic = ["LifeMagic", "WarMagic", "CreatureEnchantment", "VoidMagic"]
+    magic = ["LifeMagic", "WarMagic", "CreatureEnchantment", "ItemEnchantment", "VoidMagic"]
     str_based = ["HeavyWeapons", "LightWeapons", "TwoHandedCombat", "DirtyFighting",
                  "Axe", "Mace", "Sword", "Spear", "Staff", "UnarmedCombat"]
     quick_based = ["FinesseWeapons", "SneakAttack", "Dagger"]
@@ -185,18 +185,25 @@ def make_skill_table(wcid, skills):
     counter = 0
     new_command = "\n\nINSERT INTO `weenie_properties_skill` (`object_Id`, `type`, `level_From_P_P`, `s_a_c`, `p_p`, `init_Level`, `resistance_At_Last_Check`, `last_Used_Time`)\n"
 
-    for skill, val in skills.items():
+    skill_list = []
+    for name, val in skills.items():
+        skill_list.append(Skill(get_skill_id(name), name, val))
+    # sort by id, x is passed into the lambda, here x is each skill object, x.skill_id is returned
+    skill_list.sort(key=lambda x: x.skill_id)
 
-        key = get_skill_id(skill)
-
+    for skill in skill_list:
         # padding
-        if key < 10:
-            key = " " + str(key)
+        skill_id = skill.skill_id
+        if skill_id < 10:
+            skill_id = " " + str(skill_id)
+        skill_val = skill.value
+        if skill_val < 100:
+            skill_val = " " + str(skill_val)
 
         if counter == 0:
-            entry = f"""VALUES ({wcid},  {key}, 0, 2, 0, {val}, 0, 0) /* {skill} */\n"""
+            entry = f"""VALUES ({wcid}, {skill_id}, 0, 2, 0, {skill_val}, 0, 0) /* {skill.name} */\n"""
         else:
-            entry = f"""     , ({wcid},  {key}, 0, 2, 0, {val}, 0, 0) /* {skill} */\n"""
+            entry = f"""     , ({wcid}, {skill_id}, 0, 2, 0, {skill_val}, 0, 0) /* {skill.name} */\n"""
 
         new_command += entry
         counter += 1
