@@ -1,6 +1,7 @@
 import tkinter as tk
 from functools import partial
 from tkinter import ttk
+
 import settings as st
 import file_helper
 import view_helper as vh
@@ -38,7 +39,7 @@ class BasePanel:
 
         int_header_label = tk.Label(self.frame, text="Int", font=norm_font, fg='#221CD9', bg=st.base_bg)
 
-        int_labels = ['gen init', 'gen max', 'level', 'xp override', 'faction bits']
+        int_labels = ['gen init', 'gen max', 'level', 'xp override', 'luminance', 'faction bits']
         self.int_entries = vh.make_int_entry(self.frame, int_labels)
 
         did_header_label = tk.Label(self.frame, text="Data ID", font=norm_font, fg='#221CD9', bg=st.base_bg)
@@ -189,6 +190,7 @@ class BasePanel:
                        'gen max': (81, "/* MaxGeneratedObjects */"),
                        'level': (25, "/* Level */"),
                        'xp override': (146, "/* XpOverride */"),
+                       'luminance': (332, "/* LuminanceAward */"),
                        'faction bits': (281, "/* Faction1Bits */")
                        }
             self.cont.set_properties(my_dict, self.int_entries, 'int')

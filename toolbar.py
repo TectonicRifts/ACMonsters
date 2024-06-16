@@ -17,13 +17,14 @@ class Toolbar:
                                            command=partial(cont.open_folder, name_filter_entry))
 
         save_sql_button = tk.Button(self.frame, text="Save", bg=st.button_bg, command=cont.save_sql)
-
         open_output_button = tk.Button(self.frame, text="Output", command=cont.open_output_folder)
+        help_button = tk.Button(self.frame, text="Help", command=cont.open_help)
 
         # layout
         name_filter_label.grid(row=0, column=0, sticky="ew")
-        name_filter_entry.grid(row=0, column=1, sticky="ew")
-        open_sql_folder_button.grid(row=0, column=3, sticky="ew")
+        name_filter_entry.grid(row=0, column=1, sticky="ew", padx=10)
+        open_sql_folder_button.grid(row=0, column=3, sticky="ew", padx=(10, 0))  # 10 pad to left, 0 pad to right
         open_sql_button.grid(row=0, column=4, ipadx=10, ipady=0, sticky="ew")
         save_sql_button.grid(row=0, column=5, ipadx=25, ipady=0, sticky="ew")
         open_output_button.grid(row=0, column=6, ipadx=25, ipady=0, sticky="ew")
+        help_button.grid(row=0, column=7, ipadx=25, ipady=0, sticky="ew")

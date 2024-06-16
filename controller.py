@@ -171,3 +171,7 @@ class Controller:
                     self.sql_commands = stat_helper.set_attribute_2(self.sql_commands, i[0], val, i[1])
                 else:
                     self.sql_commands = stat_helper.set_attribute_1(self.sql_commands, i[0], val, i[1])
+
+    def open_help(self):
+        current_tab_name = self.view.get_current_tab_name()
+        print(current_tab_name)
