@@ -30,6 +30,12 @@ class BasePanel:
         self.gen_dest_combo = ttk.Combobox(self.frame, values=gen_dest_options, font=norm_font, state="readonly")
         self.gen_dest_combo.current(0)
 
+        gen_time_label = tk.Label(self.frame, text="gen time", font=norm_font, bg=st.base_bg)
+        gen_time_options = sorted(labels_module.get_all_gen_time_types())
+        gen_time_options.insert(0, "no change")
+        self.gen_time_combo = ttk.Combobox(self.frame, values=gen_time_options, font=norm_font, state="readonly")
+        self.gen_time_combo.current(0)
+
         int_header_label = tk.Label(self.frame, text="Int", font=norm_font, fg='#221CD9', bg=st.base_bg)
 
         int_labels = ['gen init', 'gen max', 'level', 'xp override', 'faction bits']
@@ -105,6 +111,10 @@ class BasePanel:
         self.gen_dest_combo.grid(row=r, column=c + 1)
         r += 1
 
+        gen_time_label.grid(row=r, column=c)
+        self.gen_time_combo.grid(row=r, column=c + 1)
+        r += 1
+
         for name, entry in self.int_entries.items():
             label = tk.Label(self.frame, text=name, font=norm_font, bg=st.base_bg)
             label.grid(row=r, column=c)
@@ -156,6 +166,17 @@ class BasePanel:
                 val = labels_module.get_gen_dest_int(selected)
                 desc = "/* GeneratorDestructionType - " + selected + " */"
                 self.cont.sql_commands = file_helper.set_property(self.cont.sql_commands, "int", 103, int(val), desc)
+
+            # gen time type
+            selected = self.gen_time_combo.get()
+
+            if selected == "no change":
+                pass
+            else:
+                val = labels_module.get_gen_time_int(selected)
+                desc = "/* GeneratorTimeType - " + selected + " */"
+                self.cont.sql_commands = file_helper.set_property(self.cont.sql_commands, "int", 142, int(val),
+                                                                  desc)
 
             # str
             my_dict = {'name': (1, "/* Name */"),

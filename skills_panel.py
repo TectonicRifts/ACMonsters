@@ -84,29 +84,30 @@ class SkillsPanel:
             attributes = stat_helper.get_all_attributes(self.cont.sql_commands)
             skills = skills_module.get_skill_table(self.cont.sql_commands)
 
-            self.cont.view.console.print("\nCurrent Effective Skills\n", "purple")
-            for skill in skills:
-                attribute_bonus = skills_module.get_attribute_bonus(attributes, skill.name)
-                effective_value = skill.value + attribute_bonus
+            if skills:  # false if the skill list is empty
+                self.cont.view.console.print("\nCurrent Effective Skills\n", "purple")
+                for skill in skills:
+                    attribute_bonus = skills_module.get_attribute_bonus(attributes, skill.name)
+                    effective_value = skill.value + attribute_bonus
 
-                self.cont.view.console.print(skill.name + "\t" + str(effective_value) + "\n")
+                    self.cont.view.console.print(skill.name + "\t" + str(effective_value) + "\n")
 
-                for name, entry in self.all_entries.items():
-                    name = name.title().replace(" ", "")
-                    if name == skill.name:
-                        entry.insert(0, str(effective_value))  # insert new
+                    for name, entry in self.all_entries.items():
+                        name = name.title().replace(" ", "")
+                        if name == skill.name:
+                            entry.insert(0, str(effective_value))  # insert new
 
-            self.cont.view.console.print("\nPCAP Effective Skills (mean [min, max])\n", "purple")
-            pcap_skills = self.get_skill_pcap()
-            for name, v in pcap_skills.items():
-                if "defense" in name:
-                    self.cont.view.console.print(
-                        str(name) + "\t" + str(v[0]) + " [" + str(v[1]) + ", " + str(v[2]) + "]\n", "brown"
-                    )
-                else:
-                    self.cont.view.console.print(
-                        str(name) + "\t" + str(v[0]) + " [" + str(v[1]) + ", " + str(v[2]) + "]\n"
-                    )
+                self.cont.view.console.print("\nPCAP Effective Skills (mean [min, max])\n", "purple")
+                pcap_skills = self.get_skill_pcap()
+                for name, v in pcap_skills.items():
+                    if "defense" in name:
+                        self.cont.view.console.print(
+                            str(name) + "\t" + str(v[0]) + " [" + str(v[1]) + ", " + str(v[2]) + "]\n", "brown"
+                        )
+                    else:
+                        self.cont.view.console.print(
+                            str(name) + "\t" + str(v[0]) + " [" + str(v[1]) + ", " + str(v[2]) + "]\n"
+                        )
         else:
             self.cont.file_warning()
 

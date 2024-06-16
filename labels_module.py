@@ -85,15 +85,32 @@ def get_all_gen_dest_types():
     return list(my_dict.values())
 
 
+def get_all_gen_time_types():
+    """Returns a list of all gen time type labels."""
+    my_dict = get_gen_time_dict()
+    return list(my_dict.values())
+
+
 def get_gen_dest_dict():
     # what happens to the generator's spawns when it's destroyed, 2 for destroy, 3 for kill
     gen_dest_types = {0: "Undefined", 1: "Nothing", 2: "Destroy", 3: "Kill"}
     return gen_dest_types
 
 
+def get_gen_time_dict():
+    gen_time_types = {0: "Undefined", 4: "Night", 5: "Day"}
+    return gen_time_types
+
+
 def get_gen_dest_int(selected):
     my_dict = get_gen_dest_dict()
     # keys become values, values become keys
+    flipped_dict = dict((v, k) for k, v in my_dict.items())
+    return flipped_dict[selected]
+
+
+def get_gen_time_int(selected):
+    my_dict = get_gen_time_dict()
     flipped_dict = dict((v, k) for k, v in my_dict.items())
     return flipped_dict[selected]
 

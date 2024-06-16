@@ -47,8 +47,9 @@ class SpellsPanel:
             self.cont.view.console.print("\n" + str(wcid) + "\t" + name + "\n\n")
             spells = spells_module.get_spellbook(self.cont.sql_commands)
 
-            for spell in spells:
-                self.cont.view.console.print(str(spell.id) + "\t" + spell.name + "\n")
+            if spells:
+                for spell in spells:
+                    self.cont.view.console.print(str(spell.id) + "\t" + spell.name + "\n")
         else:
             self.cont.file_warning()
 
@@ -57,24 +58,25 @@ class SpellsPanel:
             wcid = file_helper.get_wcid(self.cont.sql_commands)
             name = file_helper.get_name(self.cont.sql_commands)
             spells = spells_module.get_spellbook(self.cont.sql_commands)
-            upgraded = []
-            for spell in spells:
-                upgraded.append(spells_module.upgrade_spell(
-                    spell, self.spell_dict, self.special_names, self.flipped_names))
+            if spells:
+                upgraded = []
+                for spell in spells:
+                    upgraded.append(spells_module.upgrade_spell(
+                        spell, self.spell_dict, self.special_names, self.flipped_names))
 
-            new_command = spells_module.make_spellbook(wcid, upgraded)
+                new_command = spells_module.make_spellbook(wcid, upgraded)
 
-            my_list = []
+                my_list = []
 
-            # delete if already there
-            for command in self.cont.sql_commands:
-                if str("`weenie_properties_spell_book`") in command:
-                    pass
-                else:
-                    if command.strip() != "":
-                        my_list.append(command)
+                # delete if already there
+                for command in self.cont.sql_commands:
+                    if str("`weenie_properties_spell_book`") in command:
+                        pass
+                    else:
+                        if command.strip() != "":
+                            my_list.append(command)
 
-            my_list.append(new_command)
-            self.cont.sql_commands = my_list
+                my_list.append(new_command)
+                self.cont.sql_commands = my_list
 
-            self.cont.view.console.print("\nSpells for " + str(wcid) + "\t" + name + " upgraded.\n")
+                self.cont.view.console.print("\nSpells for " + str(wcid) + "\t" + name + " upgraded.\n")

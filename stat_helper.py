@@ -8,6 +8,7 @@ def get_all_attributes(commands):
     wcid = get_wcid(commands)
     my_dict = {}
     keys = [1, 2, 3, 4, 5, 6]
+    attributes = {}
 
     for command in commands:
         if str("`weenie_properties_attribute`") in command:
@@ -17,18 +18,14 @@ def get_all_attributes(commands):
                 for key in keys:
                     my_dict[key] = int(get_attribute(wcid, command, key))
 
-    attributes = {'strength': my_dict[1], 'endurance': my_dict[2], 'coordination': my_dict[4],
-                  'quickness': my_dict[3], 'focus': my_dict[5], 'self': my_dict[6]}
+    if my_dict:
+        attributes = {'strength': my_dict[1], 'endurance': my_dict[2], 'coordination': my_dict[4],
+                      'quickness': my_dict[3], 'focus': my_dict[5], 'self': my_dict[6]}
     return attributes
 
 
 def get_all_vitals(commands):
-
-    vitals = {
-        'health': 1,
-        'stamina': 1,
-        'mana': 1
-    }
+    vitals = {}
 
     for command in commands:
         if str("`weenie_properties_attribute_2nd`") in command:
@@ -64,7 +61,7 @@ def get_all_vitals(commands):
             except IndexError:
                 pass
 
-            return vitals
+    return vitals
 
 
 def get_attribute(wcid, command, key):

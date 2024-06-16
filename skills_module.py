@@ -101,10 +101,11 @@ def get_skill_id(skill_name):
 def get_skill_table(commands):
     """Returns a list with Skill objects, where each object has a skill id, name and base value of the skill."""
     wcid = file_helper.get_wcid(commands)
+    skill_list = []
 
     for command in commands:
         if str("`weenie_properties_skill`") in command:
-            skill_list = []
+
             split_command = command.split("(")
 
             # need columns 1 and 5
@@ -132,7 +133,7 @@ def get_skill_table(commands):
 
                     skill_list.append(Skill(my_key, comment, my_val))
 
-            return skill_list
+    return skill_list
 
 
 def get_attribute_bonus(attributes, name):
