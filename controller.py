@@ -1,10 +1,8 @@
 from view import View
 from pathlib import Path
 import tkinter as tk
-import platform
 import os
 import tkinter.messagebox
-import subprocess
 from tkinter import filedialog
 import file_helper
 import stat_helper
@@ -13,16 +11,12 @@ import stat_helper
 class Controller:
 
     def __init__(self, parent):
-
         # sql file (i.e., sql commands) currently being worked on
-        self.sql_commands = None
-
+        self.sql_data = None
         # name of the output file
         self.sql_output = None
-
         # keys are sql file names, the values are file contents (i.e., sql commands)
         self.sql_dict = {}
-
         # sql file (i.e., the commands from it) being used as a template to copy from
         self.template_commands = None
 
@@ -34,7 +28,7 @@ class Controller:
         self.view.console.clear()
 
         for file_name, commands in self.sql_dict.items():
-            self.sql_commands = commands
+            self.sql_data = commands
             self.sql_output = file_name
             self.view.console.print("Working on " + file_name + "...")
             func()
@@ -43,9 +37,9 @@ class Controller:
 
     def save_sql(self):
 
-        if self.sql_commands:
+        if self.sql_data:
             with open("output/weenies/" + self.sql_output, 'w') as file_object:
-                for command in self.sql_commands:
+                for command in self.sql_data:
                     command = command.replace(";", "")
                     if command.strip() != "":
                         if "Lifestoned Changelog" in command:
@@ -56,25 +50,13 @@ class Controller:
         else:
             tk.messagebox.showinfo("Info", "There was no file to save.")
 
-    def open_output_folder(self):
-
-        Path("output/").mkdir(parents=True, exist_ok=True)
-        path = "output"
-
-        if platform.system() == "Windows":
-            os.startfile(path)
-        elif platform.system() == "Darwin":
-            subprocess.Popen(["open", path])
-        else:
-            subprocess.Popen(["xdg-open", path])
-
     def open_file(self):
         """Load a single .sql file."""
         my_file = filedialog.askopenfilename(filetypes=[("sql files", "*.sql")])
         if my_file:
             with open(my_file) as file_object:
                 sql_file = file_object.read()
-                self.sql_commands = sql_file.split(";")
+                self.sql_data = sql_file.split(";")
 
                 # this is the output file name
                 self.sql_output = os.path.split(my_file)[1]
@@ -104,15 +86,13 @@ class Controller:
                     my_list.append(os.path.join(subdir, file))
 
         self.sql_dict.clear()
-
         self.view.console.clear()
         self.view.console.print("Found the following files:\n")
 
         for file_name in my_list:
-
             with open(os.path.join(file_folder, file_name)) as file_object:
                 base_name = os.path.basename(file_name)
-                if name_filter.strip() != "":
+                if name_filter.strip():
                     if name_filter in base_name.lower():
                         sql_file = file_object.read()
                         commands = sql_file.split(";")
@@ -123,55 +103,43 @@ class Controller:
                     base_name = os.path.basename(file_name)
                     self.check_creature_filter(base_name, commands)
 
-        counter = 0
-        max_panels = 4
-        self.view.grid_panel.clear()
-        for file_name, commands in self.sql_dict.items():
-            if counter < max_panels:
-                self.sql_commands = commands
-                self.sql_output = file_name
-                self.view.grid_panel.show_file(counter)
-                counter += 1
-
     def file_warning(self):
         self.view.console.print("Open a file to work with.\n")
 
     def check_creature_filter(self, base_name, commands):
-
         item_type = file_helper.get_property(commands, "int", 1)
         if item_type is not None:
             if int(item_type[0]) == 16:  # weenie is creature
                 self.sql_dict[base_name] = commands
                 self.view.console.print(base_name + "\n")
 
-    def set_properties(self, my_dict, stat_entries, tag):
+    def set_properties(self, my_dict: dict, entries: list, property_type: str):
         """Set properties for a list of entries."""
-        # i is a tuple with the property key and comment
         for label, i in my_dict.items():
-            val = stat_entries[label].get().strip()
-            if val != "":
-                if tag == 'int':
+            val = entries[label].get().strip()
+            if val:
+                if property_type == 'int':
                     val = int(val)
-                elif tag == 'did':
+                elif property_type == 'did':
                     val = int(val, 16)
-                elif tag == 'float':
+                elif property_type == 'float':
                     val = round(float(val), 4)
                     if val.is_integer():
                         val = int(val)
+                self.sql_data = file_helper.set_property(self.sql_data, property_type, i[0], val, i[1])
 
-                self.sql_commands = file_helper.set_property(self.sql_commands, tag, i[0], val, i[1])
-
-    def set_attributes(self, my_dict, stat_entries, are_vitals):
-        # i is a tuple with the property key and comment
+    def set_attributes(self, my_dict: dict, entries: list, are_vitals: bool):
         for label, i in my_dict.items():
-            val = stat_entries[label].get().strip()
-            if val != "":
+            val = entries[label].get().strip()
+            if val:
                 val = int(val)
                 if are_vitals:
-                    self.sql_commands = stat_helper.set_attribute_2(self.sql_commands, i[0], val, i[1])
+                    self.sql_data = stat_helper.set_attribute_2(self.sql_data, i[0], val, i[1])
                 else:
-                    self.sql_commands = stat_helper.set_attribute_1(self.sql_commands, i[0], val, i[1])
+                    self.sql_data = stat_helper.set_attribute_1(self.sql_data, i[0], val, i[1])
 
     def open_help(self):
         current_tab_name = self.view.get_current_tab_name()
         print(current_tab_name)
+
+

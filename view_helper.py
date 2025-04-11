@@ -3,7 +3,7 @@ import re
 import settings as st
 
 
-def make_int_entry(parent, label_list):
+def make_int_entry(parent, label_list: list) -> dict:
     entries = {}
     vcmd = parent.register(validate_int)
 
@@ -14,9 +14,8 @@ def make_int_entry(parent, label_list):
     return entries
 
 
-def make_str_entry(parent, label_list):
+def make_str_entry(parent, label_list: list) -> dict:
     entries = {}
-
     for name in label_list:
         entry = tk.Entry(parent, bg=st.entry_bg, font="Arial 12")
         entries[name] = entry
@@ -24,7 +23,7 @@ def make_str_entry(parent, label_list):
     return entries
 
 
-def make_float_entry(parent, label_list):
+def make_float_entry(parent, label_list: list) -> dict:
     entries = {}
     vcmd = parent.register(validate_float)
 
@@ -35,17 +34,17 @@ def make_float_entry(parent, label_list):
     return entries
 
 
-def validate_int(p):
-    if str.isdigit(p) or p == "" or int(p, 16):
+def validate_int(user_input: str) -> bool:
+    if str.isdigit(user_input) or user_input == "" or int(user_input, 16):
         return True
     else:
         return False
 
 
-def validate_float(p):
+def validate_float(user_input: str) -> bool:
     regex = re.compile(r"[0-9.]*$")
-    result = regex.match(p)
-    return p == "" or (p.count('.') <= 1 and result is not None and result.group(0) != "")
+    result = regex.match(user_input)
+    return user_input == "" or (user_input.count('.') <= 1 and result is not None and result.group(0) != "")
 
 
 def make_listbox(parent, my_font, selection_mode):

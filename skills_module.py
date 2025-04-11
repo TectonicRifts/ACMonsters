@@ -98,7 +98,7 @@ def get_skill_id(skill_name):
     return skills.get(skill_name)
 
 
-def get_skill_table(commands):
+def get_skill_table(commands: list) -> list:
     """Returns a list with Skill objects, where each object has a skill id, name and base value of the skill."""
     wcid = file_helper.get_wcid(commands)
     skill_list = []
@@ -226,44 +226,39 @@ def skill_look_up(name):
         magic_attack = []
         magic_defense = []
 
-        my_dict = {'melee offense': melee_attack,
-                   'melee defense': melee_defense,
-                   'missile offense': missile_attack,
-                   'missile defense': missile_defense,
-                   'magic offense': magic_attack,
-                   'magic defense': magic_defense
-                   }
+        my_dict = {
+            'melee offense': melee_attack,
+            'melee defense': melee_defense,
+            'missile offense': missile_attack,
+            'missile defense': missile_defense,
+            'magic offense': magic_attack,
+            'magic defense': magic_defense
+        }
 
         for line in my_file:
             split = line.split("\t")
 
             if split[0] == name:
-
                 if split[1] == "ATTACKER_NOTIFICATION_EVENT" and split[2] == "MISSILE_WEAPONS_SKILL":
                     # print('missile defense', split[3], 'hits', split[4])
                     for i in range(int(split[4])):
                         missile_defense.append(int(split[3]))
-
                 elif split[1] == "ATTACKER_NOTIFICATION_EVENT" and "WEAPONS_SKILL" in split[2]:
                     # print('melee defense', split[3], 'hits', split[4])
                     for i in range(int(split[4])):
                         melee_defense.append(int(split[3]))
-
                 elif split[1] == "ATTACKER_NOTIFICATION_EVENT" and split[2] == "TWO_HANDED_COMBAT_SKILL":
                     # print('melee defense', split[3], 'hits', split[4])
                     for i in range(int(split[4])):
                         melee_defense.append(int(split[3]))
-
                 elif split[1] == "EVASION_DEFENDER_NOTIFICATION_EVENT" and split[2] == "MELEE_DEFENSE_SKILL":
                     # print('melee attack', split[3], 'hits', split[4])
                     for i in range(int(split[4])):
                         melee_attack.append(int(split[3]))
-
                 elif split[1] == "EVASION_DEFENDER_NOTIFICATION_EVENT" and split[2] == "MISSILE_DEFENSE_SKILL":
                     # print('missile attack', split[3], 'hits', split[4])
                     for i in range(int(split[4])):
                         missile_attack.append(int(split[3]))
-
                 elif split[1] == "Textbox Resist" and split[2] == "MAGIC_DEFENSE_SKILL":
                     # print('magic attack', split[3], 'hits', split[4])
                     for i in range(int(split[4])):

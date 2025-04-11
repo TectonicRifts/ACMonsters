@@ -84,7 +84,7 @@ class CalcPanel:
         # for max, use 561, 607, 556, 580, 417, 1.55
         # for 150, use 435, 482, 430, 460, 322, 1.45
 
-        if self.cont.sql_commands is not None:
+        if self.cont.sql_data is not None:
 
             label = "\n" + label + " Player Profile (% chance)\n"
             self.cont.view.console.print(label, "purple")
@@ -98,8 +98,8 @@ class CalcPanel:
                 # "evade missile": "NA"
             }
 
-            attributes = stat_helper.get_all_attributes(self.cont.sql_commands)
-            skills = skills_module.get_skill_table(self.cont.sql_commands)
+            attributes = stat_helper.get_all_attributes(self.cont.sql_data)
+            skills = skills_module.get_skill_table(self.cont.sql_data)
             for skill in skills:
                 attribute_bonus = skills_module.get_attribute_bonus(attributes, skill.name)
                 effective_value = skill.value + attribute_bonus

@@ -35,7 +35,6 @@ class ArtPanel:
 
         int_header_label.grid(row=r, column=c)
         r += 1
-
         for name, entry in self.int_entries.items():
             label = tk.Label(self.frame, text=name, font=norm_font, bg=st.base_bg)
             label.grid(row=r, column=c)
@@ -44,7 +43,6 @@ class ArtPanel:
 
         float_header_label.grid(row=r, column=c)
         r += 1
-
         for name, entry in self.float_entries.items():
             label = tk.Label(self.frame, text=name, font=norm_font, bg=st.base_bg)
             label.grid(row=r, column=c)
@@ -58,24 +56,28 @@ class ArtPanel:
         tooltip_label.grid(row=r, column=c, columnspan=2, sticky="w")
 
     def set_art(self):
-        """Set art properties for a single .sql file"""
-        if self.cont.sql_commands is not None:
+        """Set art properties for a single sql file"""
+        if self.cont.sql_data is not None:
             # int
-            my_dict = {'palette template': (3, "/* PaletteTemplate */")}
+            my_dict = {
+                'palette template': (3, "/* PaletteTemplate */")
+            }
             self.cont.set_properties(my_dict, self.int_entries, 'int')
 
             # did
-            my_dict = {'palette base': (6, "/* PaletteBase */"),
-                       'clothing base': (7, "/* ClothingBase */"),
-                       'physics effect': (22, "/* PhysicsEffectTable */")
-                       }
+            my_dict = {
+                'palette base': (6, "/* PaletteBase */"),
+                'clothing base': (7, "/* ClothingBase */"),
+                'physics effect': (22, "/* PhysicsEffectTable */")
+            }
             self.cont.set_properties(my_dict, self.int_entries, 'did')
 
             # float
-            my_dict = {'shade': (12, "/* Shade */"),
-                       'translucency': (76, "/* Translucency */"),
-                       'scale': (39, "/* DefaultScale */")
-                       }
+            my_dict = {
+                'shade': (12, "/* Shade */"),
+                'translucency': (76, "/* Translucency */"),
+                'scale': (39, "/* DefaultScale */")
+            }
             self.cont.set_properties(my_dict, self.float_entries, 'float')
 
         else:

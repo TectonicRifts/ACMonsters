@@ -35,7 +35,6 @@ class AttributesPanel:
 
         attributes_header.grid(row=r, column=c, sticky='w')
         r += 1
-
         for name, entry in self.int_entries_1.items():
             label = tk.Label(self.frame, text=name, font=norm_font, bg=st.base_bg)
             label.grid(row=r, column=c)
@@ -44,7 +43,6 @@ class AttributesPanel:
 
         vitals_header.grid(row=r, column=c, sticky='w')
         r += 1
-
         for name, entry in self.int_entries_2.items():
             label = tk.Label(self.frame, text=name, font=norm_font, bg=st.base_bg)
             label.grid(row=r, column=c)
@@ -59,15 +57,15 @@ class AttributesPanel:
 
     def show_attributes(self):
 
-        if self.cont.sql_commands is not None:
-            attributes = stat_helper.get_all_attributes(self.cont.sql_commands)
+        if self.cont.sql_data is not None:
+            attributes = stat_helper.get_all_attributes(self.cont.sql_data)
 
             for name, entry in self.int_entries_1.items():
                 if name in attributes.keys():
                     entry.delete(0, tk.END)  # delete existing
                     entry.insert(0, attributes.get(name))  # insert new
 
-            vitals = stat_helper.get_all_vitals(self.cont.sql_commands)
+            vitals = stat_helper.get_all_vitals(self.cont.sql_data)
 
             for name, entry in self.int_entries_2.items():
                 if name in vitals.keys():
@@ -76,23 +74,22 @@ class AttributesPanel:
 
     def set_attributes(self):
 
-        if self.cont.sql_commands is not None:
-            my_dict = {'strength': (1, "/* Strength */"),
-                       'endurance': (2, "/* Endurance */"),
-                       'quickness': (3, "/* Quickness */"),
-                       'coordination': (4, "/* Coordination */"),
-                       'focus': (5, "/* Focus */"),
-                       'self': (6, "/* Self */")
-                       }
-
+        if self.cont.sql_data is not None:
+            my_dict = {
+                'strength': (1, "/* Strength */"),
+                'endurance': (2, "/* Endurance */"),
+                'quickness': (3, "/* Quickness */"),
+                'coordination': (4, "/* Coordination */"),
+                'focus': (5, "/* Focus */"),
+                'self': (6, "/* Self */")
+            }
             self.cont.set_attributes(my_dict, self.int_entries_1, False)
 
-            my_dict = {'health': (1, "/* MaxHealth */"),
-                       'stamina': (3, "/* MaxStamina */"),
-                       'mana': (5, "/* MaxMana */")
-                       }
-
+            my_dict = {
+                'health': (1, "/* MaxHealth */"),
+                'stamina': (3, "/* MaxStamina */"),
+                'mana': (5, "/* MaxMana */")
+            }
             self.cont.set_attributes(my_dict, self.int_entries_2, True)
-
         else:
             self.cont.file_warning()

@@ -1,5 +1,10 @@
+import os
+import subprocess
 import tkinter as tk
 from functools import partial
+from pathlib import Path
+import platform
+
 import settings as st
 
 
@@ -17,7 +22,7 @@ class Toolbar:
                                            command=partial(cont.open_folder, name_filter_entry))
 
         save_sql_button = tk.Button(self.frame, text="Save", bg=st.button_bg, command=cont.save_sql)
-        open_output_button = tk.Button(self.frame, text="Output", command=cont.open_output_folder)
+        open_output_button = tk.Button(self.frame, text="Output", command=open_output_folder)
         help_button = tk.Button(self.frame, text="Help", command=cont.open_help)
 
         # layout
@@ -28,3 +33,15 @@ class Toolbar:
         save_sql_button.grid(row=0, column=5, ipadx=25, ipady=0, sticky="ew")
         open_output_button.grid(row=0, column=6, ipadx=25, ipady=0, sticky="ew")
         help_button.grid(row=0, column=7, ipadx=25, ipady=0, sticky="ew")
+
+
+def open_output_folder():
+    Path("output/").mkdir(parents=True, exist_ok=True)
+    path = "output"
+
+    if platform.system() == "Windows":
+        os.startfile(path)
+    elif platform.system() == "Darwin":
+        subprocess.Popen(["open", path])
+    else:
+        subprocess.Popen(["xdg-open", path])

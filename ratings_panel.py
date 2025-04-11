@@ -1,6 +1,7 @@
 import tkinter as tk
 from functools import partial
-from tkinter import ttk
+
+import file_helper
 import view_helper as vh
 import settings as st
 
@@ -17,9 +18,9 @@ class RatingsPanel:
         int_labels = ['damage', 'damage resist', 'crit', 'crit resist', 'overpower']
         self.int_entries = vh.make_int_entry(self.frame, int_labels)
 
-        set_button = tk.Button(self.frame, text="Set", bg=st.button_bg, command=self.set_misc_stats)
+        set_button = tk.Button(self.frame, text="Set", bg=st.button_bg, command=self.set_ratings)
         batch_button = tk.Button(self.frame, text="Run Batch",
-                                 command=partial(self.cont.run_sql_batch, self.set_misc_stats))
+                                 command=partial(self.cont.run_sql_batch, self.set_ratings))
 
         # layout
 
@@ -39,9 +40,9 @@ class RatingsPanel:
         r += 1
         batch_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
 
-    def set_misc_stats(self):
+    def set_ratings(self):
 
-        if self.cont.sql_commands is not None:
+        if self.cont.sql_data is not None:
             # int
             my_dict = {'damage': (307, "/* DamageRating */"),
                        'damage resist': (308, "/* DamageResistRating */"),

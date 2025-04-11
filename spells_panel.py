@@ -41,11 +41,11 @@ class SpellsPanel:
         r += 1
 
     def check_spells(self):
-        if self.cont.sql_commands is not None:
-            wcid = file_helper.get_wcid(self.cont.sql_commands)
-            name = file_helper.get_name(self.cont.sql_commands)
+        if self.cont.sql_data is not None:
+            wcid = file_helper.get_wcid(self.cont.sql_data)
+            name = file_helper.get_name(self.cont.sql_data)
             self.cont.view.console.print("\n" + str(wcid) + "\t" + name + "\n\n")
-            spells = spells_module.get_spellbook(self.cont.sql_commands)
+            spells = spells_module.get_spellbook(self.cont.sql_data)
 
             if spells:
                 for spell in spells:
@@ -54,10 +54,10 @@ class SpellsPanel:
             self.cont.file_warning()
 
     def upgrade_spells(self):
-        if self.cont.sql_commands is not None:
-            wcid = file_helper.get_wcid(self.cont.sql_commands)
-            name = file_helper.get_name(self.cont.sql_commands)
-            spells = spells_module.get_spellbook(self.cont.sql_commands)
+        if self.cont.sql_data is not None:
+            wcid = file_helper.get_wcid(self.cont.sql_data)
+            name = file_helper.get_name(self.cont.sql_data)
+            spells = spells_module.get_spellbook(self.cont.sql_data)
             if spells:
                 upgraded = []
                 for spell in spells:
@@ -69,7 +69,7 @@ class SpellsPanel:
                 my_list = []
 
                 # delete if already there
-                for command in self.cont.sql_commands:
+                for command in self.cont.sql_data:
                     if str("`weenie_properties_spell_book`") in command:
                         pass
                     else:
@@ -77,6 +77,6 @@ class SpellsPanel:
                             my_list.append(command)
 
                 my_list.append(new_command)
-                self.cont.sql_commands = my_list
+                self.cont.sql_data = my_list
 
                 self.cont.view.console.print("\nSpells for " + str(wcid) + "\t" + name + " upgraded.\n")

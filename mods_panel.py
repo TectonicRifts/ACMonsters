@@ -56,16 +56,15 @@ class ModsPanel:
         batch_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
 
     def show_mods(self):
-        if self.cont.sql_commands is not None:
-
+        if self.cont.sql_data is not None:
             # clear existing
             for name, entry in self.armor_entries.items():
                 entry.delete(0, tk.END)
             for name, entry in self.resist_entries.items():
                 entry.delete(0, tk.END)
 
-            armor_mods = fh.get_armor_mods(self.cont.sql_commands)
-            resist_mods = fh.get_resist_mods(self.cont.sql_commands)
+            armor_mods = fh.get_armor_mods(self.cont.sql_data)
+            resist_mods = fh.get_resist_mods(self.cont.sql_data)
 
             for name, entry in self.armor_entries.items():
                 if name in armor_mods.keys():
@@ -80,8 +79,7 @@ class ModsPanel:
                         entry.insert(0, result)
 
     def set_mods(self):
-
-        if self.cont.sql_commands is not None:
+        if self.cont.sql_data is not None:
             armor_dict = {
                 "slash": (13, "/* ArmorModVsSlash */"),
                 "pierce": (14, "/* ArmorModVsPierce */"),

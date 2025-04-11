@@ -75,14 +75,14 @@ class SkillsPanel:
 
     def check_parameters(self):
         """Check attributes, base, effective, and pcap skills."""
-        if self.cont.sql_commands is not None:
+        if self.cont.sql_data is not None:
 
             # clear existing
             for name, entry in self.all_entries.items():
                 entry.delete(0, tk.END)  # delete existing
 
-            attributes = stat_helper.get_all_attributes(self.cont.sql_commands)
-            skills = skills_module.get_skill_table(self.cont.sql_commands)
+            attributes = stat_helper.get_all_attributes(self.cont.sql_data)
+            skills = skills_module.get_skill_table(self.cont.sql_data)
 
             if skills:  # false if the skill list is empty
                 self.cont.view.console.print("\nCurrent Effective Skills\n", "purple")
@@ -112,17 +112,17 @@ class SkillsPanel:
             self.cont.file_warning()
 
     def get_skill_pcap(self):
-        if self.cont.sql_commands is not None:
-            name = file_helper.get_name(self.cont.sql_commands)
+        if self.cont.sql_data is not None:
+            name = file_helper.get_name(self.cont.sql_data)
             pcap_skills = skills_module.skill_look_up(name)
             return pcap_skills
 
     def set_skills(self):
 
-        if self.cont.sql_commands is not None:
+        if self.cont.sql_data is not None:
 
-            wcid = file_helper.get_wcid(self.cont.sql_commands)
-            attributes = stat_helper.get_all_attributes(self.cont.sql_commands)
+            wcid = file_helper.get_wcid(self.cont.sql_data)
+            attributes = stat_helper.get_all_attributes(self.cont.sql_data)
 
             skills = {}
             # k = skill name , v = skill value
@@ -145,7 +145,7 @@ class SkillsPanel:
             my_list = []
 
             # delete if already there
-            for command in self.cont.sql_commands:
+            for command in self.cont.sql_data:
                 if str("`weenie_properties_skill`") in command:
                     pass
                 else:
@@ -153,7 +153,7 @@ class SkillsPanel:
                         my_list.append(command)
 
             my_list.append(new_command)
-            self.cont.sql_commands = my_list
+            self.cont.sql_data = my_list
 
         else:
             self.cont.file_warning()

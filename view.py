@@ -4,10 +4,10 @@ from tkinter import ttk
 from art_panel import ArtPanel
 from attributes_panel import AttributesPanel
 from calc_panel import CalcPanel
-from grid_panel import GridPanel
 from ratings_panel import RatingsPanel
 from skills_panel import SkillsPanel
 from spells_panel import SpellsPanel
+from misc_panel import MiscPanel
 from toolbar import Toolbar
 from base_panel import BasePanel
 from console import ConsolePanel
@@ -30,10 +30,10 @@ class View:
         self.skills_panel = SkillsPanel(self.right_nb, cont)
         self.calc_panel = CalcPanel(self.right_nb, cont)
         self.mods_panel = ModsPanel(self.right_nb, cont)
-        self.grid_panel = GridPanel(self.right_nb, cont)
         art_panel = ArtPanel(self.right_nb, cont)
         spells_panel = SpellsPanel(self.right_nb, cont)
-        ratings_panel = RatingsPanel(self.right_nb, cont)
+        self.ratings_panel = RatingsPanel(self.right_nb, cont)
+        misc_panel = MiscPanel(self.right_nb, cont)
 
         # left
         left_nb.add(self.console.frame, text="Console")
@@ -44,12 +44,12 @@ class View:
         self.right_nb.add(base_panel.frame, text="Base")
         self.right_nb.add(self.attributes_panel.frame, text="Attr")
         self.right_nb.add(self.skills_panel.frame, text="Skill")
-        self.right_nb.add(self.grid_panel.frame, text="Grid")
         self.right_nb.add(self.calc_panel.frame, text="Calc")
         self.right_nb.add(self.mods_panel.frame, text="Mods")
         self.right_nb.add(art_panel.frame, text="Art")
         self.right_nb.add(spells_panel.frame, text="Spell")
-        self.right_nb.add(ratings_panel.frame, text="Rate")
+        self.right_nb.add(self.ratings_panel.frame, text="Rate")
+        self.right_nb.add(misc_panel.frame, text="Misc")
 
         left_nb.grid(row=0, column=0)
         self.right_nb.grid(row=0, column=1, sticky="ns")

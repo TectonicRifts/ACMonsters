@@ -74,30 +74,30 @@ def get_creature_type_label(creature_type_int):
         return None
 
 
-def get_all_creature_types():
+def get_all_creature_types() -> list:
     creature_dict = get_creature_dict()
     return list(creature_dict.values())
 
 
-def get_all_gen_dest_types():
+def get_all_gen_dest_types() -> list:
     """Returns a list of all gen dest type labels."""
     my_dict = get_gen_dest_dict()
     return list(my_dict.values())
 
 
-def get_all_gen_time_types():
+def get_all_gen_time_types() -> list:
     """Returns a list of all gen time type labels."""
     my_dict = get_gen_time_dict()
     return list(my_dict.values())
 
 
-def get_gen_dest_dict():
+def get_gen_dest_dict() -> dict:
     # what happens to the generator's spawns when it's destroyed, 2 for destroy, 3 for kill
     gen_dest_types = {0: "Undefined", 1: "Nothing", 2: "Destroy", 3: "Kill"}
     return gen_dest_types
 
 
-def get_gen_time_dict():
+def get_gen_time_dict() -> dict:
     gen_time_types = {0: "Undefined", 4: "Night", 5: "Day"}
     return gen_time_types
 

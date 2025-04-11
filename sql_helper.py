@@ -1,10 +1,11 @@
 from pathlib import Path
 
 
-def write_sql_file(file_name, commands):
-    Path("output/renumbered").mkdir(parents=True, exist_ok=True)
+def write_sql_file(file_name, folder, commands):
+    file_path = "output/" + folder
+    Path(file_path).mkdir(parents=True, exist_ok=True)
 
-    with open("output/renumbered/" + file_name, 'w') as file_object:
+    with open(file_path + "/" + file_name + ".sql", 'w') as file_object:
         for command in commands:
             file_object.write(command)
 

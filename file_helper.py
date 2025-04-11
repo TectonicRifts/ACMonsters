@@ -4,8 +4,9 @@ import tkinter.messagebox
 import re
 
 
-def get_tag_name(tag):
-    tags = {
+def get_property_header(property_type):
+    """Property types are int, bool, float, str, and did."""
+    property_headers = {
         "int": "`weenie_properties_int`",
         "bool": "`weenie_properties_bool`",
         "float": "`weenie_properties_float`",
@@ -14,27 +15,26 @@ def get_tag_name(tag):
         "did": "`weenie_properties_d_i_d`"
     }
 
-    if tag in tags.keys():
-        return tags[tag]
+    if property_type in property_headers.keys():
+        return property_headers[property_type]
     else:
         return None
 
 
-def set_body_table(commands, template_wcid, body_table):
+def set_body_table(commands, template_wcid, body_table) -> list:
     wcid = re.findall('[0-9]+', (commands[0]))[0]
-    tag = "`weenie_properties_body_part`"
+    property_header = "`weenie_properties_body_part`"
     my_list = []
     body_table = body_table.replace(template_wcid, wcid)
 
     has_command = False
-
     for command in commands:
-        if str(tag) in command:
+        if str(property_header) in command:
             has_command = True
 
     if has_command:
         for command in commands:
-            if str(tag) in command:  # append new instead of existing
+            if str(property_header) in command:  # append new instead of existing
                 my_list.append(body_table)
             else:
                 if command.strip() != "":
@@ -46,7 +46,7 @@ def set_body_table(commands, template_wcid, body_table):
     return my_list
 
 
-def get_armor_mods(commands):
+def get_armor_mods(sql_data):
     armor_mods = {
         "slash": 13,
         "pierce": 14,
@@ -58,7 +58,7 @@ def get_armor_mods(commands):
     }
 
     for k, v in armor_mods.items():
-        mod = get_property(commands, "float", v)
+        mod = get_property(sql_data, "float", v)
         match = re.search(r"'([\d.]+)'", str(mod))
         if match:
             val = float(match.group(1))
@@ -93,28 +93,24 @@ def get_resist_mods(commands):
     return resist_mods
 
 
-def get_property(commands, tag, key):
-    tag = get_tag_name(tag)
+def get_property(commands, property_type, key):
+    property_type = get_property_header(property_type)
     key = int(key)
 
-    wcid = re.findall('[0-9]+', (commands[0]))[0]  # find number string in first line
+    wcid = get_wcid(commands)
 
     for command in commands:
-        if str(tag) in command:
-
+        if str(property_type) in command:
             my_dict = {}
             split_command = command.split("(")
 
             for line in split_command:
                 if str(wcid) in line:
                     split_comma = line.split(",", 2)
-
                     my_key = int(split_comma[1].strip())
-
                     split_other = split_comma[2].split(")")
                     my_val = split_other[0].strip()
                     comment = "".join(split_other[1].rsplit(",", 1)).strip()
-
                     my_tuple = (my_val, comment)
                     my_dict[my_key] = my_tuple
 
@@ -124,51 +120,51 @@ def get_property(commands, tag, key):
                 return None
 
 
-def set_property(commands, tag, key, val, desc):
+def set_property(commands, property_type, key, val, desc):
     """Set a property (int, bool, float, string or did) to a weenie (in sql format). If the
     property already exists, the value is updated.This function does not work for position. """
 
     is_padded = True
     key = int(key)
 
-    if tag == "str" or tag == "string":
+    if property_type == "str" or property_type == "string":
         if "'" in val:
             val = val.replace("'", "''")
         val = f"""'{val}'"""
         is_padded = False
 
-    if tag == "bool":
+    if property_type == "bool":
         if int(val) == 0:
             val = False
         else:
             val = True
 
-    if tag == "did":
+    if property_type == "did":
         val = hex(val).upper().replace('X', 'x')
         if key == 32 or key == 35:
             val = val.replace('0x', '')
 
-    tag = get_tag_name(tag)
+    property_type = get_property_header(property_type)
 
     my_list = []
     wcid = re.findall('[0-9]+', (commands[0]))[0]  # find number string in first line
 
-    has_tag = False
+    has_property = False
 
     for command in commands:
-        if str(tag) in command:
-            has_tag = True
+        if str(property_type) in command:
+            has_property = True
 
-    if has_tag:
+    if has_property:
         pass
     else:
-        new_command = f"""\n\nINSERT INTO {tag} (`object_Id`, `type`, `value`)\nVALUES """
+        new_command = f"""\n\nINSERT INTO {property_type} (`object_Id`, `type`, `value`)\nVALUES """
         new_command += f"""({wcid}, {key}, {val}) {desc}"""
         commands.append(new_command)
         return commands
 
     for command in commands:
-        if str(tag) in command:
+        if str(property_type) in command:
 
             my_dict = {}
             split_command = command.split("(")
@@ -189,7 +185,7 @@ def set_property(commands, tag, key, val, desc):
             # if key not in my_dict.keys():
             my_dict[key] = (val, desc)
 
-            new_command = f"""\n\nINSERT INTO {tag} (`object_Id`, `type`, `value`)\nVALUES """
+            new_command = f"""\n\nINSERT INTO {property_type} (`object_Id`, `type`, `value`)\nVALUES """
 
             # figure out padding
 
