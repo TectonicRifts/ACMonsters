@@ -7,18 +7,18 @@ import stat_helper
 import skills_module
 
 
-class SkillsPanel:
+class SkillsPanel(tk.Frame):
 
     def __init__(self, parent, cont):
-        self.frame = tk.Frame(parent, bg=st.base_bg)
+        super().__init__(parent, bg=st.base_bg)
         self.cont = cont
 
         norm_font = st.norm_font
 
-        melee_header = tk.Label(self.frame, text="Melee", font=norm_font, fg=st.label_text, bg=st.base_bg)
-        magic_header = tk.Label(self.frame, text="Magic", font=norm_font, fg=st.label_text, bg=st.base_bg)
-        defensive_header = tk.Label(self.frame, text="Defense", font=norm_font, fg=st.label_text, bg=st.base_bg)
-        other_header = tk.Label(self.frame, text="Other", font=norm_font, fg=st.label_text, bg=st.base_bg)
+        melee_header = tk.Label(self, text="Melee", font=norm_font, fg=st.label_text, bg=st.base_bg)
+        magic_header = tk.Label(self, text="Magic", font=norm_font, fg=st.label_text, bg=st.base_bg)
+        defensive_header = tk.Label(self, text="Defense", font=norm_font, fg=st.label_text, bg=st.base_bg)
+        other_header = tk.Label(self, text="Other", font=norm_font, fg=st.label_text, bg=st.base_bg)
 
         # warning, do not change the labels
         offensive_labels = ['heavy weapons', 'light weapons', 'finesse weapons', 'two handed combat', 'missile weapons']
@@ -26,26 +26,19 @@ class SkillsPanel:
         defensive_labels = ['melee defense', 'missile defense', 'magic defense']
         other_labels = ['sneak attack', 'dirty fighting', 'dual wield', 'deception', 'shield', 'run']
 
-        self.offensive_entries = vh.make_int_entry(self.frame, offensive_labels)
-        self.magic_entries = vh.make_int_entry(self.frame, magic_labels)
-        self.defensive_entries = vh.make_int_entry(self.frame, defensive_labels)
-        self.other_entries = vh.make_int_entry(self.frame, other_labels)
+        self.offensive_entries = vh.make_int_entry(self, offensive_labels)
+        self.magic_entries = vh.make_int_entry(self, magic_labels)
+        self.defensive_entries = vh.make_int_entry(self, defensive_labels)
+        self.other_entries = vh.make_int_entry(self, other_labels)
 
         # ** is dictionary unpacking, helps merge multiple dictionaries into a single dictionary
         self.all_entries = {
             **self.offensive_entries, **self.magic_entries, **self.defensive_entries, **self.other_entries
         }
 
-        set_button = tk.Button(self.frame, text="Set", bg=st.button_bg, command=self.set_skills)
-        batch_button = tk.Button(self.frame, text="Run Batch",
+        set_button = tk.Button(self, text="Set", bg=st.button_bg, command=self.set_skills)
+        batch_button = tk.Button(self, text="Run Batch",
                                  command=partial(self.cont.run_sql_batch, self.set_skills))
-
-        tooltip = ("All fields optional. Set attributes first and enter desired skill levels. "
-                   "Entire skill table is replaced so anything left blank will be deleted. "
-                   )
-
-        tooltip_label = tk.Label(self.frame, text=tooltip, font=norm_font, fg="dark green", wraplength=420,
-                                 justify=tk.LEFT, bg=st.base_bg)
 
         # layout
         r = 0
@@ -61,22 +54,22 @@ class SkillsPanel:
             r += 1
 
             for name, entry in content[i].items():
-                label = tk.Label(self.frame, text=name, font=norm_font, bg=st.base_bg)
-                label.grid(row=r, column=c)
-                entry.grid(row=r, column=c + 1)
+                label = tk.Label(self, text=name, font=norm_font, bg=st.base_bg)
+                label.grid(row=r, column=c, sticky="e", padx=2)
+                entry.grid(row=r, column=c + 1, padx=2)
                 r += 1
 
         for button in buttons:
-            button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
+            button.grid(row=r, column=c, columnspan=2, padx=2, pady=5, sticky="ew")
             r += 1
 
-        tooltip_label.grid(row=r, column=c, columnspan=2)
-        r += 1
+        self.columnconfigure(0, weight=0)
+        self.columnconfigure(1, weight=1)
+
 
     def check_parameters(self):
         """Check attributes, base, effective, and pcap skills."""
-        if self.cont.sql_data is not None:
-
+        if self.cont.sql_data:
             # clear existing
             for name, entry in self.all_entries.items():
                 entry.delete(0, tk.END)  # delete existing
@@ -111,15 +104,17 @@ class SkillsPanel:
         else:
             self.cont.file_warning()
 
-    def get_skill_pcap(self):
-        if self.cont.sql_data is not None:
+    def get_skill_pcap(self) ->dict:
+        if self.cont.sql_data:
             name = file_helper.get_name(self.cont.sql_data)
             pcap_skills = skills_module.skill_look_up(name)
-            return pcap_skills
+        else:
+            pcap_skills = {}
+        return pcap_skills
 
     def set_skills(self):
 
-        if self.cont.sql_data is not None:
+        if self.cont.sql_data:
 
             wcid = file_helper.get_wcid(self.cont.sql_data)
             attributes = stat_helper.get_all_attributes(self.cont.sql_data)
@@ -157,3 +152,11 @@ class SkillsPanel:
 
         else:
             self.cont.file_warning()
+
+    def show_help(self):
+        help_text = [
+            ("title", "Skills Help\n\n"),
+            ("body", "All fields are optional. Set attributes first, then enter desired skill levels. The entire skill table is replaced so any fields left blank will be deleted.\n\n"),
+        ]
+
+        self.cont.view.console.show_help(help_text)

@@ -7,27 +7,23 @@ import view_helper as vh
 import labels_module
 
 
-class AttributesPanel:
+class AttributesPanel(tk.Frame):
 
     def __init__(self, parent, cont):
-        self.frame = tk.Frame(parent, bg=st.base_bg)
+        super().__init__(parent, bg=st.base_bg)
         self.cont = cont
 
         norm_font = st.norm_font
 
-        attributes_header = tk.Label(self.frame, text="Attributes", font=norm_font, fg=st.label_text, bg=st.base_bg)
-        vitals_header = tk.Label(self.frame, text="Vitals", font=norm_font, fg=st.label_text, bg=st.base_bg)
+        attributes_header = tk.Label(self, text="Attributes", font=norm_font, fg=st.label_text, bg=st.base_bg)
+        vitals_header = tk.Label(self, text="Vitals", font=norm_font, fg=st.label_text, bg=st.base_bg)
 
-        self.int_entries_1 = vh.make_int_entry(self.frame, labels_module.get_primary_attribute_labels())
-        self.int_entries_2 = vh.make_int_entry(self.frame, labels_module.get_secondary_attribute_labels())
+        self.int_entries_1 = vh.make_int_entry(self, labels_module.get_primary_attribute_labels())
+        self.int_entries_2 = vh.make_int_entry(self, labels_module.get_secondary_attribute_labels())
 
-        set_button = tk.Button(self.frame, text="Set", bg=st.button_bg, command=self.set_attributes)
-        batch_button = tk.Button(self.frame, text="Run Batch",
+        set_button = tk.Button(self, text="Set", bg=st.button_bg, command=self.set_attributes)
+        batch_button = tk.Button(self, text="Run Batch",
                                  command=partial(self.cont.run_sql_batch, self.set_attributes))
-
-        tooltip = "All fields optional. Vitals are adjusted based on attributes."
-        tooltip_label = tk.Label(self.frame, text=tooltip, font=norm_font, fg="dark green", wraplength=420,
-                                 justify=tk.LEFT, bg=st.base_bg)
 
         # layout
         r = 0
@@ -36,24 +32,26 @@ class AttributesPanel:
         attributes_header.grid(row=r, column=c, sticky='w')
         r += 1
         for name, entry in self.int_entries_1.items():
-            label = tk.Label(self.frame, text=name, font=norm_font, bg=st.base_bg)
-            label.grid(row=r, column=c)
-            entry.grid(row=r, column=c + 1)
+            label = tk.Label(self, text=name, font=norm_font, bg=st.base_bg)
+            label.grid(row=r, column=c, sticky="e", padx=2)
+            entry.grid(row=r, column=c + 1, sticky="ew", padx=2)
             r += 1
 
         vitals_header.grid(row=r, column=c, sticky='w')
         r += 1
         for name, entry in self.int_entries_2.items():
-            label = tk.Label(self.frame, text=name, font=norm_font, bg=st.base_bg)
-            label.grid(row=r, column=c)
-            entry.grid(row=r, column=c + 1)
+            label = tk.Label(self, text=name, font=norm_font, bg=st.base_bg)
+            label.grid(row=r, column=c, sticky="e", padx=2)
+            entry.grid(row=r, column=c + 1, sticky="ew", padx=2)
             r += 1
 
-        set_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
+        set_button.grid(row=r, column=c, columnspan=2, padx=2, pady=5, sticky="ew")
         r += 1
-        batch_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
-        r += 1
-        tooltip_label.grid(row=r, column=c, columnspan=2)
+        batch_button.grid(row=r, column=c, columnspan=2, padx=2, pady=5, sticky="ew")
+
+        self.columnconfigure(0, weight=0)
+        self.columnconfigure(1, weight=1)
+
 
     def show_attributes(self):
 
@@ -93,3 +91,11 @@ class AttributesPanel:
             self.cont.set_attributes(my_dict, self.int_entries_2, True)
         else:
             self.cont.file_warning()
+
+    def show_help(self):
+        help_text = [
+            ("title", "Attributes Help\n\n"),
+            ("body", "All fields are optional. The vitals are adjusted based on the attributes so enter the desired values.\n\n"),
+        ]
+
+        self.cont.view.console.show_help(help_text)

@@ -8,9 +8,9 @@ from controller import Controller
 def main():
     # if on Windows, fix blurry font
     if os.name == 'nt':
-        windll.shcore.SetProcessDpiAwareness(1)
+        windll.shcore.SetProcessDpiAwareness(1) # type: ignore
 
-    version = 1.4
+    version = 1.5
     root = tk.Tk()
     root.title("AC Monsters " + str(version))
     Controller(root)

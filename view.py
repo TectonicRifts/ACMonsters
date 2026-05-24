@@ -4,25 +4,27 @@ from tkinter import ttk
 from art_panel import ArtPanel
 from attributes_panel import AttributesPanel
 from calc_panel import CalcPanel
-from ratings_panel import RatingsPanel
+from port_panel import PortPanel
 from skills_panel import SkillsPanel
 from spells_panel import SpellsPanel
 from misc_panel import MiscPanel
 from toolbar import Toolbar
 from base_panel import BasePanel
+from gen_panel import GenPanel
 from console import ConsolePanel
 from mods_panel import ModsPanel
+from recipe_panel import RecipePanel
 import settings as st
 
 
-class View:
+class View(tk.Frame):
 
     def __init__(self, parent, cont):
-        self.frame = tk.Frame(parent, bg=st.base_bg)
+        super().__init__(parent, bg=st.base_bg)
         self.cont = cont
 
-        self.right_nb = ttk.Notebook(self.frame)
-        left_nb = ttk.Notebook(self.frame)
+        self.right_nb = ttk.Notebook(self)
+        left_nb = ttk.Notebook(self)
 
         # make panels
         self.console = ConsolePanel(left_nb, cont)
@@ -31,34 +33,42 @@ class View:
         self.calc_panel = CalcPanel(self.right_nb, cont)
         self.mods_panel = ModsPanel(self.right_nb, cont)
         art_panel = ArtPanel(self.right_nb, cont)
-        spells_panel = SpellsPanel(self.right_nb, cont)
-        self.ratings_panel = RatingsPanel(self.right_nb, cont)
+        self.spells_panel = SpellsPanel(self.right_nb, cont)
         misc_panel = MiscPanel(self.right_nb, cont)
+        recipe_panel = RecipePanel(self.right_nb, cont)
+        port_panel = PortPanel(self.right_nb, cont)
 
         # left
-        left_nb.add(self.console.frame, text="Console")
+        left_nb.add(self.console, text="Console")
 
         # right
         base_panel = BasePanel(self.right_nb, cont)
+        gen_panel = GenPanel(self.right_nb, cont)
 
-        self.right_nb.add(base_panel.frame, text="Base")
-        self.right_nb.add(self.attributes_panel.frame, text="Attr")
-        self.right_nb.add(self.skills_panel.frame, text="Skill")
-        self.right_nb.add(self.calc_panel.frame, text="Calc")
-        self.right_nb.add(self.mods_panel.frame, text="Mods")
-        self.right_nb.add(art_panel.frame, text="Art")
-        self.right_nb.add(spells_panel.frame, text="Spell")
-        self.right_nb.add(self.ratings_panel.frame, text="Rate")
-        self.right_nb.add(misc_panel.frame, text="Misc")
+        self.right_nb.add(base_panel, text="Base")
+        self.right_nb.add(gen_panel, text="Gen")
+        self.right_nb.add(self.attributes_panel, text="Attr")
+        self.right_nb.add(self.skills_panel, text="Skill")
+        self.right_nb.add(self.calc_panel, text="Calc")
+        self.right_nb.add(self.mods_panel, text="Mods")
+        self.right_nb.add(art_panel, text="Art")
+        self.right_nb.add(self.spells_panel, text="Spell")
+        self.right_nb.add(recipe_panel, text="Recp")
+        self.right_nb.add(port_panel, text="Port")
+        self.right_nb.add(misc_panel, text="Misc")
 
-        left_nb.grid(row=0, column=0)
+        left_nb.grid(row=0, column=0, sticky="ns")
         self.right_nb.grid(row=0, column=1, sticky="ns")
 
-        toolbar = Toolbar(self.frame, cont)
-        toolbar.frame.grid(row=1, column=0, columnspan=2)
+        toolbar = Toolbar(self, cont)
+        toolbar.grid(row=1, column=0, columnspan=2)
 
-        self.frame.grid()
+        self.grid()
 
-    def get_current_tab_name(self):
-        current_tab_index = self.right_nb.index(self.right_nb.select())
-        return self.right_nb.tab(current_tab_index, option="text")
+
+    def show_help(self):
+        current_panel = self.right_nb.nametowidget(self.right_nb.select())
+        if hasattr(current_panel, "show_help"):
+            current_panel.show_help()
+        else:
+            self.console.print("No help available for this tab.")

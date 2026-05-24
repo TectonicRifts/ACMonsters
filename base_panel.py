@@ -8,94 +8,95 @@ import view_helper as vh
 import labels_module
 
 
-class BasePanel:
+class BasePanel(tk.Frame):
 
     def __init__(self, parent, cont):
-        self.frame = tk.Frame(parent, bg=st.base_bg)
+        super().__init__(parent, bg=st.base_bg)
         self.cont = cont
 
         norm_font = st.norm_font
 
+        # str entries
         str_labels = ['name', 'kill quest']
-        self.str_entries = vh.make_str_entry(self.frame, str_labels)
+        self.str_entries = vh.make_str_entry(self, str_labels)
 
-        creature_type_label = tk.Label(self.frame, text="creature type", font=norm_font, bg=st.base_bg)
+        creature_type_label = tk.Label(self, text="creature type", font=norm_font, bg=st.base_bg)
         creature_options = sorted(labels_module.get_all_creature_types())
         creature_options.insert(0, "no change")
-        self.creature_type_combo = ttk.Combobox(self.frame, values=creature_options, font=norm_font, state="readonly")
+        self.creature_type_combo = ttk.Combobox(self, values=creature_options, font=norm_font, state="readonly")
         self.creature_type_combo.current(0)
 
-        gen_dest_label = tk.Label(self.frame, text="gen dest", font=norm_font, bg=st.base_bg)
-        gen_dest_options = sorted(labels_module.get_all_gen_dest_types())
-        gen_dest_options.insert(0, "no change")
-        self.gen_dest_combo = ttk.Combobox(self.frame, values=gen_dest_options, font=norm_font, state="readonly")
-        self.gen_dest_combo.current(0)
-
-        gen_time_label = tk.Label(self.frame, text="gen time", font=norm_font, bg=st.base_bg)
-        gen_time_options = sorted(labels_module.get_all_gen_time_types())
-        gen_time_options.insert(0, "no change")
-        self.gen_time_combo = ttk.Combobox(self.frame, values=gen_time_options, font=norm_font, state="readonly")
-        self.gen_time_combo.current(0)
-
         # int entries
-        int_header_label = tk.Label(self.frame, text="Int", font=norm_font, fg='#221CD9', bg=st.base_bg)
-        int_labels = ['gen init', 'gen max', 'level', 'xp override', 'luminance', 'faction bits']
-        self.int_entries = vh.make_int_entry(self.frame, int_labels)
+        int_header_label = tk.Label(self, text="Int", font=norm_font, fg='#221CD9', bg=st.base_bg)
+        int_labels = ['level', 'xp override', 'luminance', 'lifespan', 'faction bits']
+        self.int_entries = vh.make_int_entry(self, int_labels)
 
         # did entries
-        did_header_label = tk.Label(self.frame, text="Data ID", font=norm_font, fg='#221CD9', bg=st.base_bg)
+        did_header_label = tk.Label(self, text="Data ID", font=norm_font, fg='#221CD9', bg=st.base_bg)
         did_labels = ['combat table', 'wield treasure', 'death treasure']
-        self.did_entries = vh.make_int_entry(self.frame, did_labels)
+        self.did_entries = vh.make_int_entry(self, did_labels)
 
         # float entries
-        float_header_label = tk.Label(self.frame, text="Float", font="Arial 12", fg='#221CD9', bg=st.base_bg)
-        float_labels = ['health rate', 'regen interval', 'gen radius', 'visual awareness']
-        self.float_entries = vh.make_float_entry(self.frame, float_labels)
+        float_header_label = tk.Label(self, text="Float", font="Arial 12", fg='#221CD9', bg=st.base_bg)
+        float_labels = ['health rate', 'visual awareness']
+        self.float_entries = vh.make_float_entry(self, float_labels)
 
         # checkbox entries
         self.edge_slide = tk.IntVar(value=0)
-        edge_slide_check = tk.Checkbutton(self.frame, text="edge slide", variable=self.edge_slide, font=norm_font,
-                                          bg=st.base_bg)
+        edge_slide_check = tk.Checkbutton(
+            self, text="edge slide", variable=self.edge_slide, font=norm_font, bg=st.base_bg, activebackground=st.base_bg
+        )
 
         self.npc_like_object = tk.IntVar(value=0)
-        npc_like_object_check = tk.Checkbutton(self.frame, text="npc like object", variable=self.npc_like_object,
-                                               font=norm_font, bg=st.base_bg)
+        npc_like_object_check = tk.Checkbutton(
+            self, text="npc like object", variable=self.npc_like_object, font=norm_font, bg=st.base_bg, activebackground=st.base_bg
+        )
 
         self.ignore_life_magic = tk.IntVar(value=0)
         ignore_life_check = tk.Checkbutton(
-            self.frame, text="life hollow", variable=self.ignore_life_magic, font=norm_font, bg=st.base_bg)
+            self, text="life hollow", variable=self.ignore_life_magic, font=norm_font, bg=st.base_bg, activebackground=st.base_bg
+        )
 
         self.ignore_item_magic = tk.IntVar(value=0)
         ignore_item_check = tk.Checkbutton(
-            self.frame, text="item hollow", variable=self.ignore_item_magic, font=norm_font, bg=st.base_bg)
+            self, text="item hollow", variable=self.ignore_item_magic, font=norm_font, bg=st.base_bg, activebackground=st.base_bg
+        )
 
         self.ignore_shield = tk.IntVar(value=0)
         ignore_shield_check = tk.Checkbutton(
-            self.frame, text="shield hollow", variable=self.ignore_shield, font=norm_font, bg=st.base_bg)
+            self, text="shield hollow", variable=self.ignore_shield, font=norm_font, bg=st.base_bg, activebackground=st.base_bg
+        )
+
+        self.debuff_immune = tk.IntVar(value=0)
+        debuff_immune_check = tk.Checkbutton(
+            self, text="debuff immune", variable=self.debuff_immune, font=norm_font, bg=st.base_bg, activebackground=st.base_bg
+        )
 
         self.no_corpse = tk.IntVar(value=0)
         no_corpse_check = tk.Checkbutton(
-            self.frame, text="no corpse", variable=self.no_corpse, font=norm_font, bg=st.base_bg)
+            self, text="no corpse", variable=self.no_corpse, font=norm_font, bg=st.base_bg, activebackground=st.base_bg
+        )
 
         self.allow_give = tk.IntVar(value=0)
         allow_give_check = tk.Checkbutton(
-            self.frame, text="allow give", variable=self.allow_give, font=norm_font, bg=st.base_bg)
+            self, text="allow give", variable=self.allow_give, font=norm_font, bg=st.base_bg, activebackground=st.base_bg
+        )
 
         # buttons
-        set_button = tk.Button(self.frame, text="Set", bg=st.button_bg, command=self.set_misc_stats)
-        batch_button = tk.Button(self.frame, text="Run Batch",
+        set_button = tk.Button(self, text="Set", bg=st.button_bg, command=self.set_misc_stats)
+        batch_button = tk.Button(self, text="Run Batch",
                                  command=partial(self.cont.run_sql_batch, self.set_misc_stats))
 
-        xp_from_level_button = tk.Button(self.frame, text="Find XP", command=self.set_xp_from_level)
+        xp_from_level_button = tk.Button(self, text="Find XP", command=self.set_xp_from_level)
 
         # layout
         r = 0
         c = 0
 
         for name, entry in self.str_entries.items():
-            label = tk.Label(self.frame, text=name, font=norm_font, bg=st.base_bg)
-            label.grid(row=r, column=c)
-            entry.grid(row=r, column=c + 1)
+            label = tk.Label(self, text=name, font=norm_font, bg=st.base_bg)
+            label.grid(row=r, column=c, sticky="e", padx=2)
+            entry.grid(row=r, column=c + 1, sticky="ew", padx=2)
             r += 1
 
         edge_slide_check.grid(row=r, column=c, sticky="w", padx=5)
@@ -105,50 +106,50 @@ class BasePanel:
         ignore_item_check.grid(row=r, column=c + 1, sticky="w", padx=5)
         r += 1
         ignore_shield_check.grid(row=r, column=c, sticky="w", padx=5)
-        no_corpse_check.grid(row=r, column=c + 1, sticky="w", padx=5)
+        debuff_immune_check.grid(row=r, column=c + 1, sticky="w", padx=5)
         r += 1
-        allow_give_check.grid(row=r, column=c, sticky="w", padx=5)
-        r += 1
-
-        int_header_label.grid(row=r, column=c)
-        r += 1
-        creature_type_label.grid(row=r, column=c)
-        self.creature_type_combo.grid(row=r, column=c + 1)
-        r += 1
-        gen_dest_label.grid(row=r, column=c)
-        self.gen_dest_combo.grid(row=r, column=c + 1)
+        no_corpse_check.grid(row=r, column=c, sticky="w", padx=5)
+        allow_give_check.grid(row=r, column=c + 1, sticky="w", padx=5)
         r += 1
 
-        gen_time_label.grid(row=r, column=c)
-        self.gen_time_combo.grid(row=r, column=c + 1)
+        int_header_label.grid(row=r, column=c, sticky="w")
+        r += 1
+        creature_type_label.grid(row=r, column=c, sticky="e", padx=2)
+        self.creature_type_combo.grid(row=r, column=c + 1, sticky="ew", padx=2)
         r += 1
 
         for name, entry in self.int_entries.items():
-            label = tk.Label(self.frame, text=name, font=norm_font, bg=st.base_bg)
-            label.grid(row=r, column=c)
-            entry.grid(row=r, column=c + 1)
+            label = tk.Label(self, text=name, font=norm_font, bg=st.base_bg)
+            label.grid(row=r, column=c, sticky="e", padx=2)
+            entry.grid(row=r, column=c + 1, sticky="ew", padx=2)
             r += 1
 
-        did_header_label.grid(row=r, column=c)
+        xp_from_level_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
+        r += 1
+
+        did_header_label.grid(row=r, column=c, sticky="w")
         r += 1
         for name, entry in self.did_entries.items():
-            label = tk.Label(self.frame, text=name, font=norm_font, bg=st.base_bg)
-            label.grid(row=r, column=c)
-            entry.grid(row=r, column=c + 1)
+            label = tk.Label(self, text=name, font=norm_font, bg=st.base_bg)
+            label.grid(row=r, column=c, sticky="e", padx=2)
+            entry.grid(row=r, column=c + 1, sticky="ew", padx=2)
             r += 1
 
-        float_header_label.grid(row=r, column=c)
+        float_header_label.grid(row=r, column=c, sticky="w")
         r += 1
         for name, entry in self.float_entries.items():
-            label = tk.Label(self.frame, text=name, font=norm_font, bg=st.base_bg)
-            label.grid(row=r, column=c)
-            entry.grid(row=r, column=c + 1)
+            label = tk.Label(self, text=name, font=norm_font, bg=st.base_bg)
+            label.grid(row=r, column=c, sticky="e", padx=2)
+            entry.grid(row=r, column=c + 1, sticky="ew", padx=2)
             r += 1
 
-        set_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
-        xp_from_level_button.grid(row=r, column=c + 1, padx=5, pady=5, sticky="ew")
+        set_button.grid(row=r, column=c, columnspan=2, padx=2, pady=5, sticky="ew")
         r += 1
-        batch_button.grid(row=r, column=c, padx=5, pady=5, sticky="ew")
+        batch_button.grid(row=r, column=c, columnspan=2, padx=2, pady=5, sticky="ew")
+
+        self.columnconfigure(0, weight=0)
+        self.columnconfigure(1, weight=1)
+
 
     def set_misc_stats(self):
 
@@ -163,26 +164,6 @@ class BasePanel:
                 desc = "/* CreatureType - " + selected + " */"
                 self.cont.sql_data = fh.set_property(self.cont.sql_data, "int", 2, int(val), desc)
 
-            # gen dest type
-            selected = self.gen_dest_combo.get()
-
-            if selected == "no change":
-                pass
-            else:
-                val = labels_module.get_gen_dest_int(selected)
-                desc = "/* GeneratorDestructionType - " + selected + " */"
-                self.cont.sql_data = fh.set_property(self.cont.sql_data, "int", 103, int(val), desc)
-
-            # gen time type
-            selected = self.gen_time_combo.get()
-
-            if selected == "no change":
-                pass
-            else:
-                val = labels_module.get_gen_time_int(selected)
-                desc = "/* GeneratorTimeType - " + selected + " */"
-                self.cont.sql_data = fh.set_property(self.cont.sql_data, "int", 142, int(val), desc)
-
             # str
             my_dict = {
                 'name': (1, "/* Name */"),
@@ -192,11 +173,10 @@ class BasePanel:
 
             # int
             my_dict = {
-                'gen init': (82, "/* InitGeneratedObjects */"),
-                'gen max': (81, "/* MaxGeneratedObjects */"),
                 'level': (25, "/* Level */"),
                 'xp override': (146, "/* XpOverride */"),
                 'luminance': (332, "/* LuminanceAward */"),
+                'lifespan': (267, "/* Lifespan */"),
                 'faction bits': (281, "/* Faction1Bits */")
             }
             self.cont.set_properties(my_dict, self.int_entries, 'int')
@@ -212,14 +192,13 @@ class BasePanel:
             # float
             my_dict = {
                 'health rate': (3, "/* HealthRate */"),
-                'regen interval': (41, "/* RegenerationInterval */"),
-                'gen radius': (43, "/* GeneratorRadius */"),
                 'visual awareness': (31, "/* VisualAwarenessRange */")
             }
             self.cont.set_properties(my_dict, self.float_entries, 'float')
 
             # set to npc
             if self.edge_slide.get() == 1:
+                self.cont.sql_data = fh.set_property(self.cont.sql_data, "int", 93, 4195336, "/* PhysicsState - ReportCollisions, Gravity, EdgeSlide */")
                 self.cont.sql_data = fh.set_property(self.cont.sql_data, "bool", 42, 1, "/* AllowEdgeSlide */")
 
             # set npc should appear as an object
@@ -239,6 +218,10 @@ class BasePanel:
             # ignore shield, this is a float
             if self.ignore_shield.get() == 1:
                 self.cont.sql_data = fh.set_property(self.cont.sql_data, "float", 151, 1, "/* IgnoreShield */")
+
+            # debuff immune, this is a bool
+            if self.debuff_immune.get() == 1:
+                self.cont.sql_data = self.cont.sql_data = fh.set_property(self.cont.sql_data, "bool", 103, 1, "/* NonProjectileMagicImmune */")
 
             # no corpse, this is a bool
             if self.no_corpse.get() == 1:
@@ -261,3 +244,15 @@ class BasePanel:
                     if name == "xp override":
                         entry.delete(0, tk.END)  # delete existing
                         entry.insert(0, xp_value)  # insert new
+
+    def show_help(self):
+        help_text = [
+            ("title", "Base Properties Help\n\n"),
+            ("body", "All fields are optional.\n\n"),
+            ("header", "Edge Slide\n"),
+            ("body", "Creature no longer falls off cliffs. Sets physics state and edge slide (int 93, bool 42).\n\n"),
+            ("header", "NPC Like Object\n"),
+            ("body", "Sets AI immobile, don't turn or move when giving, and NPC looks like object to true (bool 52, 82, 83).\n\n")
+        ]
+
+        self.cont.view.console.show_help(help_text)

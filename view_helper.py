@@ -35,10 +35,7 @@ def make_float_entry(parent, label_list: list) -> dict:
 
 
 def validate_int(user_input: str) -> bool:
-    if str.isdigit(user_input) or user_input == "" or int(user_input, 16):
-        return True
-    else:
-        return False
+    return user_input.isdigit() or user_input == ""
 
 
 def validate_float(user_input: str) -> bool:

@@ -8,22 +8,22 @@ import platform
 import settings as st
 
 
-class Toolbar:
+class Toolbar(tk.Frame):
 
     def __init__(self, parent, cont):
-        self.frame = tk.Frame(parent, bg=st.base_bg)
+        super().__init__(parent, bg=st.base_bg)
 
-        open_sql_button = tk.Button(self.frame, text="Open File", command=cont.open_file)
-        name_filter_label = tk.Label(self.frame, text="Name contains", font=st.norm_font, bg=st.base_bg)
-        name_filter_entry = tk.Entry(self.frame, bg=st.entry_bg, font=st.norm_font)
+        open_sql_button = tk.Button(self, text="Open File", command=cont.open_file)
+        name_filter_label = tk.Label(self, text="Name contains", font=st.norm_font, bg=st.base_bg)
+        name_filter_entry = tk.Entry(self, bg=st.entry_bg, font=st.norm_font)
         self.creature_only = tk.IntVar(value=0)
 
-        open_sql_folder_button = tk.Button(self.frame, text="Open Folder",
+        open_sql_folder_button = tk.Button(self, text="Open Folder",
                                            command=partial(cont.open_folder, name_filter_entry))
 
-        save_sql_button = tk.Button(self.frame, text="Save", bg=st.button_bg, command=cont.save_sql)
-        open_output_button = tk.Button(self.frame, text="Output", command=open_output_folder)
-        help_button = tk.Button(self.frame, text="Help", command=cont.open_help)
+        save_sql_button = tk.Button(self, text="Save", bg=st.button_bg, command=cont.save_sql)
+        open_output_button = tk.Button(self, text="Output", command=open_output_folder)
+        help_button = tk.Button(self, text="Help", command=cont.show_help)
 
         # layout
         name_filter_label.grid(row=0, column=0, sticky="ew")

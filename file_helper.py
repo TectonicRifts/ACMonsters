@@ -4,226 +4,203 @@ import tkinter.messagebox
 import re
 
 
-def get_property_header(property_type):
+PROPERTY_HEADERS = {
+    "int": "`weenie_properties_int`",
+    "bool": "`weenie_properties_bool`",
+    "float": "`weenie_properties_float`",
+    "string": "`weenie_properties_string`",
+    "str": "`weenie_properties_string`",
+    "did": "`weenie_properties_d_i_d`"
+}
+
+ARMOR_MOD_IDS = {
+    "slash": 13,
+    "pierce": 14,
+    "bludge": 15,
+    "cold": 16,
+    "fire": 17,
+    "acid": 18,
+    "electric": 19
+}
+
+RESIST_MOD_IDS = {
+    "slash": 64,
+    "pierce": 65,
+    "bludge": 66,
+    "cold": 68,
+    "fire": 67,
+    "acid": 69,
+    "electric": 70,
+    "nether": 166
+}
+
+
+def get_property_header(property_type: str) -> str | None:
     """Property types are int, bool, float, str, and did."""
-    property_headers = {
-        "int": "`weenie_properties_int`",
-        "bool": "`weenie_properties_bool`",
-        "float": "`weenie_properties_float`",
-        "string": "`weenie_properties_string`",
-        "str": "`weenie_properties_string`",
-        "did": "`weenie_properties_d_i_d`"
-    }
-
-    if property_type in property_headers.keys():
-        return property_headers[property_type]
-    else:
-        return None
+    return PROPERTY_HEADERS.get(property_type)
 
 
-def set_body_table(commands, template_wcid, body_table) -> list:
-    wcid = re.findall('[0-9]+', (commands[0]))[0]
-    property_header = "`weenie_properties_body_part`"
-    my_list = []
-    body_table = body_table.replace(template_wcid, wcid)
-
-    has_command = False
-    for command in commands:
-        if str(property_header) in command:
-            has_command = True
-
-    if has_command:
-        for command in commands:
-            if str(property_header) in command:  # append new instead of existing
-                my_list.append(body_table)
-            else:
-                if command.strip() != "":
-                    my_list.append(command)
-    else:
-        commands.append(body_table)
-        return commands
-
-    return my_list
+def get_armor_mods(sql_data: list) -> dict:
+    return extract_float_properties(sql_data, ARMOR_MOD_IDS)
 
 
-def get_armor_mods(sql_data):
-    armor_mods = {
-        "slash": 13,
-        "pierce": 14,
-        "bludge": 15,
-        "cold": 16,
-        "fire": 17,
-        "acid": 18,
-        "electric": 19
-    }
+def get_resist_mods(sql_data: list) -> dict:
+    return extract_float_properties(sql_data, RESIST_MOD_IDS)
 
-    for k, v in armor_mods.items():
+
+def extract_float_properties(sql_data: list, property_ids: dict) -> dict:
+    result = {}
+
+    for k, v in property_ids.items():
         mod = get_property(sql_data, "float", v)
         match = re.search(r"'([\d.]+)'", str(mod))
+
         if match:
-            val = float(match.group(1))
-            armor_mods[k] = val
+            result[k] = float(match.group(1))
         else:
-            armor_mods[k] = None
+            result[k] = None
 
-    return armor_mods
-
-
-def get_resist_mods(commands):
-    resist_mods = {
-        "slash": 64,
-        "pierce": 65,
-        "bludge": 66,
-        "cold": 68,
-        "fire": 67,
-        "acid": 69,
-        "electric": 70,
-        "nether": 166
-    }
-
-    for k, v in resist_mods.items():
-        mod = get_property(commands, "float", v)
-        match = re.search(r"'([\d.]+)'", str(mod))
-        if match:
-            val = float(match.group(1))
-            resist_mods[k] = val
-        else:
-            resist_mods[k] = None
-
-    return resist_mods
+    return result
 
 
-def get_property(commands, property_type, key):
-    property_type = get_property_header(property_type)
-    key = int(key)
+def get_property(sql_data: list, property_type: str, key: int) -> tuple[str, str] | None:
+    """
+    Returns a tuple (val, comment) or None if the property type is invalid, the property table does
+    not exist, or the given key is not found in the property table.
+    """
+    property_header = get_property_header(property_type)
+    if property_header is None:
+        return None
 
-    wcid = get_wcid(commands)
+    wcid = get_wcid(sql_data)
 
-    for command in commands:
-        if str(property_type) in command:
-            my_dict = {}
+    for command in sql_data:
+        if property_header in command:
+            parsed_sql_data = {}
             split_command = command.split("(")
 
             for line in split_command:
                 if str(wcid) in line:
+                    # split on the first two commas only
                     split_comma = line.split(",", 2)
                     my_key = int(split_comma[1].strip())
+
                     split_other = split_comma[2].split(")")
                     my_val = split_other[0].strip()
                     comment = "".join(split_other[1].rsplit(",", 1)).strip()
-                    my_tuple = (my_val, comment)
-                    my_dict[my_key] = my_tuple
 
-            if key in my_dict:
-                return my_dict[key]
-            else:
-                return None
+                    parsed_sql_data[my_key] = (my_val, comment)
+
+            return parsed_sql_data.get(key)
+
+    return None
 
 
-def set_property(commands, property_type, key, val, desc):
+def set_property(sql_data: list, property_type: str, key, val, desc) -> list:
     """Set a property (int, bool, float, string or did) to a weenie (in sql format). If the
-    property already exists, the value is updated.This function does not work for position. """
+    property already exists, the value is updated. This function does not work for position. """
 
     is_padded = True
     key = int(key)
 
-    if property_type == "str" or property_type == "string":
-        if "'" in val:
-            val = val.replace("'", "''")
+    # format value depending on property type
+    if property_type in ("str", "string"):
+        val = val.replace("'", "''")
         val = f"""'{val}'"""
         is_padded = False
 
-    if property_type == "bool":
+    elif property_type == "bool":
         if int(val) == 0:
             val = False
         else:
             val = True
 
-    if property_type == "did":
+    elif property_type == "did":
         val = hex(val).upper().replace('X', 'x')
-        if key == 32 or key == 35:
+        # these did properties are stored without the 0x prefix
+        if key in (32, 35):
             val = val.replace('0x', '')
 
-    property_type = get_property_header(property_type)
+    property_header = get_property_header(property_type)
 
-    my_list = []
-    wcid = re.findall('[0-9]+', (commands[0]))[0]  # find number string in first line
+    # find number string in first line
+    wcid = re.findall('[0-9]+', (sql_data[0]))[0]
 
-    has_property = False
+    # check if this property table already exists
+    has_property_table = False
 
-    for command in commands:
-        if str(property_type) in command:
-            has_property = True
+    for command in sql_data:
+        if str(property_header) in command:
+            has_property_table = True
 
-    if has_property:
-        pass
-    else:
-        new_command = f"""\n\nINSERT INTO {property_type} (`object_Id`, `type`, `value`)\nVALUES """
+    # if not, add a new insert command
+    if not has_property_table:
+        new_command = f"""\n\nINSERT INTO {property_header} (`object_Id`, `type`, `value`)\nVALUES """
         new_command += f"""({wcid}, {key}, {val}) {desc}"""
-        commands.append(new_command)
-        return commands
+        sql_data.append(new_command)
+        return sql_data
 
-    for command in commands:
-        if str(property_type) in command:
+    new_sql_data = []
 
-            my_dict = {}
+    for command in sql_data:
+        if str(property_header) in command:
+
+            properties = {}
             split_command = command.split("(")
 
             for line in split_command:
                 if str(wcid) in line:
                     split_comma = line.split(",", 2)
 
-                    my_key = int(split_comma[1].strip())
+                    existing_key = int(split_comma[1].strip())
 
                     split_other = split_comma[2].split(")")
-                    my_val = split_other[0].strip()
+                    existing_val = split_other[0].strip()
                     comment = "".join(split_other[1].rsplit(",", 1)).strip()
 
-                    my_tuple = (my_val, comment)
-                    my_dict[my_key] = my_tuple
+                    properties[existing_key] = (existing_val, comment)
 
-            # if key not in my_dict.keys():
-            my_dict[key] = (val, desc)
+            # add or replace the target property
+            properties[key] = (val, desc)
 
-            new_command = f"""\n\nINSERT INTO {property_type} (`object_Id`, `type`, `value`)\nVALUES """
+            # rebuild the insert command
+            new_command = f"""\n\nINSERT INTO {property_header} (`object_Id`, `type`, `value`)\nVALUES """
 
             # figure out padding
-
             i = 0
-            total_lines = len(my_dict)
+            total_lines = len(properties)
 
-            my_tuple = get_longest(my_dict)
-            longest_key = my_tuple[0]
-            longest_val = my_tuple[1]
+            longest_key, longest_val = get_longest(properties)
+
             if longest_val < 8:
                 longest_val = 8
 
-            for k, v in sorted(my_dict.items()):
+            for k, v in sorted(properties.items()):
 
                 if is_padded:
-                    my_justified_value = str(v[0]).rjust(longest_val, " ")
-                    my_justified_key = str(k).rjust(longest_key, " ")
+                    justified_value = str(v[0]).rjust(longest_val, " ")
+                    justified_key = str(k).rjust(longest_key, " ")
                 else:
-                    my_justified_value = " " + str(v[0])
-                    my_justified_key = str(k).rjust(longest_key, " ")
+                    justified_value = " " + str(v[0])
+                    justified_key = str(k).rjust(longest_key, " ")
 
                 if i == 0:
-                    new_command = new_command + f"""({wcid},{my_justified_key},{my_justified_value}) {v[1]}"""
+                    new_command = new_command + f"""({wcid},{justified_key},{justified_value}) {v[1]}"""
                     if i < (total_lines - 1):
                         new_command = new_command + "\n    "
                 else:
-                    new_command = new_command + f""" , ({wcid},{my_justified_key},{my_justified_value}) {v[1]}"""
+                    new_command = new_command + f""" , ({wcid},{justified_key},{justified_value}) {v[1]}"""
                     if i < (total_lines - 1):
                         new_command = new_command + "\n    "
                 i += 1
 
-            my_list.append(new_command)
+            new_sql_data.append(new_command)
 
         else:
             if command.strip() != "":
-                my_list.append(command)
+                new_sql_data.append(command)
 
-    return my_list
+    return new_sql_data
 
 
 def get_longest(my_dict):
@@ -335,3 +312,29 @@ def get_spell_list(name):
                     results_dict[spell_id] = spell_name
 
     return results_dict
+
+
+def set_body_table(sql_data, template_wcid, body_table) -> list:
+    # TODO not used anymore?
+    wcid = re.findall('[0-9]+', (sql_data[0]))[0]
+    property_header = "`weenie_properties_body_part`"
+    my_list = []
+    body_table = body_table.replace(template_wcid, wcid)
+
+    has_command = False
+    for command in sql_data:
+        if str(property_header) in command:
+            has_command = True
+
+    if has_command:
+        for command in sql_data:
+            if str(property_header) in command:  # append new instead of existing
+                my_list.append(body_table)
+            else:
+                if command.strip() != "":
+                    my_list.append(command)
+    else:
+        sql_data.append(body_table)
+        return sql_data
+
+    return my_list

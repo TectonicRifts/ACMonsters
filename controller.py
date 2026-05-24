@@ -1,3 +1,4 @@
+import profiler
 from view import View
 from pathlib import Path
 import tkinter as tk
@@ -64,11 +65,10 @@ class Controller:
                 self.view.console.print("Working with: " + self.sql_output + "\n")
                 self.view.attributes_panel.show_attributes()
                 self.view.skills_panel.check_parameters()
+                self.view.spells_panel.check_spells()
 
-                # for max, use 561, 607, 556, 580, 417, 1.55
-                # for 150, use 435, 482, 430, 460, 322, 1.45
-                self.view.calc_panel.profile_player("Max", 561, 607, 556, 580, 417, 1.55)
-                self.view.calc_panel.profile_player("150", 435, 482, 430, 460, 322, 1.45)
+                self.view.calc_panel.profile_player(profiler.profile_max)
+                self.view.calc_panel.profile_player(profiler.profile_150)
 
                 self.view.mods_panel.show_mods()
 
@@ -138,8 +138,6 @@ class Controller:
                 else:
                     self.sql_data = stat_helper.set_attribute_1(self.sql_data, i[0], val, i[1])
 
-    def open_help(self):
-        current_tab_name = self.view.get_current_tab_name()
-        print(current_tab_name)
-
-
+    def show_help(self):
+        self.view.console.clear()
+        self.view.show_help()

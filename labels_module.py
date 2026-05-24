@@ -98,7 +98,7 @@ def get_gen_dest_dict() -> dict:
 
 
 def get_gen_time_dict() -> dict:
-    gen_time_types = {0: "Undefined", 4: "Night", 5: "Day"}
+    gen_time_types = {0: "Undefined", 3: "Event", 4: "Night", 5: "Day"}
     return gen_time_types
 
 

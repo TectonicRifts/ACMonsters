@@ -6,15 +6,25 @@ class Spell:
         self.id = spell_id
         self.pr = pr
         self.name = name
+        self.short_name = self.name
+
+        lower_case_name = name.lower()
+
+        if "incantation of " in lower_case_name:
+            self.short_name = self.name.replace("Incantation of", "")
+            self.short_name = str.strip(self.short_name) + " VIII"
+        if "vulnerability" in lower_case_name:
+            self.short_name = self.short_name.replace("Vulnerability", "Vul")
 
 
-def get_spellbook(commands):
-    """Returns a list with Skill objects, where each object has a skill id, name and base value of the skill."""
+def get_spellbook(commands) -> list:
+    # returns an empty list if no spells, or if no file is open
     wcid = file_helper.get_wcid(commands)
+    spell_list = []
 
     for command in commands:
         if str("`weenie_properties_spell_book`") in command:
-            spell_list = []
+
             split_command = command.split("(")
 
             # need columns 1 and 2
@@ -44,10 +54,10 @@ def get_spellbook(commands):
                                 comment = line[comment_start + 2:comment_end].strip()
                                 spell_list.append(Spell(spell_id, spell_pr, comment))
 
-            return spell_list
+    return spell_list
 
 
-def make_spellbook(wcid, spells):
+def make_spellbook(wcid, spells) -> str:
     """Make a new spellbook."""
     counter = 0
     new_command = "\n\nINSERT INTO `weenie_properties_spell_book` (`object_Id`, `spell`, `probability`)\n"
@@ -69,7 +79,7 @@ def make_spellbook(wcid, spells):
     return new_command
 
 
-def upgrade_spell(spell, spell_dict, special_names, flipped_names):
+def upgrade_spell(spell, spell_dict, special_names, flipped_names) -> Spell:
     """Upgrades the spell to the next higher level. If there is no next level, returns the
     spell as is."""
     upgraded = None
@@ -115,7 +125,7 @@ def upgrade_spell(spell, spell_dict, special_names, flipped_names):
         return spell
 
 
-def load_spell_dict():
+def load_spell_dict() -> dict:
     # key = spell name, value = spell id
     spell_dict = {}
 
@@ -129,7 +139,7 @@ def load_spell_dict():
     return spell_dict
 
 
-def load_special_dict():
+def load_special_dict() -> dict:
     # key = regular level 7 spell name, value = actual, special level 7 name
     spell_dict = {}
 
@@ -141,7 +151,8 @@ def load_special_dict():
     return spell_dict
 
 
-def get_spell_level(spell_name, flipped_names):
+def get_spell_level(spell_name, flipped_names) -> int:
+    # returns spell level as an int, which is figured out from the spell name
     level_dict = {"I": 1, "II": 2, "III": 3, "IV": 4, "V": 5, "VI": 6, "VII": 7, "VIII": 8}
 
     level = 1
@@ -158,8 +169,52 @@ def get_spell_level(spell_name, flipped_names):
     return level
 
 
-def get_roman_level(spell_level):
+def get_roman_level(spell_level) -> str:
+    # returns spell level as a Roman numeral
     level_dict = {1: 'I', 2: 'II', 3: 'III', 4: 'IV', 5: 'V', 6: 'VI', 7: 'VII', 8: 'VIII'}
     if spell_level > 8:
         spell_level = 8
     return level_dict[spell_level]
+
+# spellbook probabilities based on WeenieFab
+def get_probability_none(chances) -> float:
+    prob = 1.0
+    for c in chances:
+        prob *= (1.0 - c)
+    return prob
+
+
+def get_probability_any(chances) -> float:
+    return 1.0 - get_probability_none(chances)
+
+
+def spellbook_stored_to_independent_percents(stored_values):
+    """
+    stored_values: list of spell probabilities stored in the spellbook, e.g. [2.25, 2.4, 2.1]
+
+    Returns actual independent percents for each spell.
+    """
+    raw_probs = [x - 2.0 for x in stored_values]
+    independent_percents = []
+
+    for i, p in enumerate(raw_probs):
+        prev_none = get_probability_none(raw_probs[:i]) if i > 0 else 1.0
+        independent_percents.append(round(p * prev_none * 100, 2))
+
+    return independent_percents
+
+
+def independent_percents_to_spellbook_stored(independent_percents):
+    """
+    independent_percents: list like [25.0, 10.0, 5.0]
+
+    Returns stored spellbook values.
+    """
+    chances = [p / 100.0 for p in independent_percents]
+    raw_spellbook_probs = []
+
+    for i, chance in enumerate(chances):
+        prev_none = get_probability_none(raw_spellbook_probs) if i > 0 else 1.0
+        raw_spellbook_probs.append(chance / prev_none)
+
+    return [round(x + 2.0, 2) for x in raw_spellbook_probs]
