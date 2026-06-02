@@ -39,7 +39,7 @@ class PortPanel(tk.Frame):
                                         bg=st.base_bg, activebackground=st.base_bg)
 
         self.on_click = tk.IntVar(value=0)
-        on_click_check = tk.Checkbutton(self, text="on click", variable=self.on_click, font=norm_font,
+        on_click_check = tk.Checkbutton(self, text="use on click", variable=self.on_click, font=norm_font,
                                           bg=st.base_bg, activebackground=st.base_bg)
 
         # used for portal restriction such as no recall, no summon
