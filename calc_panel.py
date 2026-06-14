@@ -358,21 +358,3 @@ class CalcPanel(tk.Frame):
             x_label="Player Skill"
         )
 
-
-    def show_help(self):
-        help_text = [
-            ("title", "Skill Calculator Help\n\n"),
-            ("header", "Skill Modifier\n"),
-            ("body", "Use a mod of 1.6 for missile at full accuracy.\n"),
-            ("body", "Use a mod of 1.35 for melee since 35% is the mean weapon attack mod.\n\n"),
-            ("header", "Pet Skill\n"),
-            ("body", "You can enter a pet's skill in the player skill field to profile a pet's chance to hit.\n"),
-            ("body", "The default skill levels are 653 and 693 for level 180 and 200 pets.\n"),
-            ("body", "Use a skill modifier of 1.\n\n"),
-            ("header", "Plot Player Range\n"),
-            ("body", "This holds monster skill constant and varies the player skill.\n\n"),
-            ("header", "Plot Monster Range\n"),
-            ("body", "This holds player skill constant and varies the monster skill.\n")
-        ]
-
-        self.cont.view.console.show_help(help_text)

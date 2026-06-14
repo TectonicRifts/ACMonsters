@@ -15,6 +15,8 @@ class Spell:
             self.short_name = str.strip(self.short_name) + " VIII"
         if "vulnerability" in lower_case_name:
             self.short_name = self.short_name.replace("Vulnerability", "Vul")
+        if "resistance" in lower_case_name:
+            self.short_name = self.short_name.replace("Resistance", "Resist")
 
 
 def get_spellbook(commands) -> list:

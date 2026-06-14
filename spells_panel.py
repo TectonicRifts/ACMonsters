@@ -68,6 +68,17 @@ class SpellsPanel(tk.Frame):
         # load spell on select
         self.spell_tree.bind("<<TreeviewSelect>>", self.load_selected_spell)
 
+        scrollbar = ttk.Scrollbar(
+            self,
+            orient="vertical",
+            command=self.spell_tree.yview
+        )
+
+        self.spell_tree.configure(
+            yscrollcommand=scrollbar.set
+        )
+
+
         self.total_label = tk.Label(self, text="Total cast chance: 0.00%", bg=st.base_bg, font=st.norm_font, anchor="w")
 
         # spell labels and entries
@@ -84,6 +95,7 @@ class SpellsPanel(tk.Frame):
         self.info_label.grid(row=r, column=c, columnspan=2, padx=2, pady=5, sticky="ew")
         r += 1
         self.spell_tree.grid(row=r, column=c, columnspan=2, padx=2, pady=2, sticky="nsew")
+        scrollbar.grid(row=r, column=c + 2, sticky="ns")
         r += 1
         self.total_label.grid(row=r, column=c, columnspan=2, padx=2, pady=5, sticky="ew")
         r += 1
@@ -114,6 +126,7 @@ class SpellsPanel(tk.Frame):
         search_text = self.find_entry.get().strip().lower()
 
         if search_text == "":
+            self.cont.view.console.print("Enter a spell name to search for.\n")
             return
 
         matches = []
@@ -359,12 +372,3 @@ class SpellsPanel(tk.Frame):
             )
 
             self.check_spells()
-
-
-    def show_help(self):
-        help_text = [
-            ("title", "Spell Help\n\n"),
-            ("body", "Use to edit a spell or upgrade the level of all spells.\n\n")
-        ]
-
-        self.cont.view.console.show_help(help_text)

@@ -91,11 +91,3 @@ class AttributesPanel(tk.Frame):
             self.cont.set_attributes(my_dict, self.int_entries_2, True)
         else:
             self.cont.file_warning()
-
-    def show_help(self):
-        help_text = [
-            ("title", "Attributes Help\n\n"),
-            ("body", "All fields are optional. The vitals are adjusted based on the attributes so enter the desired values.\n\n"),
-        ]
-
-        self.cont.view.console.show_help(help_text)

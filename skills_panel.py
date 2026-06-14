@@ -153,10 +153,3 @@ class SkillsPanel(tk.Frame):
         else:
             self.cont.file_warning()
 
-    def show_help(self):
-        help_text = [
-            ("title", "Skills Help\n\n"),
-            ("body", "All fields are optional. Set attributes first, then enter desired skill levels. The entire skill table is replaced so any fields left blank will be deleted.\n\n"),
-        ]
-
-        self.cont.view.console.show_help(help_text)

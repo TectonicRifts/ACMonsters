@@ -211,13 +211,3 @@ class ArtPanel(tk.Frame):
             self.cont.view.console.print("Enter a clothing base, setup did and gfx object.\n")
 
 
-    def show_help(self):
-        help_text = [
-            ("title", "Art Help\n\n"),
-            ("body", "All fields are optional.\n\n"),
-            ("header", "Calculator\n"),
-            ("body", "Enter a hex value to convert it to a decimal or vice versa.\n")
-        ]
-
-        self.cont.view.console.show_help(help_text)
-

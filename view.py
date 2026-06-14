@@ -67,8 +67,4 @@ class View(tk.Frame):
 
 
     def show_help(self):
-        current_panel = self.right_nb.nametowidget(self.right_nb.select())
-        if hasattr(current_panel, "show_help"):
-            current_panel.show_help()
-        else:
-            self.console.print("No help available for this tab.")
+        self.console.print("For help, visit the ACM Wiki: https://github.com/TectonicRifts/ACMonsters/wiki")

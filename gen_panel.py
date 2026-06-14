@@ -229,9 +229,11 @@ class GenPanel(tk.Frame):
         if not gen_name:
             gen_name = "Placeholder Gen"
 
-        gen_wcid = int(self.gen_int_entries["gen wcid"].get())
-        if not gen_wcid:
+        try:
+            gen_wcid = int(self.gen_int_entries["gen wcid"].get())
+        except ValueError:
             gen_wcid = 90750
+
         child_wcid = gen_wcid + 1
 
         # other gen properties
@@ -296,6 +298,10 @@ class GenPanel(tk.Frame):
 
         tot_rows = top_total + scatter_total + specific_total
 
+        if tot_rows == 0:
+            self.cont.view.console.print("Add at least one row to the generator table.\n")
+            return
+
         if selected_template == "wave":
             delay = 3600
             # list with -1 repeated tot_rows times
@@ -331,17 +337,6 @@ class GenPanel(tk.Frame):
 
         sh.write_sql_file(str(gen_wcid) + " " + gen_name, "gen", ''.join(commands))
 
-    def show_help(self):
-        help_text = [
-            ("title", "Generator Help\n\n"),
-            ("body", "All fields are optional. Use to set generator properties inside a creature or create standalone generators with the specified table.\n\n"),
-            ("header", "Initial Delay\n"),
-            ("body", "Only applies to event generators, and sets the delay between activating the event and generating the first spawn.\n\n"),
-            ("header", "Loc Paste\n"),
-            ("body", "A paste of /myloc in the form: 0x01AC0117 [31.013346 -19.342186 0.005000] -0.763732 0.000000 0.000000 -0.645533\n\n")
-        ]
-
-        self.cont.view.console.show_help(help_text)
 
 
 

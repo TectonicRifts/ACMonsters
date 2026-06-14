@@ -245,14 +245,3 @@ class BasePanel(tk.Frame):
                         entry.delete(0, tk.END)  # delete existing
                         entry.insert(0, xp_value)  # insert new
 
-    def show_help(self):
-        help_text = [
-            ("title", "Base Properties Help\n\n"),
-            ("body", "All fields are optional.\n\n"),
-            ("header", "Edge Slide\n"),
-            ("body", "Creature no longer falls off cliffs. Sets physics state and edge slide (int 93, bool 42).\n\n"),
-            ("header", "NPC Like Object\n"),
-            ("body", "Sets AI immobile, don't turn or move when giving, and NPC looks like object to true (bool 52, 82, 83).\n\n")
-        ]
-
-        self.cont.view.console.show_help(help_text)
