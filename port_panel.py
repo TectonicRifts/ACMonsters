@@ -22,7 +22,7 @@ class PortPanel(tk.Frame):
         self.port_color_combo = ttk.Combobox(self, values=color_options, font=norm_font, state="readonly")
         self.port_color_combo.current(0)
 
-        str_labels = ['port name', 'quest name', 'loc paste']
+        str_labels = ['port name', 'quest stamp', 'quest restrict', 'loc paste']
         self.str_entries = vh.make_str_entry(self, str_labels)
 
         angles_label = tk.Label(self, text="loc facing", font=norm_font, bg=st.base_bg)
@@ -33,10 +33,6 @@ class PortPanel(tk.Frame):
 
         int_labels = ['port wcid', 'min level']
         self.int_entries = vh.make_int_entry(self, int_labels)
-
-        self.quest_restrict = tk.IntVar(value=0)
-        quest_restrict_check = tk.Checkbutton(self, text="quest restrict", variable=self.quest_restrict, font=norm_font,
-                                        bg=st.base_bg, activebackground=st.base_bg)
 
         self.on_click = tk.IntVar(value=0)
         on_click_check = tk.Checkbutton(self, text="use on click", variable=self.on_click, font=norm_font,
@@ -79,8 +75,7 @@ class PortPanel(tk.Frame):
         bitmask_label.grid(row=r, column=c, sticky="e", padx=2)
         self.bitmask_combo.grid(row=r, column=c + 1, sticky="ew", padx=2)
         r += 1
-        quest_restrict_check.grid(row=r, column=c)
-        on_click_check.grid(row=r, column=c + 1)
+        on_click_check.grid(row=r, column=c)
         r += 1
         make_port_button.grid(row=r, column=c, columnspan=2, padx=2, pady=5, sticky="ew")
 
@@ -95,13 +90,19 @@ class PortPanel(tk.Frame):
         if not port_name:
             port_name = "Placeholder Portal"
 
-        port_wcid = int(self.int_entries["port wcid"].get())
-        if not port_wcid:
+        port_wcid = self.int_entries["port wcid"].get()
+        if port_wcid:
+            port_wcid = int(port_wcid)
+        else:
             port_wcid = 90750
 
-        quest_name = self.str_entries["quest name"].get().strip()
-        if not quest_name:
-            quest_name = None
+        quest_stamp = self.str_entries["quest stamp"].get().strip()
+        if not quest_stamp:
+            quest_stamp = None
+
+        quest_restrict = self.str_entries["quest restrict"].get().strip()
+        if not quest_restrict:
+            quest_restrict = None
 
         port_color = self.port_color_combo.get()
         port_setup = port_module.portal_colors[port_color]
@@ -119,12 +120,7 @@ class PortPanel(tk.Frame):
         else:
             use_on_click = False
 
-        if self.quest_restrict:
-            do_quest_restrict = True
-        else:
-            do_quest_restrict = False
-
-        port_body = port_module.make_portal_body(port_wcid, port_name, port_setup, bitmask_int, min_level, use_on_click, quest_name, do_quest_restrict)
+        port_body = port_module.make_portal_body(port_wcid, port_name, port_setup, bitmask_int, min_level, use_on_click, quest_stamp, quest_restrict)
 
         entry = self.str_entries["loc paste"]
         specific_loc = entry.get().strip()
@@ -143,3 +139,5 @@ class PortPanel(tk.Frame):
 
             commands = port_body + position_table
             sh.write_sql_file(str(port_wcid) + " " + port_name, "port", ''.join(commands))
+        else:
+            self.cont.view.console.print("A loc paste is required.")

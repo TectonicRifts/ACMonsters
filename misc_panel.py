@@ -19,9 +19,12 @@ class MiscPanel(tk.Frame):
         str_labels = ["quest name", "description", "min delta", "max delta"]
         self.quest_entries = vh.make_str_entry(self, str_labels)
 
+        self.quest_entries["min delta"].insert(0, "72000")
+        self.quest_entries["max delta"].insert(0, "-1")
+
         # kill task
         task_header_label = tk.Label(self, text="Kill Task", font=norm_font, fg=st.label_text, bg=st.base_bg)
-        str_labels = ["counter name", "kill total"]
+        str_labels = ["task name", "kill total"]
         self.task_entries = vh.make_str_entry(self, str_labels)
 
         # event
@@ -78,18 +81,22 @@ class MiscPanel(tk.Frame):
         self.columnconfigure(1, weight=1)
 
 
-    def make_quest(self):
-        quest_name = str.strip(self.quest_entries["quest name"].get())
-        description = str.strip(self.quest_entries["description"].get())
-        if quest_name.__contains__("'"):
-            quest_name.replace("'", "''")
-        if description.__contains__("'"):
-            description.replace("'", "''")
+    def make_quest(self, name: str = None):
+        if name is None:
+            quest_name = str.strip(self.quest_entries["quest name"].get())
+            description = str.strip(self.quest_entries["description"].get())
+        else:
+            quest_name = str.strip(self.task_entries["task name"].get())
+            description = "task timer"
+
+        quest_name = quest_name.replace("'", "''")
+        description = description.replace("'", "''")
 
         min_delta = str.strip(self.quest_entries["min delta"].get())
         max_delta = str.strip(self.quest_entries["max delta"].get())
 
         if quest_name and description and min_delta and max_delta:
+            print("this ran")
             commands = [
                 f"DELETE FROM `quest` WHERE `name` = '{quest_name}';\n\n",
                 "INSERT INTO `quest` (`name`, `min_Delta`, `max_Solves`, `message`, `last_Modified`)\n",
@@ -99,9 +106,14 @@ class MiscPanel(tk.Frame):
             sh.write_sql_file(quest_name, "quests", ''.join(commands))
 
     def make_kill_task(self):
-        self.make_quest()
-        counter_name = str.strip(self.quest_entries["counter name"].get())
-        kill_total = str.strip(self.quest_entries["kill total"].get())
+        counter_name = str.strip(self.task_entries["task name"].get())
+        counter_name = counter_name.replace("'", "''")
+
+        self.make_quest(name=counter_name)
+        
+        counter_name = counter_name + "KillCount"
+
+        kill_total = str.strip(self.task_entries["kill total"].get())
 
         if counter_name and kill_total:
             commands = [
@@ -130,14 +142,4 @@ class MiscPanel(tk.Frame):
             ]
             sh.write_sql_file(event_name, "events", ''.join(commands))
 
-
-    def show_help(self):
-        help_text = [
-            ("title", "Misc Help\n\n"),
-            ("header", "Quest\n"),
-            ("body", "If repeatable, min delta is the timer in milliseconds (e.g., 72000), and max delta should be -1.\n"),
-            ("body", "For a one time flag, min and max delta should be 0 and 1.\n")
-        ]
-
-        self.cont.view.console.show_help(help_text)
 

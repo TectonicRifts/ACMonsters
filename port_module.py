@@ -13,7 +13,6 @@ direction_angles = {
 bitmask_comments = {
     1: "Unrestricted",
     17: "Unrestricted, NoSummon",
-    48: "NoSummon, NoRecall",
     49: "Unrestricted, NoSummon, NoRecall"
 }
 
@@ -85,7 +84,7 @@ def make_position_table(port_wcid, loc: Location):
     return commands
 
 
-def make_portal_body(port_wcid: int, port_name: str, port_setup: str, port_bitmask: int, min_level: int, on_click: bool, quest_name: str | None, quest_restrict: bool) -> list:
+def make_portal_body(port_wcid: int, port_name: str, port_setup: str, port_bitmask: int, min_level: int, on_click: bool, quest_stamp: str | None, quest_restrict: str | None) -> list:
     class_name = port_name.replace(" ", "").lower()
     if not port_setup:
         port_setup = "0x020001B3"
@@ -139,17 +138,17 @@ def make_portal_body(port_wcid: int, port_name: str, port_setup: str, port_bitma
         f"VALUES ({port_wcid},  54,    -0.1) /* UseRadius */;\n\n",
     ]
 
-    if quest_name and not quest_restrict:
+    if quest_stamp and not quest_restrict:
         str_table = [
             "INSERT INTO `weenie_properties_string` (`object_Id`, `type`, `value`)\n",
             f"VALUES ({port_wcid},   1, '{port_name}') /* Name */\n",
-            f"     , ({port_wcid},  33, '{quest_name}') /* Quest */;\n\n",
+            f"     , ({port_wcid},  33, '{quest_stamp}') /* Quest */;\n\n",
         ]
-    elif quest_name and quest_restrict:
+    elif quest_stamp and quest_restrict:
         str_table = [
             "INSERT INTO `weenie_properties_string` (`object_Id`, `type`, `value`)\n",
             f"VALUES ({port_wcid},   1, '{port_name}') /* Name */\n",
-            f"     , ({port_wcid},  37, '{quest_name}') /* QuestRestriction */;\n\n",
+            f"     , ({port_wcid},  37, '{quest_restrict}') /* QuestRestriction */;\n\n",
         ]
     else:
         str_table = [
