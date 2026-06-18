@@ -5,6 +5,22 @@ def is_hex(val: str) -> bool:
     return val.startswith("0x") or any(c in val.upper() for c in "ABCDEF")
 
 
+def ensure_hex_prefix(val: str):
+    val = val.strip()
+    if not val:
+        return None
+
+    if not val.lower().startswith("0x"):
+        val = f"0x{val}"
+
+    try:
+        # make sure it's hex
+        int(val, 16)
+        return val
+    except ValueError:
+        return None
+
+
 def write_json_file(file_name, folder, data):
     file_path = Path("output") / folder
     file_path.mkdir(parents=True, exist_ok=True)

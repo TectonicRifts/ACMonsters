@@ -167,8 +167,14 @@ class ArtPanel(tk.Frame):
 
 
     def add_texture_pair(self):
-        old_texture = self.clo_entries["old texture"].get().strip()
-        new_texture = self.clo_entries["new texture"].get().strip()
+        old_texture = art_module.ensure_hex_prefix(
+            self.clo_entries["old texture"].get()
+        )
+
+        new_texture = art_module.ensure_hex_prefix(
+            self.clo_entries["new texture"].get()
+        )
+
         if old_texture and new_texture:
             self.texture_pairs.append((old_texture, new_texture))
             self.cont.view.console.print(f"Added the texture pair: {old_texture} and {new_texture}.\n")
@@ -186,15 +192,20 @@ class ArtPanel(tk.Frame):
 
 
     def make_custom_clothing(self):
-        # TODO not done
         # custom clothing base hex, such as 0x10000938
-        clothing_base = self.did_entries["clothing base"].get().strip()
+        clothing_base = art_module.ensure_hex_prefix(
+            self.did_entries["clothing base"].get()
+        )
 
         # the setup did of the item to modify, such as 0x02001112
-        setup_did = self.clo_entries["setup did"].get().strip()
+        setup_did = art_module.ensure_hex_prefix(
+            self.clo_entries["setup did"].get()
+        )
 
         # gfx object of the part to modify, such as 0x01003357
-        gfx_object = self.clo_entries["gfx object"].get().strip()
+        gfx_object = art_module.ensure_hex_prefix(
+            self.clo_entries["gfx object"].get()
+        )
 
         if clothing_base and setup_did and gfx_object:
 
