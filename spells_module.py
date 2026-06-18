@@ -131,7 +131,7 @@ def load_spell_dict() -> dict:
     # key = spell name, value = spell id
     spell_dict = {}
 
-    with open('spell_names.txt', 'r', encoding='utf-8') as file:
+    with open('resources/spell_names.txt', 'r', encoding='utf-8') as file:
         for line in file:
             spell_id, spell_name = line.strip().split(',', 1)
             # print(spell_id, spell_name)
@@ -145,7 +145,7 @@ def load_special_dict() -> dict:
     # key = regular level 7 spell name, value = actual, special level 7 name
     spell_dict = {}
 
-    with open('spell_names7.txt', 'r', encoding='utf-8') as file:
+    with open('resources/spell_names7.txt', 'r', encoding='utf-8') as file:
         for line in file:
             regular_name, special_name = line.strip().split('\t', 1)
             spell_dict[regular_name] = special_name

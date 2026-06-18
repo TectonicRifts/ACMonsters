@@ -38,6 +38,8 @@ class Controller:
 
     def save_sql(self):
 
+        Path("output/weenies").mkdir(parents=True, exist_ok=True)
+
         if self.sql_data:
             with open("output/weenies/" + self.sql_output, 'w') as file_object:
                 for command in self.sql_data:

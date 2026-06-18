@@ -10,9 +10,9 @@ def main():
     if os.name == 'nt':
         windll.shcore.SetProcessDpiAwareness(1) # type: ignore
 
-    version = 1.7
+    version = "0.1.7"
     root = tk.Tk()
-    root.title("AC Monsters " + str(version))
+    root.title("AC Monsters " + version)
     Controller(root)
     root.mainloop()
 

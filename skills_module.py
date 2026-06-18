@@ -215,7 +215,7 @@ def make_skill_table(wcid, skills):
 
 
 def skill_look_up(name):
-    with open('pcap_creature_skills.txt') as my_file:
+    with open('resources/pcap_creature_skills.txt') as my_file:
 
         melee_attack = []
         melee_defense = []

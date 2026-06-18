@@ -238,7 +238,7 @@ def get_name(commands):
 
 
 def get_xp_value(level):
-    with open("xp_by_level.txt", 'r') as my_file:
+    with open("resources/xp_by_level.txt", 'r') as my_file:
         for line in my_file:
             split = line.split("\t")
             if int(level) == int(split[0].strip()):
@@ -293,14 +293,14 @@ def find_death_treasure(file_name, entry, text_area):
     text_area.configure(state='disabled')
 
 
-def get_spell_list(name):
+def get_spell_list(name: str):
     results_dict = {}
     search_phrase = name.strip().lower()
 
     if not search_phrase:  # empty string
         tk.messagebox.showerror("Error", "Enter a spell name.")
     else:
-        with open("spell_data.txt", 'r') as my_file:
+        with open("resources/spell_data.txt", 'r') as my_file:
             for line in my_file:
                 if search_phrase in line.lower():
                     split1 = line.split("\t")
