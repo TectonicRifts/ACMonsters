@@ -9,8 +9,8 @@ def main():
     # if on Windows, fix blurry font
     if os.name == 'nt':
         windll.shcore.SetProcessDpiAwareness(1) # type: ignore
-
-    version = "0.1.7"
+    
+    version = "0.1.8"
     root = tk.Tk()
     root.title("AC Monsters " + version)
     Controller(root)

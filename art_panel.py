@@ -1,4 +1,6 @@
 from functools import partial
+from tkinter import ttk
+
 import view_helper as vh
 import settings as st
 import tkinter as tk
@@ -23,9 +25,14 @@ class ArtPanel(tk.Frame):
         float_labels = ['shade', 'translucency', 'scale']
         self.float_entries = vh.make_float_entry(self, float_labels)
 
+        # calculator
         calc_header_label = tk.Label(self, text="Calculator", font=norm_font, fg=st.label_text, bg=st.base_bg)
-        str_labels = ['hex or dec']
+        str_labels = ['number']
         self.str_entries = vh.make_str_entry(self, str_labels)
+
+        calc_options = ["dec to hex", "hex to dec"]
+        self.calc_combo = ttk.Combobox(self, values=calc_options, font=norm_font, state="readonly")
+        self.calc_combo.current(0)
 
         convert_button = tk.Button(self, text="Convert", command=self.convert)
 
@@ -67,6 +74,8 @@ class ArtPanel(tk.Frame):
             label.grid(row=r, column=c, sticky="e", padx=2)
             entry.grid(row=r, column=c + 1, sticky="ew", padx=2)
             r += 1
+        self.calc_combo.grid(row=r, column=c + 1, padx=2, pady=5, sticky="ew")
+        r += 1
 
         convert_button.grid(row=r, column=c, padx=2, pady=5, sticky="ew")
         r += 1
@@ -123,45 +132,36 @@ class ArtPanel(tk.Frame):
 
 
     def convert(self):
-        val = self.str_entries["hex or dec"].get().strip()
-
-        if art_module.is_hex(val):
-            self.hex_to_dec()
-        else:
-            self.dec_to_hex()
-
-
-    def hex_to_dec(self):
-        val = self.str_entries["hex or dec"].get().strip()
+        val = self.str_entries["number"].get().strip()
 
         if val == "":
-            self.cont.view.console.print("Enter a hex value.\n")
+            self.cont.view.console.print("Enter a value.\n")
             return
 
+        convert_type = self.calc_combo.get()
+        if convert_type == "hex to dec":
+            if art_module.is_hex(val):
+                self.hex_to_dec(val)
+            else:
+                self.cont.view.console.print("Enter a valid hex value.\n")
+        else:
+            self.dec_to_hex(val)
+
+
+    def hex_to_dec(self, val: str):
         try:
             # handles both "72C90013" and "0x72C90013"
             dec_val = int(val, 16)
             self.cont.view.console.print(f"{dec_val}\n")
-
         except ValueError:
             self.cont.view.console.print("Invalid hex value.\n")
 
 
-    def dec_to_hex(self):
-        val = self.str_entries["hex or dec"].get().strip()
-
-        if val == "":
-            self.cont.view.console.print("Enter a decimal value.\n")
-            return
-
+    def dec_to_hex(self, val: str):
         try:
             dec_val = int(val)
-
-            # force into 32-bit two's complement
             hex_val = f"0x{dec_val & 0xFFFFFFFF:08X}"
-
             self.cont.view.console.print(f"{hex_val}\n")
-
         except ValueError:
             self.cont.view.console.print("Invalid decimal value.\n")
 

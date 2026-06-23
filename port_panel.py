@@ -18,6 +18,8 @@ class PortPanel(tk.Frame):
         port_header_label = tk.Label(self, text="Portal", font=norm_font, fg='#221CD9', bg=st.base_bg)
 
         port_color_label = tk.Label(self, text="color", font=norm_font, bg=st.base_bg)
+
+        # portal color dropdown
         color_options = list(port_module.portal_colors.keys())
         self.port_color_combo = ttk.Combobox(self, values=color_options, font=norm_font, state="readonly")
         self.port_color_combo.current(0)

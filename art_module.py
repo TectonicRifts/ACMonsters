@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 
+
 def is_hex(val: str) -> bool:
     return val.startswith("0x") or any(c in val.upper() for c in "ABCDEF")
 
