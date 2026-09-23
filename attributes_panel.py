@@ -55,15 +55,15 @@ class AttributesPanel(tk.Frame):
 
     def show_attributes(self):
 
-        if self.cont.sql_data is not None:
-            attributes = stat_helper.get_all_attributes(self.cont.sql_data)
+        if self.cont.weenie_sql is not None:
+            attributes = stat_helper.get_all_attributes(self.cont.weenie_sql)
 
             for name, entry in self.int_entries_1.items():
                 if name in attributes.keys():
                     entry.delete(0, tk.END)  # delete existing
                     entry.insert(0, attributes.get(name))  # insert new
 
-            vitals = stat_helper.get_all_vitals(self.cont.sql_data)
+            vitals = stat_helper.get_all_vitals(self.cont.weenie_sql)
 
             for name, entry in self.int_entries_2.items():
                 if name in vitals.keys():
@@ -72,7 +72,7 @@ class AttributesPanel(tk.Frame):
 
     def set_attributes(self):
 
-        if self.cont.sql_data is not None:
+        if self.cont.weenie_sql is not None:
             my_dict = {
                 'strength': (1, "/* Strength */"),
                 'endurance': (2, "/* Endurance */"),

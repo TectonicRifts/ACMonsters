@@ -53,7 +53,7 @@ class RecipePanel(tk.Frame):
         for name, entry in self.int_entries.items():
             val = entry.get().strip()
             if val == "":
-                self.cont.view.console.print(f"There was an invalid or missing integer field.\n")
+                self.cont.print(f"There was an invalid or missing integer field.\n")
                 return
             else:
                 int_fields[name] = val
@@ -62,7 +62,7 @@ class RecipePanel(tk.Frame):
         for name, entry in self.str_entries.items():
             val = entry.get().strip()
             if val == "":
-                self.cont.view.console.print(f"There was an invalid or missing text field.\n")
+                self.cont.print(f"There was an invalid or missing text field.\n")
                 return
             else:
                 # escape any apostrophes

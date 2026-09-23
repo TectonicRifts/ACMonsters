@@ -101,7 +101,7 @@ class MiscPanel(tk.Frame):
 
         quest_name = self.quest_entries["quest name"].get().strip()
         if not quest_name:
-            self.cont.view.console.print("Enter a quest name.\n")
+            self.cont.print("Enter a quest name.\n")
             return
 
         description = self.quest_entries["description"].get().strip()
@@ -128,7 +128,7 @@ class MiscPanel(tk.Frame):
 
         quest_name = self.quest_entries["quest name"].get().strip()
         if not quest_name:
-            self.cont.view.console.print("Enter a quest name.\n")
+            self.cont.print("Enter a quest name.\n")
             return
 
         description = self.quest_entries["description"].get().strip()
@@ -137,13 +137,13 @@ class MiscPanel(tk.Frame):
 
         total_bits = self.bits_entries["total bits"].get().strip()
         if not total_bits:
-            self.cont.view.console.print("Enter a total number of bits.\n")
+            self.cont.print("Enter a total number of bits.\n")
             return
 
         try:
             total_bits = int(total_bits)
         except ValueError:
-            self.cont.view.console.print("Total bits must be a whole number.\n")
+            self.cont.print("Total bits must be a whole number.\n")
             return
 
         min_delta = 0
@@ -154,7 +154,7 @@ class MiscPanel(tk.Frame):
         # print list of bit flags
         for i in range(total_bits):
             value = 2 ** i
-            self.cont.view.console.print(f"{hex(value)} = {value}\n")
+            self.cont.print(f"{hex(value)} = {value}\n")
 
         write_quest_sql(quest_name, min_delta, max_solves, description)
 
@@ -174,7 +174,7 @@ class MiscPanel(tk.Frame):
         kill_total = self.task_entries["kill total"].get().strip()
 
         if not kill_total:
-            self.cont.view.console.print("Enter a kill total.\n")
+            self.cont.print("Enter a kill total.\n")
             return
 
         write_quest_sql(counter_name, min_delta, kill_total, description)
@@ -183,7 +183,7 @@ class MiscPanel(tk.Frame):
     def make_event(self):
         event_name = self.event_entries["event name"].get().strip()
         if not event_name:
-            self.cont.view.console.print("Enter an event name.\n")
+            self.cont.print("Enter an event name.\n")
             return
 
         selected = self.event_state_combo.get()

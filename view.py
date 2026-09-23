@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 
+import profiler
 from art_panel import ArtPanel
 from attributes_panel import AttributesPanel
 from calc_panel import CalcPanel
@@ -34,9 +35,10 @@ class View(tk.Frame):
         self.mods_panel = ModsPanel(self.right_nb, cont)
         art_panel = ArtPanel(self.right_nb, cont)
         self.spells_panel = SpellsPanel(self.right_nb, cont)
-        misc_panel = MiscPanel(self.right_nb, cont)
         recipe_panel = RecipePanel(self.right_nb, cont)
         port_panel = PortPanel(self.right_nb, cont)
+        misc_panel = MiscPanel(self.right_nb, cont)
+
 
         # left
         left_nb.add(self.console, text="Console")
@@ -64,6 +66,17 @@ class View(tk.Frame):
         toolbar.grid(row=1, column=0, columnspan=2)
 
         self.grid()
+
+    def refresh(self):
+        """Refresh the view after opening a file."""
+        self.attributes_panel.show_attributes()
+        self.skills_panel.check_parameters()
+        self.spells_panel.check_spells()
+
+        self.calc_panel.profile_player(profiler.profile_max)
+        self.calc_panel.profile_player(profiler.profile_150)
+
+        self.mods_panel.show_mods()
 
 
     def show_help(self):

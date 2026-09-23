@@ -60,9 +60,9 @@ class CalcPanel(tk.Frame):
 
     def _print(self, text, color=None):
         if color is None:
-            self.cont.view.console.print(text)
+            self.cont.print(text)
         else:
-            self.cont.view.console.print(text, color)
+            self.cont.print(text, color)
 
     def _get_entry_value(self, key, required_message=None, as_int=False, as_float=False):
         raw = self.skill_check_entries.get(key).get().strip()
@@ -143,7 +143,7 @@ class CalcPanel(tk.Frame):
 
     def profile_player(self, player_profile):
 
-        if self.cont.sql_data is None:
+        if self.cont.weenie_sql is None:
             return
 
         self._print(f"\n{player_profile.name} Player Profile (% chance)\n", "purple")
@@ -156,8 +156,8 @@ class CalcPanel(tk.Frame):
             "evade melee": "NA",
         }
 
-        attributes = stat_helper.get_all_attributes(self.cont.sql_data)
-        skills = skills_module.get_skill_table(self.cont.sql_data)
+        attributes = stat_helper.get_all_attributes(self.cont.weenie_sql)
+        skills = skills_module.get_skill_table(self.cont.weenie_sql)
 
         found_war_or_void = False
 

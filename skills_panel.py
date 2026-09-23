@@ -69,44 +69,44 @@ class SkillsPanel(tk.Frame):
 
     def check_parameters(self):
         """Check attributes, base, effective, and pcap skills."""
-        if self.cont.sql_data:
+        if self.cont.weenie_sql:
             # clear existing
             for name, entry in self.all_entries.items():
                 entry.delete(0, tk.END)  # delete existing
 
-            attributes = stat_helper.get_all_attributes(self.cont.sql_data)
-            skills = skills_module.get_skill_table(self.cont.sql_data)
+            attributes = stat_helper.get_all_attributes(self.cont.weenie_sql)
+            skills = skills_module.get_skill_table(self.cont.weenie_sql)
 
             if skills:  # false if the skill list is empty
-                self.cont.view.console.print("\nCurrent Effective Skills\n", "purple")
+                self.cont.print("\nCurrent Effective Skills\n", "purple")
                 for skill in skills:
                     attribute_bonus = skills_module.get_attribute_bonus(attributes, skill.name)
                     effective_value = skill.value + attribute_bonus
 
-                    self.cont.view.console.print(skill.name + "\t" + str(effective_value) + "\n")
+                    self.cont.print(skill.name + "\t" + str(effective_value) + "\n")
 
                     for name, entry in self.all_entries.items():
                         name = name.title().replace(" ", "")
                         if name == skill.name:
                             entry.insert(0, str(effective_value))  # insert new
 
-                self.cont.view.console.print("\nPCAP Effective Skills (mean [min, max])\n", "purple")
+                self.cont.print("\nPCAP Effective Skills (mean [min, max])\n", "purple")
                 pcap_skills = self.get_skill_pcap()
                 for name, v in pcap_skills.items():
                     if "defense" in name:
-                        self.cont.view.console.print(
+                        self.cont.print(
                             str(name) + "\t" + str(v[0]) + " [" + str(v[1]) + ", " + str(v[2]) + "]\n", "brown"
                         )
                     else:
-                        self.cont.view.console.print(
+                        self.cont.print(
                             str(name) + "\t" + str(v[0]) + " [" + str(v[1]) + ", " + str(v[2]) + "]\n"
                         )
         else:
             self.cont.file_warning()
 
     def get_skill_pcap(self) ->dict:
-        if self.cont.sql_data:
-            name = file_helper.get_name(self.cont.sql_data)
+        if self.cont.weenie_sql:
+            name = file_helper.get_name(self.cont.weenie_sql)
             pcap_skills = skills_module.skill_look_up(name)
         else:
             pcap_skills = {}
@@ -114,10 +114,10 @@ class SkillsPanel(tk.Frame):
 
     def set_skills(self):
 
-        if self.cont.sql_data:
+        if self.cont.weenie_sql:
 
-            wcid = file_helper.get_wcid(self.cont.sql_data)
-            attributes = stat_helper.get_all_attributes(self.cont.sql_data)
+            wcid = file_helper.get_wcid(self.cont.weenie_sql)
+            attributes = stat_helper.get_all_attributes(self.cont.weenie_sql)
 
             skills = {}
             # k = skill name , v = skill value
@@ -140,7 +140,7 @@ class SkillsPanel(tk.Frame):
             my_list = []
 
             # delete if already there
-            for command in self.cont.sql_data:
+            for command in self.cont.weenie_sql:
                 if str("`weenie_properties_skill`") in command:
                     pass
                 else:
@@ -148,7 +148,7 @@ class SkillsPanel(tk.Frame):
                         my_list.append(command)
 
             my_list.append(new_command)
-            self.cont.sql_data = my_list
+            self.cont.weenie_sql = my_list
 
         else:
             self.cont.file_warning()

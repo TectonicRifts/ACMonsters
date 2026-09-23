@@ -1,4 +1,5 @@
 from port_module import Location
+import file_helper as fh
 
 def get_gen_prs(tot_rows: int) -> list[float]:
     if tot_rows == 1:
@@ -20,31 +21,26 @@ def get_gen_prs(tot_rows: int) -> list[float]:
 
 
 def make_gen_row(gen_wcid: int, child_wcid: int, where: int, delay: int, spawn_pr: float, loc: Location | None = None) -> str:
-    # TODO
-    # if no loc provided, uses None
-    # need to provide a loc for specific gen
-    # spawn_pr = -1
     spawn_name = "Placeholder (" + str(child_wcid) + ")"
-
-    # 1 = Top, 2 = Scatter, 4 = Specific
-    where_dict = {
-        1: "Top",
-        2: "Scatter",
-        4: "Specific"
-    }
     max_create = 1
 
     if loc is None:
         loc = Location(0, 0, 0, 0, 1, 0, 0, 0)
 
-    return f"({gen_wcid}, {spawn_pr}, {child_wcid}, {delay}, 1, {max_create}, 1, {where}, -1, 0, 0, {loc.cell_id}, {loc.ox}, {loc.oy}, {loc.oz}, {loc.aw}, {loc.ax}, {loc.ay}, {loc.az}) /* Generate {spawn_name} (x1 up to max of {max_create}) - Regenerate upon Destruction - Location to (re)Generate: {where_dict[where]} */"
+    comment = (
+        f"Generate {spawn_name} (x1 up to max of {max_create}) - "
+        f"Regenerate upon Destruction - "
+        f"Location to (re)Generate: {fh.GenWhere(where).name.title()}"
+    )
+
+    return f"({gen_wcid}, {spawn_pr}, {child_wcid}, {delay}, 1, {max_create}, 1, {where}, -1, 0, 0, {loc.cell_id}, {loc.ox}, {loc.oy}, {loc.oz}, {loc.aw}, {loc.ax}, {loc.ay}, {loc.az}) /* {comment} */"
 
 
 def get_default_gen_body(gen_wcid: int, gen_name: str, gen_init: int, gen_max: int, regen_interval: int, gen_radius: int) -> list:
 
     class_name = gen_name.replace(" ", "").lower()
 
-    commands = [
+    sql_statements = [
         f"DELETE FROM `weenie` WHERE `class_Id` = {gen_wcid};\n\n",
 
         "INSERT INTO `weenie` (`class_Id`, `class_Name`, `type`, `last_Modified`)\n",
@@ -73,14 +69,14 @@ def get_default_gen_body(gen_wcid: int, gen_name: str, gen_init: int, gen_max: i
         f"     , ({gen_wcid},   8, 0x06001066) /* Icon */;\n\n"
     ]
 
-    return commands
+    return sql_statements
 
 
 def get_event_gen_body(gen_wcid: int, gen_name: str, gen_init: int, gen_max: int, regen_interval: int, gen_radius: int, event_name: str, init_delay: int) -> list:
 
     class_name = gen_name.replace(" ", "").lower()
 
-    commands = [
+    sql_statements = [
         f"DELETE FROM `weenie` WHERE `class_Id` = {gen_wcid};\n\n",
 
         "INSERT INTO `weenie` (`class_Id`, `class_Name`, `type`, `last_Modified`)\n",
@@ -112,15 +108,14 @@ def get_event_gen_body(gen_wcid: int, gen_name: str, gen_init: int, gen_max: int
         f"     , ({gen_wcid},   8, 0x06001066) /* Icon */;\n\n"
     ]
 
-    return commands
+    return sql_statements
 
 
 def get_gen_table(gen_rows: list) -> list:
-    # TODO
-    commands = [
+
+    sql_statements = [
         f"INSERT INTO `weenie_properties_generator` (`object_Id`, `probability`, `weenie_Class_Id`, `delay`, `init_Create`, `max_Create`, `when_Create`, `where_Create`, `stack_Size`, `palette_Id`, `shade`, `obj_Cell_Id`, `origin_X`, `origin_Y`, `origin_Z`, `angles_W`, `angles_X`, `angles_Y`, `angles_Z`)\n"
     ]
-
     tot_rows = len(gen_rows)
 
     for i, row in enumerate(gen_rows):
@@ -134,7 +129,6 @@ def get_gen_table(gen_rows: list) -> list:
         else:
             suffix = "\n"
 
-        commands.append(prefix + row + suffix)
+        sql_statements.append(prefix + row + suffix)
 
-    # return "".join(commands)
-    return commands
+    return sql_statements

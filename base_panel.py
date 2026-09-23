@@ -153,7 +153,7 @@ class BasePanel(tk.Frame):
 
     def set_misc_stats(self):
 
-        if self.cont.sql_data is not None:
+        if self.cont.weenie_sql is not None:
             # creature type
             selected = self.creature_type_combo.get()
 
@@ -162,7 +162,7 @@ class BasePanel(tk.Frame):
             else:
                 val = labels_module.get_creature_type_int(selected)
                 desc = "/* CreatureType - " + selected + " */"
-                self.cont.sql_data = fh.set_property(self.cont.sql_data, "int", 2, int(val), desc)
+                self.cont.weenie_sql = fh.set_property(self.cont.weenie_sql, "int", 2, int(val), desc)
 
             # str
             my_dict = {
@@ -198,44 +198,44 @@ class BasePanel(tk.Frame):
 
             # set to npc
             if self.edge_slide.get() == 1:
-                self.cont.sql_data = fh.set_property(self.cont.sql_data, "int", 93, 4195336, "/* PhysicsState - ReportCollisions, Gravity, EdgeSlide */")
-                self.cont.sql_data = fh.set_property(self.cont.sql_data, "bool", 42, 1, "/* AllowEdgeSlide */")
+                self.cont.weenie_sql = fh.set_property(self.cont.weenie_sql, "int", 93, 4195336, "/* PhysicsState - ReportCollisions, Gravity, EdgeSlide */")
+                self.cont.weenie_sql = fh.set_property(self.cont.weenie_sql, "bool", 42, 1, "/* AllowEdgeSlide */")
 
             # set npc should appear as an object
             if self.npc_like_object.get() == 1:
-                self.cont.sql_data = fh.set_property(self.cont.sql_data, "bool", 52, 1, "/* AiImmobile */")
-                self.cont.sql_data = fh.set_property(self.cont.sql_data, "bool", 82, 1, "/* DontTurnOrMoveWhenGiving */")
-                self.cont.sql_data = fh.set_property(self.cont.sql_data, "bool", 83, 1, "/* NpcLooksLikeObject */")
+                self.cont.weenie_sql = fh.set_property(self.cont.weenie_sql, "bool", 52, 1, "/* AiImmobile */")
+                self.cont.weenie_sql = fh.set_property(self.cont.weenie_sql, "bool", 82, 1, "/* DontTurnOrMoveWhenGiving */")
+                self.cont.weenie_sql = fh.set_property(self.cont.weenie_sql, "bool", 83, 1, "/* NpcLooksLikeObject */")
 
             # attacks of the monster ignore life magic, i.e., ignores life armor, imperil, prots, vulns
             if self.ignore_life_magic.get() == 1:
-                self.cont.sql_data = fh.set_property(self.cont.sql_data, "bool", 65, 1, "/* IgnoreMagicResist */")
+                self.cont.weenie_sql = fh.set_property(self.cont.weenie_sql, "bool", 65, 1, "/* IgnoreMagicResist */")
 
             # attacks of the monster ignore item magic, i.e., impen, brittlemail, banes, lures
             if self.ignore_item_magic.get() == 1:
-                self.cont.sql_data = fh.set_property(self.cont.sql_data, "bool", 66, 1, "/* IgnoreMagicArmor */")
+                self.cont.weenie_sql = fh.set_property(self.cont.weenie_sql, "bool", 66, 1, "/* IgnoreMagicArmor */")
 
             # ignore shield, this is a float
             if self.ignore_shield.get() == 1:
-                self.cont.sql_data = fh.set_property(self.cont.sql_data, "float", 151, 1, "/* IgnoreShield */")
+                self.cont.weenie_sql = fh.set_property(self.cont.weenie_sql, "float", 151, 1, "/* IgnoreShield */")
 
             # debuff immune, this is a bool
             if self.debuff_immune.get() == 1:
-                self.cont.sql_data = self.cont.sql_data = fh.set_property(self.cont.sql_data, "bool", 103, 1, "/* NonProjectileMagicImmune */")
+                self.cont.weenie_sql = self.cont.weenie_sql = fh.set_property(self.cont.weenie_sql, "bool", 103, 1, "/* NonProjectileMagicImmune */")
 
             # no corpse, this is a bool
             if self.no_corpse.get() == 1:
-                self.cont.sql_data = fh.set_property(self.cont.sql_data, "bool", 29, 1, "/* NoCorpse */")
+                self.cont.weenie_sql = fh.set_property(self.cont.weenie_sql, "bool", 29, 1, "/* NoCorpse */")
 
             # allow give, this is a bool
             if self.allow_give.get() == 1:
-                self.cont.sql_data = fh.set_property(self.cont.sql_data, "bool", 8, 1, "/* AllowGive */")
+                self.cont.weenie_sql = fh.set_property(self.cont.weenie_sql, "bool", 8, 1, "/* AllowGive */")
         else:
             self.cont.file_warning()
 
     def set_xp_from_level(self):
-        if self.cont.sql_data is not None:
-            level = fh.get_property(self.cont.sql_data, "int", 25)[0]
+        if self.cont.weenie_sql is not None:
+            level = fh.get_property(self.cont.weenie_sql, "int", 25)[0]
 
             if level is not None:
                 xp_value = fh.get_xp_value(level)

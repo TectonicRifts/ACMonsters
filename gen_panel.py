@@ -18,12 +18,14 @@ class GenPanel(tk.Frame):
 
         norm_font = st.norm_font
 
+        # gen destruction
         gen_dest_label = tk.Label(self, text="gen dest", font=norm_font, bg=st.base_bg)
         gen_dest_options = sorted(labels_module.get_all_gen_dest_types())
         gen_dest_options.insert(0, "no change")
         self.gen_dest_combo = ttk.Combobox(self, values=gen_dest_options, font=norm_font, state="readonly")
         self.gen_dest_combo.current(0)
 
+        # gen time type
         gen_time_label = tk.Label(self, text="gen time", font=norm_font, bg=st.base_bg)
         gen_time_options = sorted(labels_module.get_all_gen_time_types())
         gen_time_options.insert(0, "no change")
@@ -46,9 +48,9 @@ class GenPanel(tk.Frame):
         self.str_entries = vh.make_str_entry(self, str_labels)
 
         # buttons
-        set_button = tk.Button(self, text="Set", bg=st.button_bg, command=self.set_misc_stats)
+        set_button = tk.Button(self, text="Set", bg=st.button_bg, command=self.set_gen_properties)
         batch_button = tk.Button(self, text="Run Batch",
-                                 command=partial(self.cont.run_sql_batch, self.set_misc_stats))
+                                 command=partial(self.cont.run_sql_batch, self.set_gen_properties))
 
         # gen templates
         self.specific_locs = []
@@ -68,7 +70,6 @@ class GenPanel(tk.Frame):
         self.gen_angles_combo.current(0)
 
         template_label = tk.Label(self, text="template", font=norm_font, bg=st.base_bg)
-        # TODO add more templates
         gen_templates = ["default", "wave"]
         template_options = gen_templates
         self.templates_combo = ttk.Combobox(self, values=template_options, font=norm_font, state="readonly")
@@ -77,7 +78,8 @@ class GenPanel(tk.Frame):
         add_loc_button = tk.Button(self, text="Add Loc", command=self.add_specific_loc)
         clear_locs_button = tk.Button(self, text="Clear Locs", command=self.clear_specific_locs)
 
-        make_gen_button = tk.Button(self, text="Make Gen", command=self.make_gen)
+        set_gen_button = tk.Button(self, text="Set", bg=st.button_bg, command=self.set_gen_table)
+        make_gen_button = tk.Button(self, text="Make Gen", command=self.make_standalone_gen)
 
         # layout
         r = 0
@@ -141,14 +143,14 @@ class GenPanel(tk.Frame):
         r += 1
         clear_locs_button.grid(row=r, column=c, padx=2, pady=5, sticky="ew")
         r += 1
+        set_gen_button.grid(row=r, column=c, columnspan=2, padx=2, pady=5, sticky="ew")
+        r += 1
         make_gen_button.grid(row=r, column=c, columnspan=2, padx=2, pady=5, sticky="ew")
 
         self.columnconfigure(0, weight=0)
         self.columnconfigure(1, weight=1)
 
-
-    def set_misc_stats(self):
-
+    def set_gen_properties(self):
         # gen dest type
         selected = self.gen_dest_combo.get()
 
@@ -157,7 +159,7 @@ class GenPanel(tk.Frame):
         else:
             val = labels_module.get_gen_dest_int(selected)
             desc = "/* GeneratorDestructionType - " + selected + " */"
-            self.cont.sql_data = fh.set_property(self.cont.sql_data, "int", 103, int(val), desc)
+            self.cont.weenie_sql = fh.set_property(self.cont.weenie_sql, "int", 103, int(val), desc)
 
         # gen time type
         selected = self.gen_time_combo.get()
@@ -167,12 +169,12 @@ class GenPanel(tk.Frame):
         else:
             val = labels_module.get_gen_time_int(selected)
             desc = "/* GeneratorTimeType - " + selected + " */"
-            self.cont.sql_data = fh.set_property(self.cont.sql_data, "int", 142, int(val), desc)
+            self.cont.weenie_sql = fh.set_property(self.cont.weenie_sql, "int", 142, int(val), desc)
 
             # to destroy spawns when gen event ends
             if selected == "Event":
                 desc = "/* GeneratorEndDestructionType - Destroy " + selected + " */"
-                self.cont.sql_data = fh.set_property(self.cont.sql_data, "int", 145, 2, desc)
+                self.cont.weenie_sql = fh.set_property(self.cont.weenie_sql, "int", 145, 2, desc)
 
         # int
         my_dict = {
@@ -211,19 +213,74 @@ class GenPanel(tk.Frame):
 
             self.specific_locs.append(loc)
             loc_str = f"@teleloc {loc.cell_id} [{loc.ox} {loc.oy} {loc.oz}] {loc.aw} {loc.ax} {loc.ay} {loc.az}\n"
-            self.cont.view.console.print("Added: " + loc_str)
-            self.cont.view.console.print("Total locs: " + str(len(self.specific_locs)) + "\n")
-
+            self.cont.print("Added: " + loc_str)
+            self.cont.print("Total locs: " + str(len(self.specific_locs)) + "\n")
 
     def clear_specific_locs(self):
         self.specific_locs.clear()
-        self.cont.view.console.print("Cleared all specific locs.\n")
+        self.cont.print("Cleared all specific locs.\n")
 
+    def build_gen_table(self, gen_wcid: int) -> list:
+        gen_rows = []
+        child_wcid = gen_wcid + 1
 
-    def make_gen(self):
-        # template
+        top_total = self.gen_int_entries["top total"].get()
+        top_total = int(top_total) if top_total else 0
+
+        scatter_total = self.gen_int_entries["scatter total"].get()
+        scatter_total = int(scatter_total) if scatter_total else 0
+
+        specific_total = len(self.specific_locs)
+        tot_rows = top_total + scatter_total + specific_total
+
+        if tot_rows == 0:
+            self.cont.print("Add at least one row to the generator table.\n")
+            return gen_rows
+
         selected_template = self.templates_combo.get()
 
+        if selected_template == "wave":
+            delay = 3600
+            # list with -1 repeated tot_rows times
+            gen_prs = [-1] * tot_rows
+        else:
+            delay = 30
+            gen_prs = gen_module.get_gen_prs(tot_rows)
+
+        pr_index = 0
+
+        for i in range(top_total):
+            spawn_pr = gen_prs[pr_index]
+            gen_rows.append(
+                gen_module.make_gen_row(gen_wcid, child_wcid, fh.GenWhere.TOP.value, delay, spawn_pr)
+            )
+            child_wcid += 1
+            pr_index += 1
+
+        for i in range(scatter_total):
+            spawn_pr = gen_prs[pr_index]
+            gen_rows.append(
+                gen_module.make_gen_row(gen_wcid, child_wcid, fh.GenWhere.SCATTER.value, delay, spawn_pr)
+            )
+            child_wcid += 1
+            pr_index += 1
+
+        for loc in self.specific_locs:
+            spawn_pr = gen_prs[pr_index]
+            gen_rows.append(
+                gen_module.make_gen_row(gen_wcid, child_wcid, fh.GenWhere.SPECIFIC.value, delay, spawn_pr, loc)
+            )
+            child_wcid += 1
+            pr_index += 1
+
+        return gen_module.get_gen_table(gen_rows)
+
+    def set_gen_table(self):
+        gen_wcid = self.cont.get_wcid()
+        gen_table = self.build_gen_table(gen_wcid)
+        self.cont.set_sql_table("`weenie_properties_generator`", gen_table)
+
+    def make_standalone_gen(self):
         # gen name and wcid
         gen_name = self.gen_str_entries["gen name"].get().strip()
         if not gen_name:
@@ -234,40 +291,20 @@ class GenPanel(tk.Frame):
         except ValueError:
             gen_wcid = 90750
 
-        child_wcid = gen_wcid + 1
-
         # other gen properties
         gen_init = self.int_entries["gen init"].get()
         gen_max = self.int_entries["gen max"].get()
 
-        if gen_init:
-            gen_init = int(gen_init)
-        else:
-            gen_init = 1
-
-        if gen_max:
-            gen_max = int(gen_max)
-        else:
-            gen_max = 1
+        gen_init = int(gen_init) if gen_init else 1
+        gen_max = int(gen_max) if gen_max else 1
 
         regen_interval = self.float_entries["regen interval"].get()
         gen_radius = self.float_entries["gen radius"].get()
         init_delay = self.float_entries["init delay"].get()
 
-        if regen_interval:
-            regen_interval = int(regen_interval)
-        else:
-            regen_interval = 60
-
-        if gen_radius:
-            gen_radius = int(gen_radius)
-        else:
-            gen_radius = 20
-
-        if init_delay:
-            init_delay = int(init_delay)
-        else:
-            init_delay = 0
+        regen_interval = int(regen_interval) if regen_interval else 60
+        gen_radius = int(gen_radius) if gen_radius else 20
+        init_delay = int(init_delay) if init_delay else 0
 
         # gen body
         selected_time = self.gen_time_combo.get()
@@ -281,64 +318,7 @@ class GenPanel(tk.Frame):
                 gen_wcid, gen_name, gen_init, gen_max, regen_interval, gen_radius
             )
 
-        # gen table
-        top_total = self.gen_int_entries["top total"].get()
-        if top_total:
-            top_total = int(top_total)
-        else:
-            top_total = 0
+        gen_table = self.build_gen_table(gen_wcid)
 
-        scatter_total = self.gen_int_entries["scatter total"].get()
-        if scatter_total:
-            scatter_total = int(scatter_total)
-        else:
-            scatter_total = 0
-
-        specific_total = len(self.specific_locs)
-
-        tot_rows = top_total + scatter_total + specific_total
-
-        if tot_rows == 0:
-            self.cont.view.console.print("Add at least one row to the generator table.\n")
-            return
-
-        if selected_template == "wave":
-            delay = 3600
-            # list with -1 repeated tot_rows times
-            gen_prs = [-1] * tot_rows
-        else:
-            delay = 30
-            gen_prs = gen_module.get_gen_prs(tot_rows)
-
-        # where: 1 = Top, 2 = Scatter, 4 = Specific
-        gen_rows = []
-        pr_index = 0
-
-        for i in range(top_total):
-            spawn_pr = gen_prs[pr_index]
-            gen_rows.append(gen_module.make_gen_row(gen_wcid, child_wcid, 1, delay, spawn_pr))
-            child_wcid += 1
-            pr_index += 1
-
-        for i in range(scatter_total):
-            spawn_pr = gen_prs[pr_index]
-            gen_rows.append(gen_module.make_gen_row(gen_wcid, child_wcid, 2, delay, spawn_pr))
-            child_wcid += 1
-            pr_index += 1
-
-        for loc in self.specific_locs:
-            spawn_pr = gen_prs[pr_index]
-            gen_rows.append(gen_module.make_gen_row(gen_wcid, child_wcid, 4, delay, spawn_pr, loc))
-            child_wcid += 1
-            pr_index += 1
-
-        gen_table = gen_module.get_gen_table(gen_rows)
-        commands = gen_body + gen_table
-
-        sh.write_sql_file(str(gen_wcid) + " " + gen_name, "gen", ''.join(commands))
-
-
-
-
-
-
+        sql_statements = gen_body + gen_table
+        sh.write_sql_file(str(gen_wcid) + " " + gen_name, "gen", ''.join(sql_statements))

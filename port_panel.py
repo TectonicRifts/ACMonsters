@@ -142,4 +142,4 @@ class PortPanel(tk.Frame):
             commands = port_body + position_table
             sh.write_sql_file(str(port_wcid) + " " + port_name, "port", ''.join(commands))
         else:
-            self.cont.view.console.print("A loc paste is required.")
+            self.cont.print("A loc paste is required.")

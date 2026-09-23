@@ -1,8 +1,5 @@
-import tkinter as tk
-from tkinter import END
-import tkinter.messagebox
 import re
-
+from enum import IntEnum
 
 PROPERTY_HEADERS = {
     "int": "`weenie_properties_int`",
@@ -34,6 +31,10 @@ RESIST_MOD_IDS = {
     "nether": 166
 }
 
+class GenWhere(IntEnum):
+    TOP = 1
+    SCATTER = 2
+    SPECIFIC = 4
 
 def get_property_header(property_type: str) -> str | None:
     """Property types are int, bool, float, str, and did."""
@@ -63,7 +64,7 @@ def extract_float_properties(sql_data: list, property_ids: dict) -> dict:
     return result
 
 
-def get_property(sql_data: list, property_type: str, key: int) -> tuple[str, str] | None:
+def get_property(weenie_sql: list, property_type: str, key: int) -> tuple[str, str] | None:
     """
     Returns a tuple (val, comment) or None if the property type is invalid, the property table does
     not exist, or the given key is not found in the property table.
@@ -72,14 +73,14 @@ def get_property(sql_data: list, property_type: str, key: int) -> tuple[str, str
     if property_header is None:
         return None
 
-    wcid = get_wcid(sql_data)
+    wcid = get_wcid(weenie_sql)
 
-    for command in sql_data:
-        if property_header in command:
-            parsed_sql_data = {}
-            split_command = command.split("(")
+    for table in weenie_sql:
+        if property_header in table:
+            sql_statement = {}
+            split_table = table.split("(")
 
-            for line in split_command:
+            for line in split_table:
                 if str(wcid) in line:
                     # split on the first two commas only
                     split_comma = line.split(",", 2)
@@ -89,15 +90,15 @@ def get_property(sql_data: list, property_type: str, key: int) -> tuple[str, str
                     my_val = split_other[0].strip()
                     comment = "".join(split_other[1].rsplit(",", 1)).strip()
 
-                    parsed_sql_data[my_key] = (my_val, comment)
+                    sql_statement[my_key] = (my_val, comment)
 
-            return parsed_sql_data.get(key)
+            return sql_statement.get(key)
 
     return None
 
 
-def set_property(sql_data: list, property_type: str, key, val, desc) -> list:
-    """Set a property (int, bool, float, string or did) to a weenie (in sql format). If the
+def set_property(weenie_sql: list, property_type: str, key, val, desc) -> list:
+    """Set a property (int, bool, float, string or did) of a weenie (in sql format). If the
     property already exists, the value is updated. This function does not work for position. """
 
     is_padded = True
@@ -124,29 +125,29 @@ def set_property(sql_data: list, property_type: str, key, val, desc) -> list:
     property_header = get_property_header(property_type)
 
     # find number string in first line
-    wcid = re.findall('[0-9]+', (sql_data[0]))[0]
+    wcid = re.findall('[0-9]+', (weenie_sql[0]))[0]
 
     # check if this property table already exists
     has_property_table = False
 
-    for command in sql_data:
-        if str(property_header) in command:
+    for table in weenie_sql:
+        if str(property_header) in table:
             has_property_table = True
 
     # if not, add a new insert command
     if not has_property_table:
-        new_command = f"""\n\nINSERT INTO {property_header} (`object_Id`, `type`, `value`)\nVALUES """
-        new_command += f"""({wcid}, {key}, {val}) {desc}"""
-        sql_data.append(new_command)
-        return sql_data
+        new_table = f"""\n\nINSERT INTO {property_header} (`object_Id`, `type`, `value`)\nVALUES """
+        new_table += f"""({wcid}, {key}, {val}) {desc}"""
+        weenie_sql.append(new_table)
+        return weenie_sql
 
-    new_sql_data = []
+    new_weenie_sql = []
 
-    for command in sql_data:
-        if str(property_header) in command:
+    for table in weenie_sql:
+        if str(property_header) in table:
 
             properties = {}
-            split_command = command.split("(")
+            split_command = table.split("(")
 
             for line in split_command:
                 if str(wcid) in line:
@@ -163,8 +164,8 @@ def set_property(sql_data: list, property_type: str, key, val, desc) -> list:
             # add or replace the target property
             properties[key] = (val, desc)
 
-            # rebuild the insert command
-            new_command = f"""\n\nINSERT INTO {property_header} (`object_Id`, `type`, `value`)\nVALUES """
+            # rebuild the insert statement
+            new_table = f"""\n\nINSERT INTO {property_header} (`object_Id`, `type`, `value`)\nVALUES """
 
             # figure out padding
             i = 0
@@ -176,7 +177,6 @@ def set_property(sql_data: list, property_type: str, key, val, desc) -> list:
                 longest_val = 8
 
             for k, v in sorted(properties.items()):
-
                 if is_padded:
                     justified_value = str(v[0]).rjust(longest_val, " ")
                     justified_key = str(k).rjust(longest_key, " ")
@@ -185,25 +185,24 @@ def set_property(sql_data: list, property_type: str, key, val, desc) -> list:
                     justified_key = str(k).rjust(longest_key, " ")
 
                 if i == 0:
-                    new_command = new_command + f"""({wcid},{justified_key},{justified_value}) {v[1]}"""
+                    new_table = new_table + f"""({wcid},{justified_key},{justified_value}) {v[1]}"""
                     if i < (total_lines - 1):
-                        new_command = new_command + "\n    "
+                        new_table = new_table + "\n    "
                 else:
-                    new_command = new_command + f""" , ({wcid},{justified_key},{justified_value}) {v[1]}"""
+                    new_table = new_table + f""" , ({wcid},{justified_key},{justified_value}) {v[1]}"""
                     if i < (total_lines - 1):
-                        new_command = new_command + "\n    "
+                        new_table = new_table + "\n    "
                 i += 1
 
-            new_sql_data.append(new_command)
+            new_weenie_sql.append(new_table)
 
-        else:
-            if command.strip() != "":
-                new_sql_data.append(command)
+        elif table.strip():
+            new_weenie_sql.append(table)
 
-    return new_sql_data
+    return new_weenie_sql
 
 
-def get_longest(my_dict):
+def get_longest(my_dict: dict):
     longest_key = 0
     longest_val = 0
 
@@ -223,17 +222,18 @@ def get_longest(my_dict):
     return longest_key, longest_val
 
 
-def get_wcid(commands):
-    wcid = re.findall('[0-9]+', (commands[0]))[0]
+def get_wcid(weenie_sql: list):
+    wcid = re.findall('[0-9]+', (weenie_sql[0]))[0]
     return wcid
 
 
-def get_name(commands):
-    name = str(get_property(commands, "str", 1))
+def get_name(weenie_sql):
+    name = str(get_property(weenie_sql, "str", 1))
     split = name.split(",")[0]
     name = split.replace("(", "")
     name = name.replace("''", "'")
     name = name[2:-2]
+
     return name
 
 
@@ -247,94 +247,38 @@ def get_xp_value(level):
     return 0
 
 
-def find_listbox_output(file_name, entry, listbox):
-    results_list = []
-    search_phrase = entry.get().strip().lower()
+def set_sql_table(weenie_sql: list[str], table_name: str, new_table: list[str]) -> list[str]:
+    # example table names: `weenie_properties_generator` or `weenie_properties_body_part`
+    new_weenie_sql = []
 
-    if not search_phrase:  # empty string
-        tk.messagebox.showerror("Error", "Enter something to search for.")
-    else:
-        with open(file_name, 'r') as my_file:
-            for line in my_file:
-                if search_phrase in line.lower():
-                    split = line.split("\t")
-                    results_list.append(split[0] + "," + split[1])
+    # new table has to be a str, not list, because a table is represented by a single string in weenie_sql
+    tot_rows = len(new_table)
+    table_str = ""
 
-        # clear the listbox first
-        listbox.delete(0, END)
+    for i in range(tot_rows):
+        if i == 0: # first row is the insert statement
+            table_str = "\n\n" + new_table[i]
+        elif i == tot_rows - 1:
+            prefix = "     "
+            table_str = table_str + prefix + new_table[i].strip()
+        else:
+            table_str = table_str + new_table[i]
+        i += 1
 
-        # add the result to the listbox
-        i = 0
-        for result in results_list:
-            listbox.insert(i, result)
-            i += 1
+    found = False
 
+    for table in weenie_sql:
+        if table_name in table:
+            # replace the old table with the new one
+            found = True
+            new_weenie_sql.append(table_str)
+        elif table.strip():
+            # carry over the existing table
+            new_weenie_sql.append(table)
 
-def find_death_treasure(file_name, entry, text_area):
-    results_list = []
-    search_phrase = entry.get().strip().lower()
+    if not found:
+        new_weenie_sql.append(table_str)
 
-    text_area.configure(state='normal')
-    text_area.delete('1.0', END)
-
-    if not search_phrase:
-        text_area.insert(END, "Enter something to search for.")
-    else:
-        with open(file_name, 'r') as my_file:
-            for line in my_file:
-                split = line.split('\t')
-                if search_phrase in split[0]:
-                    results_list.append(split[1].strip())
-
-        text_area.insert(END, "Options for Loot Tier " + search_phrase + "\n")
-        for result in results_list:
-            text_area.insert(END, result + "\t")
-
-    text_area.configure(state='disabled')
+    return new_weenie_sql
 
 
-def get_spell_list(name: str):
-    results_dict = {}
-    search_phrase = name.strip().lower()
-
-    if not search_phrase:  # empty string
-        tk.messagebox.showerror("Error", "Enter a spell name.")
-    else:
-        with open("resources/spell_data.txt", 'r') as my_file:
-            for line in my_file:
-                if search_phrase in line.lower():
-                    split1 = line.split("\t")
-                    spell_name = split1[1]
-                    split2 = split1[2].split(",")
-                    split3 = split2[0].split(":")
-                    spell_id = split3[1].strip()
-
-                    results_dict[spell_id] = spell_name
-
-    return results_dict
-
-
-def set_body_table(sql_data, template_wcid, body_table) -> list:
-    # TODO not used anymore?
-    wcid = re.findall('[0-9]+', (sql_data[0]))[0]
-    property_header = "`weenie_properties_body_part`"
-    my_list = []
-    body_table = body_table.replace(template_wcid, wcid)
-
-    has_command = False
-    for command in sql_data:
-        if str(property_header) in command:
-            has_command = True
-
-    if has_command:
-        for command in sql_data:
-            if str(property_header) in command:  # append new instead of existing
-                my_list.append(body_table)
-            else:
-                if command.strip() != "":
-                    my_list.append(command)
-    else:
-        sql_data.append(body_table)
-        return sql_data
-
-    return my_list

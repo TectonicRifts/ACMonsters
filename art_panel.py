@@ -104,7 +104,7 @@ class ArtPanel(tk.Frame):
 
     def set_art(self):
         """Set art properties for a single sql file"""
-        if self.cont.sql_data is not None:
+        if self.cont.weenie_sql is not None:
             # int
             my_dict = {
                 'palette template': (3, "/* PaletteTemplate */")

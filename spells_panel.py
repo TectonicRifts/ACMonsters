@@ -126,7 +126,7 @@ class SpellsPanel(tk.Frame):
         search_text = self.find_entry.get().strip().lower()
 
         if search_text == "":
-            self.cont.view.console.print("Enter a spell name to search for.\n")
+            self.cont.print("Enter a spell name to search for.\n")
             return
 
         matches = []
@@ -136,13 +136,13 @@ class SpellsPanel(tk.Frame):
                 matches.append((spell_id, spell_name))
 
         if not matches:
-            self.cont.view.console.print("No matching spells found.\n")
+            self.cont.print("No matching spells found.\n")
             return
 
-        self.cont.view.console.print("\nMatching spells:\n")
+        self.cont.print("\nMatching spells:\n")
 
         for spell_id, spell_name in matches:
-            self.cont.view.console.print(f"{spell_id}\t{spell_name}\n")
+            self.cont.print(f"{spell_id}\t{spell_name}\n")
 
 
     def clear_spell_tree(self):
@@ -168,15 +168,15 @@ class SpellsPanel(tk.Frame):
 
 
     def check_spells(self):
-        if self.cont.sql_data is None:
+        if self.cont.weenie_sql is None:
             self.cont.file_warning()
             return
 
-        wcid = file_helper.get_wcid(self.cont.sql_data)
-        name = file_helper.get_name(self.cont.sql_data)
+        wcid = file_helper.get_wcid(self.cont.weenie_sql)
+        name = file_helper.get_name(self.cont.weenie_sql)
         self.info_label.config(text=f"{wcid} {name}")
 
-        spells = spells_module.get_spellbook(self.cont.sql_data)
+        spells = spells_module.get_spellbook(self.cont.weenie_sql)
 
         self.current_spells = []
 
@@ -226,18 +226,18 @@ class SpellsPanel(tk.Frame):
         chance_text = self.chance_entry.get().strip().replace("%", "")
 
         if spell_id_text == "" or chance_text == "":
-            self.cont.view.console.print("Enter a spell ID and chance.\n")
+            self.cont.print("Enter a spell ID and chance.\n")
             return
 
         try:
             spell_id = int(spell_id_text)
             chance = float(chance_text)
         except ValueError:
-            self.cont.view.console.print("Spell ID must be an integer and chance must be a number.\n")
+            self.cont.print("Spell ID must be an integer and chance must be a number.\n")
             return
 
         if chance < 0 or chance > 100:
-            self.cont.view.console.print("Chance must be between 0 and 100.\n")
+            self.cont.print("Chance must be between 0 and 100.\n")
             return
 
         spell_name = self.id_to_spell.get(spell_id, "Unknown Spell")
@@ -270,7 +270,7 @@ class SpellsPanel(tk.Frame):
         selected = self.spell_tree.selection()
 
         if not selected:
-            self.cont.view.console.print("Select a spell to delete.\n")
+            self.cont.print("Select a spell to delete.\n")
             return
 
         item = selected[0]
@@ -291,11 +291,11 @@ class SpellsPanel(tk.Frame):
 
 
     def save_spellbook(self):
-        if self.cont.sql_data is None:
+        if self.cont.weenie_sql is None:
             self.cont.file_warning()
             return
 
-        wcid = file_helper.get_wcid(self.cont.sql_data)
+        wcid = file_helper.get_wcid(self.cont.weenie_sql)
 
         independent = []
 
@@ -319,7 +319,7 @@ class SpellsPanel(tk.Frame):
 
         my_list = []
 
-        for command in self.cont.sql_data:
+        for command in self.cont.weenie_sql:
             if "`weenie_properties_spell_book`" not in command:
                 if command.strip() != "":
                     my_list.append(command)
@@ -327,20 +327,20 @@ class SpellsPanel(tk.Frame):
         if self.current_spells:
             my_list.append(new_command)
 
-        self.cont.sql_data = my_list
+        self.cont.weenie_sql = my_list
 
-        self.cont.view.console.print("Spellbook saved.\n")
+        self.cont.print("Spellbook saved.\n")
         self.check_spells()
 
 
     def upgrade_spells(self):
-        if self.cont.sql_data is None:
+        if self.cont.weenie_sql is None:
             self.cont.file_warning()
             return
 
-        wcid = file_helper.get_wcid(self.cont.sql_data)
-        name = file_helper.get_name(self.cont.sql_data)
-        spells = spells_module.get_spellbook(self.cont.sql_data)
+        wcid = file_helper.get_wcid(self.cont.weenie_sql)
+        name = file_helper.get_name(self.cont.weenie_sql)
+        spells = spells_module.get_spellbook(self.cont.weenie_sql)
 
         if spells:
             upgraded = []
@@ -359,15 +359,15 @@ class SpellsPanel(tk.Frame):
 
             my_list = []
 
-            for command in self.cont.sql_data:
+            for command in self.cont.weenie_sql:
                 if "`weenie_properties_spell_book`" not in command:
                     if command.strip() != "":
                         my_list.append(command)
 
             my_list.append(new_command)
-            self.cont.sql_data = my_list
+            self.cont.weenie_sql = my_list
 
-            self.cont.view.console.print(
+            self.cont.print(
                 "\nSpells for " + str(wcid) + "\t" + name + " upgraded.\n"
             )
 

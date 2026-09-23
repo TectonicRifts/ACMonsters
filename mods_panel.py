@@ -83,17 +83,16 @@ class ModsPanel(tk.Frame):
         self.columnconfigure(1, weight=1)
         self.columnconfigure(2, weight=1)
 
-
     def show_mods(self):
-        if self.cont.sql_data is not None:
+        if self.cont.weenie_sql is not None:
             # clear existing
             for name, entry in self.armor_entries.items():
                 entry.delete(0, tk.END)
             for name, entry in self.resist_entries.items():
                 entry.delete(0, tk.END)
 
-            armor_mods = fh.get_armor_mods(self.cont.sql_data)
-            resist_mods = fh.get_resist_mods(self.cont.sql_data)
+            armor_mods = fh.get_armor_mods(self.cont.weenie_sql)
+            resist_mods = fh.get_resist_mods(self.cont.weenie_sql)
 
             for name, entry in self.armor_entries.items():
                 if name in armor_mods.keys():
@@ -108,7 +107,7 @@ class ModsPanel(tk.Frame):
                         entry.insert(0, result)
 
     def set_mods(self):
-        if self.cont.sql_data is not None:
+        if self.cont.weenie_sql is not None:
             armor_dict = {
                 "slash": (13, "/* ArmorModVsSlash */"),
                 "pierce": (14, "/* ArmorModVsPierce */"),
@@ -136,14 +135,14 @@ class ModsPanel(tk.Frame):
         else:
             self.cont.file_warning()
 
-
     def set_ratings(self):
-        if self.cont.sql_data is not None:
+        if self.cont.weenie_sql is not None:
             # int
-            my_dict = {'damage': (307, "/* DamageRating */"),
-                       'dmg resist': (308, "/* DamageResistRating */"),
-                       'crit': (313, "/* CritRating */"),
-                       'crit resist': (316, "/* CritDamageResistRating */"),
-                       'overpower': (386, "/* Overpower */")
-                       }
+            my_dict = {
+                'damage': (307, "/* DamageRating */"),
+                'dmg resist': (308, "/* DamageResistRating */"),
+                'crit': (313, "/* CritRating */"),
+                'crit resist': (316, "/* CritDamageResistRating */"),
+                'overpower': (386, "/* Overpower */")
+            }
             self.cont.set_properties(my_dict, self.int_entries, 'int')
